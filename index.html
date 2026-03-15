@@ -1,0 +1,1522 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>🐾 ToxiVet Chile — Encuesta de Toxicología</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,700;0,900;1,700&family=Syne:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<style>
+:root {
+  --bg: #0d1117;
+  --surface: #161b22;
+  --surface2: #21262d;
+  --border: rgba(255,255,255,0.08);
+  --cream: #f0ebe0;
+  --muted: rgba(240,235,224,0.55);
+  --green: #3fb950;
+  --green-dim: rgba(63,185,80,0.18);
+  --red: #f85149;
+  --red-dim: rgba(248,81,73,0.18);
+  --orange: #d29922;
+  --orange-dim: rgba(210,153,34,0.18);
+  --yellow: #e3b341;
+  --blue: #58a6ff;
+  --purple: #bc8cff;
+  --purple-dim: rgba(188,140,255,0.18);
+  --plant-accent: #56d364;
+  --food-accent: #f0883e;
+  --drug-accent: #bc8cff;
+  --mix-accent: #58a6ff;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Syne',sans-serif;
+  background:var(--bg);
+  color:var(--cream);
+  min-height:100vh;
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  overflow-x:hidden;
+}
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 60% 40% at 10% 0%,rgba(63,185,80,0.07) 0%,transparent 70%),
+    radial-gradient(ellipse 50% 50% at 90% 100%,rgba(88,166,255,0.06) 0%,transparent 70%),
+    radial-gradient(ellipse 40% 60% at 50% 50%,rgba(188,140,255,0.04) 0%,transparent 70%);
+}
+
+.app{width:100%;max-width:500px;min-height:100vh;display:flex;flex-direction:column;position:relative;padding-bottom:40px}
+
+/* ── HEADER ── */
+.header{padding:22px 20px 0;text-align:center}
+.header-logo{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:4px}
+.logo-pill{
+  background:linear-gradient(135deg,#1a2a1a,#2a3a2a);
+  border:1px solid rgba(63,185,80,0.3);
+  border-radius:30px;padding:6px 16px;
+  display:flex;align-items:center;gap:8px;
+}
+.logo-text{font-family:'Fraunces',serif;font-size:18px;font-weight:900;letter-spacing:-0.5px}
+.logo-text span{color:var(--green)}
+.header-sub{color:var(--muted);font-size:11px;letter-spacing:2.5px;text-transform:uppercase;margin-top:2px}
+
+/* ── CATEGORY SELECTOR ── */
+.cat-section{padding:24px 16px 0}
+.cat-title{color:var(--muted);font-size:11px;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;padding:0 4px}
+.cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cat-card{
+  background:var(--surface);border:1.5px solid var(--border);
+  border-radius:16px;padding:16px 14px;cursor:pointer;
+  transition:all 0.25s cubic-bezier(0.4,0,0.2,1);
+  text-align:left;position:relative;overflow:hidden;
+}
+.cat-card::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity 0.25s;border-radius:14px}
+.cat-card:active{transform:scale(0.97)}
+.cat-card.plants::before{background:radial-gradient(ellipse at top left,rgba(86,211,100,0.12),transparent 70%)}
+.cat-card.foods::before{background:radial-gradient(ellipse at top left,rgba(240,136,62,0.12),transparent 70%)}
+.cat-card.drugs::before{background:radial-gradient(ellipse at top left,rgba(188,140,255,0.12),transparent 70%)}
+.cat-card.mix::before{background:radial-gradient(ellipse at top left,rgba(88,166,255,0.12),transparent 70%)}
+.cat-card:hover::before,.cat-card.selected::before{opacity:1}
+.cat-card.selected.plants{border-color:var(--plant-accent);box-shadow:0 0 20px rgba(86,211,100,0.15)}
+.cat-card.selected.foods{border-color:var(--food-accent);box-shadow:0 0 20px rgba(240,136,62,0.15)}
+.cat-card.selected.drugs{border-color:var(--drug-accent);box-shadow:0 0 20px rgba(188,140,255,0.15)}
+.cat-card.selected.mix{border-color:var(--mix-accent);box-shadow:0 0 20px rgba(88,166,255,0.15)}
+.cat-icon{font-size:28px;margin-bottom:8px;display:block}
+.cat-name{font-family:'Fraunces',serif;font-size:16px;font-weight:700;margin-bottom:3px}
+.cat-name.plants{color:var(--plant-accent)}
+.cat-name.foods{color:var(--food-accent)}
+.cat-name.drugs{color:var(--drug-accent)}
+.cat-name.mix{color:var(--mix-accent)}
+.cat-count{color:var(--muted);font-size:11px}
+.mix-full{grid-column:span 2}
+
+.btn-start{
+  margin:20px 16px 0;
+  background:linear-gradient(135deg,#238636,#2ea043);
+  color:white;border:none;border-radius:14px;
+  padding:16px;font-family:'Syne',sans-serif;
+  font-size:16px;font-weight:600;cursor:pointer;
+  width:calc(100% - 32px);transition:all 0.2s;
+  box-shadow:0 4px 20px rgba(35,134,54,0.35);
+  letter-spacing:0.3px;
+}
+.btn-start:active{transform:scale(0.98)}
+.btn-start:disabled{opacity:0.4;cursor:not-allowed;transform:none}
+
+/* ── PROGRESS ── */
+.progress-wrap{padding:16px 16px 0;display:none}
+.prog-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.prog-label{font-size:12px;color:var(--muted)}
+.prog-pills{display:flex;gap:6px}
+.prog-pill{background:var(--surface2);border-radius:20px;padding:3px 10px;font-size:11px;color:var(--muted);border:1px solid var(--border)}
+.prog-bar-bg{height:3px;background:var(--surface2);border-radius:2px;overflow:hidden}
+.prog-bar-fill{height:100%;border-radius:2px;transition:width 0.5s cubic-bezier(0.4,0,0.2,1);background:var(--green)}
+
+/* ── QUESTION SCREEN ── */
+#screen-question{display:none;flex:1;flex-direction:column;padding:12px 16px 0}
+.q-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:20px;overflow:hidden;margin-bottom:12px;
+  box-shadow:0 8px 32px rgba(0,0,0,0.4);
+}
+.q-visual{
+  width:100%;height:180px;display:flex;align-items:center;
+  justify-content:center;position:relative;overflow:hidden;
+}
+.q-visual-emoji{font-size:80px;line-height:1;z-index:1;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.3))}
+.q-visual-bg{position:absolute;inset:0}
+.q-body{padding:16px 18px 20px}
+.q-meta{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.q-badge{
+  font-size:10px;font-weight:600;letter-spacing:1.5px;
+  text-transform:uppercase;padding:3px 10px;border-radius:20px;
+}
+.badge-plant{background:rgba(86,211,100,0.15);color:var(--plant-accent);border:1px solid rgba(86,211,100,0.3)}
+.badge-food{background:rgba(240,136,62,0.15);color:var(--food-accent);border:1px solid rgba(240,136,62,0.3)}
+.badge-drug{background:rgba(188,140,255,0.15);color:var(--drug-accent);border:1px solid rgba(188,140,255,0.3)}
+.q-cat-label{font-size:11px;color:var(--muted)}
+.q-text{font-family:'Fraunces',serif;font-size:18px;font-weight:700;line-height:1.35;color:var(--cream)}
+
+/* ── OPTIONS ── */
+.options{display:flex;flex-direction:column;gap:8px}
+.opt-btn{
+  background:var(--surface);border:1.5px solid var(--border);
+  border-radius:12px;padding:13px 14px;cursor:pointer;
+  display:flex;align-items:flex-start;gap:12px;text-align:left;
+  color:var(--cream);font-family:'Syne',sans-serif;font-size:13.5px;
+  width:100%;transition:all 0.2s;line-height:1.4;
+}
+.opt-btn:not(.disabled):hover{background:var(--surface2);border-color:rgba(255,255,255,0.2)}
+.opt-btn:active:not(.disabled){transform:scale(0.99)}
+.opt-letter{
+  width:28px;height:28px;min-width:28px;background:var(--surface2);
+  border-radius:8px;display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:600;transition:all 0.2s;flex-shrink:0;margin-top:1px;
+  border:1px solid var(--border);
+}
+.opt-btn.correct{background:var(--green-dim);border-color:var(--green)}
+.opt-btn.correct .opt-letter{background:var(--green);color:#000;border-color:var(--green)}
+.opt-btn.incorrect{background:var(--red-dim);border-color:var(--red)}
+.opt-btn.incorrect .opt-letter{background:var(--red);color:#fff;border-color:var(--red)}
+.opt-btn.disabled{cursor:default;pointer-events:none}
+
+/* ── FEEDBACK ── */
+.feedback{
+  margin-top:12px;background:var(--surface);border-radius:14px;
+  padding:14px 15px;border-left:3px solid var(--green);
+  display:none;animation:slideUp 0.3s ease;
+}
+.feedback.danger{border-left-color:var(--red)}
+.feedback.warning{border-left-color:var(--orange)}
+.feedback.purple{border-left-color:var(--purple)}
+@keyframes slideUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.fb-head{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.fb-icon{font-size:18px}
+.fb-title{font-family:'Fraunces',serif;font-size:15px;font-weight:700;color:var(--cream)}
+.fb-text{color:var(--muted);font-size:12.5px;line-height:1.6;margin-bottom:8px}
+.fb-tags{display:flex;flex-wrap:wrap;gap:6px}
+.fb-tag{
+  font-size:11px;padding:3px 10px;border-radius:20px;font-weight:500;
+}
+.tag-red{background:rgba(248,81,73,0.2);color:#ff9f9b;border:1px solid rgba(248,81,73,0.35)}
+.tag-orange{background:rgba(210,153,34,0.2);color:#f0b429;border:1px solid rgba(210,153,34,0.35)}
+.tag-yellow{background:rgba(227,179,65,0.2);color:#e3b341;border:1px solid rgba(227,179,65,0.35)}
+.tag-green{background:rgba(63,185,80,0.2);color:#7ee787;border:1px solid rgba(63,185,80,0.35)}
+.tag-purple{background:rgba(188,140,255,0.2);color:#d2b0ff;border:1px solid rgba(188,140,255,0.35)}
+.tag-blue{background:rgba(88,166,255,0.2);color:#79c0ff;border:1px solid rgba(88,166,255,0.35)}
+
+.human-risk{
+  margin-top:8px;background:rgba(88,166,255,0.08);border:1px solid rgba(88,166,255,0.2);
+  border-radius:8px;padding:8px 10px;font-size:11.5px;color:rgba(120,192,255,0.9);
+  display:flex;gap:7px;align-items:flex-start;
+}
+.human-risk span:first-child{flex-shrink:0}
+
+.safe-list-wrap{
+  margin-top:10px;background:rgba(63,185,80,0.07);
+  border:1px solid rgba(63,185,80,0.25);border-radius:10px;padding:12px 14px;
+}
+.safe-list-title{color:#7ee787;font-size:11.5px;font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.safe-cols{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.safe-col-head{color:rgba(120,220,140,0.7);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px}
+.safe-item{font-size:10.5px;color:rgba(240,235,224,0.65);padding:2px 0;line-height:1.4}
+
+.btn-next{
+  margin-top:12px;background:var(--surface2);color:var(--cream);
+  border:1px solid var(--border);border-radius:12px;padding:14px;
+  font-family:'Syne',sans-serif;font-size:15px;font-weight:600;
+  cursor:pointer;width:100%;transition:all 0.2s;display:none;
+}
+.btn-next:active{transform:scale(0.98)}
+
+/* ── RESULTS ── */
+#screen-results{
+  display:none;flex:1;flex-direction:column;
+  padding:20px 16px 40px;align-items:center;
+}
+.result-score-wrap{text-align:center;margin-bottom:20px}
+.score-ring{
+  width:130px;height:130px;border-radius:50%;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  margin:0 auto 16px;position:relative;
+}
+.score-ring svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+.score-ring-num{font-family:'Fraunces',serif;font-size:46px;font-weight:900;line-height:1;color:var(--cream)}
+.score-ring-sub{font-size:11px;color:var(--muted);letter-spacing:1px}
+.result-title{font-family:'Fraunces',serif;font-size:26px;font-weight:900;color:var(--cream);margin-bottom:6px}
+.result-msg{color:var(--muted);font-size:13.5px;line-height:1.6;max-width:340px;margin:0 auto 20px}
+
+.vet-banner{
+  background:rgba(248,81,73,0.08);border:1px solid rgba(248,81,73,0.25);
+  border-radius:14px;padding:13px 14px;margin-bottom:16px;width:100%;
+  display:flex;gap:10px;align-items:flex-start;
+}
+.vet-banner-icon{font-size:18px;flex-shrink:0}
+.vet-banner-text{color:rgba(240,235,224,0.7);font-size:12.5px;line-height:1.5}
+
+.summary-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:16px;padding:16px;width:100%;margin-bottom:16px;
+}
+.summary-head{color:var(--muted);font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px}
+.sum-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.sum-item:last-child{border-bottom:none}
+.sum-emoji{font-size:24px;min-width:30px;text-align:center}
+.sum-info{flex:1}
+.sum-name{color:var(--cream);font-size:13px;font-weight:500;margin-bottom:1px}
+.sum-sub{color:var(--muted);font-size:11px}
+.sum-result{font-size:16px}
+
+.btn-newround{
+  background:linear-gradient(135deg,#238636,#2ea043);color:white;
+  border:none;border-radius:14px;padding:15px;
+  font-family:'Syne',sans-serif;font-size:15px;font-weight:600;
+  cursor:pointer;width:100%;margin-bottom:10px;
+  box-shadow:0 4px 16px rgba(35,134,54,0.3);
+  transition:all 0.2s;
+}
+.btn-newround:active{transform:scale(0.98)}
+.btn-back{
+  background:transparent;border:1.5px solid var(--border);color:var(--muted);
+  border-radius:14px;padding:13px;width:100%;
+  font-family:'Syne',sans-serif;font-size:14px;cursor:pointer;transition:all 0.2s;
+}
+.btn-back:active{background:var(--surface2)}
+.btn-exit{
+  margin-top:8px;background:transparent;border:1px solid rgba(248,81,73,0.3);
+  color:rgba(248,81,73,0.7);border-radius:12px;padding:10px;
+  font-family:'Syne',sans-serif;font-size:13px;cursor:pointer;
+  transition:all 0.2s;width:100%;display:none;
+}
+.btn-exit:active{background:rgba(248,81,73,0.1)}
+
+/* ── INTRO ── */
+#screen-intro{flex:1;display:flex;flex-direction:column}
+
+/* ── VENENOS ── */
+.cat-card.poison::before{background:radial-gradient(ellipse at top left,rgba(255,107,53,0.12),transparent 70%)}
+.cat-card.selected.poison{border-color:#ff6b35;box-shadow:0 0 20px rgba(255,107,53,0.15)}
+.cat-name.poison{color:#ff6b35}
+.badge-poison{background:rgba(255,107,53,0.15);color:#ff6b35;border:1px solid rgba(255,107,53,0.3)}
+
+/* ✅ FIX: badge-common — una sola regla (eliminado el duplicado) */
+.badge-common{background:rgba(255,193,7,0.18);color:#ffc107;border:1px solid rgba(255,193,7,0.4);animation:pulse 1.5s infinite}
+
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.6}}
+
+/* ── HERO TEXT ── */
+.hero-question{
+  text-align:center;padding:20px 20px 4px;
+  font-family:'Fraunces',serif;font-size:18px;font-weight:700;
+  line-height:1.35;color:var(--cream);
+}
+.hero-question span{color:#56d364}
+
+/* ── BOTTOM ACTION BUTTONS ── */
+.bottom-actions{display:flex;flex-direction:column;gap:8px;padding:16px 16px 0}
+.btn-info{
+  background:var(--surface);border:1.5px solid var(--border);
+  color:var(--muted);border-radius:12px;padding:12px 16px;
+  font-family:'Syne',sans-serif;font-size:13px;font-weight:500;
+  cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:10px;
+  text-align:left;width:100%;
+}
+.btn-info:active{background:var(--surface2);border-color:rgba(255,255,255,0.2)}
+.btn-info-icon{font-size:18px;flex-shrink:0}
+.btn-info-text{flex:1}
+.btn-info-arrow{opacity:0.4;font-size:14px}
+
+/* ── OVERLAY PANELS ── */
+.overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.75);
+  z-index:100;display:none;align-items:flex-end;
+  justify-content:center;backdrop-filter:blur(4px);
+}
+.overlay.open{display:flex}
+.panel{
+  background:#161b22;border-radius:20px 20px 0 0;
+  width:100%;max-width:500px;
+  max-height:88vh;overflow-y:auto;
+  border-top:1px solid rgba(255,255,255,0.1);
+  animation:panelUp 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+@keyframes panelUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.panel-header{
+  position:sticky;top:0;background:#161b22;
+  padding:16px 16px 12px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;z-index:1;
+}
+.panel-title{font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:var(--cream)}
+.panel-close{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:8px;padding:6px 12px;color:var(--muted);
+  font-family:'Syne',sans-serif;font-size:12px;cursor:pointer;
+}
+.panel-body{padding:16px}
+.panel-section{margin-bottom:20px}
+.panel-section-title{
+  color:var(--muted);font-size:10px;letter-spacing:2px;text-transform:uppercase;
+  margin-bottom:10px;border-bottom:1px solid var(--border);padding-bottom:6px;
+}
+.item-row{
+  display:flex;align-items:flex-start;gap:8px;padding:6px 0;
+  border-bottom:1px solid rgba(255,255,255,0.04);font-size:12.5px;color:var(--cream);
+}
+.item-row:last-child{border-bottom:none}
+.item-num{color:var(--muted);font-size:11px;min-width:22px;padding-top:1px;flex-shrink:0}
+.item-name{flex:1;line-height:1.4}
+.item-sci{color:var(--muted);font-size:11px;font-style:italic;display:block;margin-top:1px}
+.ref-block{
+  background:var(--surface2);border-radius:12px;padding:14px;
+  margin-bottom:12px;border-left:3px solid var(--blue);
+}
+.ref-title{color:var(--blue);font-size:13px;font-weight:600;margin-bottom:5px}
+.ref-text{color:var(--muted);font-size:12px;line-height:1.6}
+.ref-link{color:var(--blue);text-decoration:none;font-size:11px;display:block;margin-top:4px}
+.author-card{
+  background:var(--surface2);border-radius:16px;padding:20px;
+  text-align:center;margin-bottom:14px;border:1px solid var(--border);
+}
+.author-dog{font-size:48px;margin-bottom:10px;display:block}
+.author-name{font-family:'Fraunces',serif;font-size:22px;font-weight:900;color:var(--cream);margin-bottom:4px}
+.author-role{color:var(--muted);font-size:12px;margin-bottom:14px;line-height:1.5}
+.author-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(88,166,255,0.1);border:1px solid rgba(88,166,255,0.3);
+  border-radius:30px;padding:8px 16px;font-size:12px;color:var(--blue);
+}
+.disclaimer{
+  background:rgba(248,81,73,0.07);border:1px solid rgba(248,81,73,0.2);
+  border-radius:12px;padding:12px;font-size:11.5px;
+  color:rgba(240,235,224,0.6);line-height:1.6;text-align:center;
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <div class="header-logo">
+      <div class="logo-pill" onclick="handleLogoClick()" style="cursor:pointer;user-select:none">
+        <span>🐾</span>
+        <span class="logo-text">Toxi<span>Vet</span> Chile</span>
+      </div>
+    </div>
+    <div class="header-sub">Encuesta Interactiva · Toxicología para mascotas</div>
+  </div>
+
+  <div class="hero-question">
+    ¿Conoces los <span>peligros</span> a los que tu<br>compañero animal está expuesto<br>en el hogar?
+  </div>
+
+  <div id="screen-intro">
+    <div class="cat-section">
+      <div class="cat-title">Elige una categoría para comenzar</div>
+      <div class="cat-grid" id="cat-grid">
+        <div class="cat-card plants" onclick="selectCat('plants',this)">
+          <span class="cat-icon">🌿</span>
+          <div class="cat-name plants">Plantas</div>
+          <div class="cat-count">39 plantas · 10 al azar + alerta</div>
+        </div>
+        <div class="cat-card foods" onclick="selectCat('foods',this)">
+          <span class="cat-icon">🍽️</span>
+          <div class="cat-name foods">Alimentos</div>
+          <div class="cat-count">39 alimentos · 10 al azar + alerta</div>
+        </div>
+        <div class="cat-card drugs" onclick="selectCat('drugs',this)">
+          <span class="cat-icon">⚗️</span>
+          <div class="cat-name drugs">Drogas & Medicamentos</div>
+          <div class="cat-count">40 sustancias · 10 al azar + alerta</div>
+        </div>
+        <div class="cat-card poison" onclick="selectCat('poison',this)">
+          <span class="cat-icon">☠️</span>
+          <div class="cat-name poison">Venenos & Químicos</div>
+          <div class="cat-count">19 venenos · 10 al azar + alerta</div>
+        </div>
+        <div class="cat-card mix" onclick="selectCat('mix',this)" style="grid-column:span 2">
+          <span class="cat-icon">🔀</span>
+          <div class="cat-name mix">Mix completo</div>
+          <div class="cat-count">157 preguntas · 10 al azar + alerta</div>
+        </div>
+      </div>
+      <button class="btn-start" id="btn-start" onclick="startQuiz()" disabled>Selecciona una categoría</button>
+    </div>
+
+    <div class="bottom-actions">
+      <button class="btn-info" onclick="openPanel('panel-lists')">
+        <span class="btn-info-icon">📋</span>
+        <span class="btn-info-text">Ver listado completo por categoría</span>
+        <span class="btn-info-arrow">›</span>
+      </button>
+      <button class="btn-info" onclick="openPanel('panel-sources')">
+        <span class="btn-info-icon">📚</span>
+        <span class="btn-info-text">Fuentes científicas · Merck Vet Manual</span>
+        <span class="btn-info-arrow">›</span>
+      </button>
+      <button class="btn-info" onclick="openPanel('panel-author')">
+        <span class="btn-info-icon">🐕</span>
+        <span class="btn-info-text">Acerca del autor</span>
+        <span class="btn-info-arrow">›</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── OVERLAY: LISTADOS ── -->
+  <div class="overlay" id="panel-lists" onclick="closePanel('panel-lists',event)">
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">📋 Listado completo</span>
+        <button class="panel-close" onclick="closePanel('panel-lists')">← Volver</button>
+      </div>
+      <div style="padding:10px 16px 0">
+        <button id="copy-btn" onclick="copyList()" style="width:100%;background:rgba(88,166,255,0.1);border:1.5px solid rgba(88,166,255,0.3);color:#58a6ff;border-radius:10px;padding:10px;font-family:'Syne',sans-serif;font-size:13px;cursor:pointer;">
+          📋 Copiar lista completa en texto
+        </button>
+      </div>
+      <div class="panel-body">
+        <div class="panel-section">
+          <div class="panel-section-title">🌿 Plantas tóxicas (30) + ✅ Seguras (9)</div>
+          <div class="item-row"><span class="item-num">1</span><span class="item-name">Lirios<span class="item-sci">Lilium spp.</span></span></div>
+          <div class="item-row"><span class="item-num">2</span><span class="item-name">Aloe Vera / Sábila<span class="item-sci">Aloe barbadensis miller</span></span></div>
+          <div class="item-row"><span class="item-num">3</span><span class="item-name">Filodendro<span class="item-sci">Philodendron spp.</span></span></div>
+          <div class="item-row"><span class="item-num">4</span><span class="item-name">Pothos / Potus / Poto<span class="item-sci">Epipremnum aureum</span></span></div>
+          <div class="item-row"><span class="item-num">5</span><span class="item-name">Costilla de Adán<span class="item-sci">Monstera deliciosa</span></span></div>
+          <div class="item-row"><span class="item-num">6</span><span class="item-name">Cala / Cartucho<span class="item-sci">Zantedeschia aethiopica</span></span></div>
+          <div class="item-row"><span class="item-num">7</span><span class="item-name">Azalea / Rododendro<span class="item-sci">Rhododendron spp.</span></span></div>
+          <div class="item-row"><span class="item-num">8</span><span class="item-name">Hortensia<span class="item-sci">Hydrangea spp.</span></span></div>
+          <div class="item-row"><span class="item-num">9</span><span class="item-name">Narciso<span class="item-sci">Narcissus spp.</span></span></div>
+          <div class="item-row"><span class="item-num">10</span><span class="item-name">Tulipán<span class="item-sci">Tulipa spp.</span></span></div>
+          <div class="item-row"><span class="item-num">11</span><span class="item-name">Hiedra<span class="item-sci">Hedera helix</span></span></div>
+          <div class="item-row"><span class="item-num">12</span><span class="item-name">Geranio<span class="item-sci">Pelargonium spp.</span></span></div>
+          <div class="item-row"><span class="item-num">13</span><span class="item-name">Adelfa / Oleander<span class="item-sci">Nerium oleander</span></span></div>
+          <div class="item-row"><span class="item-num">14</span><span class="item-name">Palma de Sagú<span class="item-sci">Cycas revoluta</span></span></div>
+          <div class="item-row"><span class="item-num">15</span><span class="item-name">Dieffenbachia<span class="item-sci">Dieffenbachia spp.</span></span></div>
+          <div class="item-row"><span class="item-num">16</span><span class="item-name">Espatifilo / Lirio de Paz<span class="item-sci">Spathiphyllum spp.</span></span></div>
+          <div class="item-row"><span class="item-num">17</span><span class="item-name">Drácena<span class="item-sci">Dracaena spp.</span></span></div>
+          <div class="item-row"><span class="item-num">18</span><span class="item-name">Planta de Jade<span class="item-sci">Crassula ovata</span></span></div>
+          <div class="item-row"><span class="item-num">19</span><span class="item-name">Lengua de Suegra<span class="item-sci">Sansevieria trifasciata</span></span></div>
+          <div class="item-row"><span class="item-num">20</span><span class="item-name">Anturio<span class="item-sci">Anthurium spp.</span></span></div>
+          <div class="item-row"><span class="item-num">21</span><span class="item-name">Eucalipto<span class="item-sci">Eucalyptus spp.</span></span></div>
+          <div class="item-row"><span class="item-num">22</span><span class="item-name">Cinamomo<span class="item-sci">Melia azedarach</span></span></div>
+          <div class="item-row"><span class="item-num">23</span><span class="item-name">Planta Ti<span class="item-sci">Cordyline fruticosa</span></span></div>
+          <div class="item-row"><span class="item-num">24</span><span class="item-name">Taro<span class="item-sci">Colocasia esculenta</span></span></div>
+          <div class="item-row"><span class="item-num">25</span><span class="item-name">Scindapsus<span class="item-sci">Scindapsus pictus</span></span></div>
+          <div class="item-row"><span class="item-num">26</span><span class="item-name">Palán Palán<span class="item-sci">Nicotiana glauca</span></span></div>
+          <div class="item-row"><span class="item-num">27</span><span class="item-name">Flor de Pascua<span class="item-sci">Euphorbia pulcherrima</span></span></div>
+          <div class="item-row"><span class="item-num">28</span><span class="item-name">Prímula<span class="item-sci">Primula spp.</span></span></div>
+          <div class="item-row"><span class="item-num">29</span><span class="item-name">Tradescantia<span class="item-sci">Tradescantia spp.</span></span></div>
+          <div class="item-row"><span class="item-num">30</span><span class="item-name">Palán Palán<span class="item-sci">Nicotiana glauca</span></span></div>
+        </div>
+        <div class="panel-section">
+          <div class="panel-section-title" style="color:#56d364">✅ Plantas SEGURAS (9)</div>
+          <div class="item-row"><span class="item-num">1</span><span class="item-name" style="color:#7ee787">Calatea ✅<span class="item-sci">Calathea spp.</span></span></div>
+          <div class="item-row"><span class="item-num">2</span><span class="item-name" style="color:#7ee787">Helecho de Boston ✅<span class="item-sci">Nephrolepis exaltata</span></span></div>
+          <div class="item-row"><span class="item-num">3</span><span class="item-name" style="color:#7ee787">Orquídea Phalaenopsis ✅<span class="item-sci">Orchidaceae</span></span></div>
+          <div class="item-row"><span class="item-num">4</span><span class="item-name" style="color:#7ee787">Echeveria ✅<span class="item-sci">Echeveria spp.</span></span></div>
+          <div class="item-row"><span class="item-num">5</span><span class="item-name" style="color:#7ee787">Bambú real ✅<span class="item-sci">Bambusoideae</span></span></div>
+          <div class="item-row"><span class="item-num">6</span><span class="item-name" style="color:#7ee787">Hierba gatera ✅<span class="item-sci">Nepeta cataria</span></span></div>
+          <div class="item-row"><span class="item-num">7</span><span class="item-name" style="color:#7ee787">Caléndula ✅<span class="item-sci">Calendula officinalis</span></span></div>
+          <div class="item-row"><span class="item-num">8</span><span class="item-name" style="color:#7ee787">Pilea ✅<span class="item-sci">Pilea peperomioides</span></span></div>
+          <div class="item-row"><span class="item-num">9</span><span class="item-name" style="color:#7ee787">Romero ✅<span class="item-sci">Rosmarinus officinalis</span></span></div>
+        </div>
+        <div class="panel-section">
+          <div class="panel-section-title">🍽️ Alimentos peligrosos (30) + ✅ Seguros (15)</div>
+          <div class="item-row"><span class="item-num">1</span><span class="item-name">Chocolate<span class="item-sci">Teobromina · negro &gt; con leche &gt; blanco</span></span></div>
+          <div class="item-row"><span class="item-num">2</span><span class="item-name">Uvas frescas<span class="item-sci">Toxina desconocida · falla renal aguda</span></span></div>
+          <div class="item-row"><span class="item-num">3</span><span class="item-name">Pasas de uva<span class="item-sci">Más tóxicas que uvas frescas (concentradas)</span></span></div>
+          <div class="item-row"><span class="item-num">4</span><span class="item-name">Cebolla<span class="item-sci">Allium cepa · cruda, cocida o en polvo</span></span></div>
+          <div class="item-row"><span class="item-num">5</span><span class="item-name">Ajo<span class="item-sci">Allium sativum · 5× más tóxico que la cebolla</span></span></div>
+          <div class="item-row"><span class="item-num">6</span><span class="item-name">Palta / Aguacate<span class="item-sci">Persea americana · persina + cuesco obstructivo</span></span></div>
+          <div class="item-row"><span class="item-num">7</span><span class="item-name">Café molido y granos de café<span class="item-sci">Cafeína · vida media 18h en perros</span></span></div>
+          <div class="item-row"><span class="item-num">8</span><span class="item-name">Xilitol (edulcorante artificial)<span class="item-sci">Chicles, dulces, pasta dental, maní "natural"</span></span></div>
+          <div class="item-row"><span class="item-num">9</span><span class="item-name">Huesos cocidos<span class="item-sci">Pollo, res · astillas que perforan intestinos</span></span></div>
+          <div class="item-row"><span class="item-num">10</span><span class="item-name">Nueces de Macadamia<span class="item-sci">Solo afecta a perros · mecanismo desconocido</span></span></div>
+          <div class="item-row"><span class="item-num">11</span><span class="item-name">Masa de pan cruda con levadura<span class="item-sci">Gas + alcohol por fermentación gástrica</span></span></div>
+          <div class="item-row"><span class="item-num">12</span><span class="item-name">Cebollín y Puerro<span class="item-sci">Familia Allium · misma toxicidad que cebolla</span></span></div>
+          <div class="item-row"><span class="item-num">13</span><span class="item-name">Té negro y verde<span class="item-sci">Cafeína + teobromina · gatos muy sensibles</span></span></div>
+          <div class="item-row"><span class="item-num">14</span><span class="item-name">Bebidas alcohólicas (etanol)<span class="item-sci">Pisco, vino, cerveza · coma posible</span></span></div>
+          <div class="item-row"><span class="item-num">15</span><span class="item-name">Hongos / Setas silvestres<span class="item-sci">Amanita spp. · falla hepática tardía 24-72h</span></span></div>
+          <div class="item-row"><span class="item-num">16</span><span class="item-name">Sal en exceso<span class="item-sci">Snacks salados · hipernatremia · convulsiones</span></span></div>
+          <div class="item-row"><span class="item-num">17</span><span class="item-name">Longanizas y cecinas parrilleras<span class="item-sci">Triple riesgo: grasa + allium + sal</span></span></div>
+          <div class="item-row"><span class="item-num">18</span><span class="item-name">Bebidas energéticas<span class="item-sci">Cafeína + taurina + xantinas · efecto sinérgico</span></span></div>
+          <div class="item-row"><span class="item-num">19</span><span class="item-name">Leche y lácteos<span class="item-sci">Intolerancia a lactosa · diarrea y gases</span></span></div>
+          <div class="item-row"><span class="item-num">20</span><span class="item-name">Alimentos muy grasosos<span class="item-sci">Tocino, frituras · pancreatitis aguda</span></span></div>
+          <div class="item-row"><span class="item-num">21</span><span class="item-name">Queso azul<span class="item-sci">Roquefort, Gorgonzola · Roquefortina C</span></span></div>
+          <div class="item-row"><span class="item-num">22</span><span class="item-name">Ruibarbo — hojas<span class="item-sci">Rheum rhabarbarum · ácido oxálico concentrado</span></span></div>
+          <div class="item-row"><span class="item-num">23</span><span class="item-name">Embutidos con condimentos<span class="item-sci">Sal + grasas + ajo/cebolla en receta</span></span></div>
+          <div class="item-row"><span class="item-num">24</span><span class="item-name">Cerezas — semillas y tallos<span class="item-sci">Amigdalina → cianuro · pulpa es segura</span></span></div>
+          <div class="item-row"><span class="item-num">25</span><span class="item-name">Manzana — semillas y corazón<span class="item-sci">Amigdalina → cianuro · pulpa es segura</span></span></div>
+          <div class="item-row"><span class="item-num">26</span><span class="item-name">Cebolla en polvo<span class="item-sci">Forma más concentrada · en salsas y sopas</span></span></div>
+          <div class="item-row"><span class="item-num">27</span><span class="item-name">Nueces y Pecanas<span class="item-sci">Hongo Penicillium · tremorgenic mycotoxins</span></span></div>
+          <div class="item-row"><span class="item-num">28</span><span class="item-name">Productos "light" o "diet"<span class="item-sci">Verificar xilitol y otros edulcorantes</span></span></div>
+          <div class="item-row"><span class="item-num">29</span><span class="item-name">Tomate verde / planta de tomate<span class="item-sci">Solanine en hojas y frutos inmaduros</span></span></div>
+          <div class="item-row"><span class="item-num">30</span><span class="item-name">Papa cruda y brotes de papa<span class="item-sci">Solanine · papa cocida es segura</span></span></div>
+        </div>
+        <div class="panel-section">
+          <div class="panel-section-title" style="color:#7ee787">✅ Alimentos SEGUROS (15)</div>
+          <div class="item-row"><span class="item-num">1</span><span class="item-name" style="color:#7ee787">Pollo hervido sin huesos ni condimentos ✅<span class="item-sci">Proteína base dieta blanda veterinaria</span></span></div>
+          <div class="item-row"><span class="item-num">2</span><span class="item-name" style="color:#7ee787">Zanahoria cruda ✅<span class="item-sci">Snack bajo en calorías · limpia dientes</span></span></div>
+          <div class="item-row"><span class="item-num">3</span><span class="item-name" style="color:#7ee787">Arándanos ✅<span class="item-sci">Antioxidantes reales · vitaminas C y K</span></span></div>
+          <div class="item-row"><span class="item-num">4</span><span class="item-name" style="color:#7ee787">Arroz blanco hervido sin sal ✅<span class="item-sci">Carbohidrato digestivo para dieta blanda</span></span></div>
+          <div class="item-row"><span class="item-num">5</span><span class="item-name" style="color:#7ee787">Pepino fresco ✅<span class="item-sci">95% agua · hidratante · bajo en calorías</span></span></div>
+          <div class="item-row"><span class="item-num">6</span><span class="item-name" style="color:#7ee787">Sandía sin semillas ni cáscara ✅<span class="item-sci">Pulpa roja hidratante · retirar semillas</span></span></div>
+          <div class="item-row"><span class="item-num">7</span><span class="item-name" style="color:#7ee787">Mantequilla de maní SIN xilitol ✅<span class="item-sci">Verificar siempre los ingredientes</span></span></div>
+          <div class="item-row"><span class="item-num">8</span><span class="item-name" style="color:#7ee787">Huevo cocido ✅<span class="item-sci">Proteína completa · todos los aminoácidos</span></span></div>
+          <div class="item-row"><span class="item-num">9</span><span class="item-name" style="color:#7ee787">Zapallo / Calabaza cocido ✅<span class="item-sci">Regulador digestivo bidireccional</span></span></div>
+          <div class="item-row"><span class="item-num">10</span><span class="item-name" style="color:#7ee787">Frutillas / Fresas ✅<span class="item-sci">Vitamina C y antioxidantes · moderar en gatos</span></span></div>
+          <div class="item-row"><span class="item-num">11</span><span class="item-name" style="color:#7ee787">Manzana sin semillas (pulpa) ✅<span class="item-sci">Retirar siempre semillas y corazón</span></span></div>
+          <div class="item-row"><span class="item-num">12</span><span class="item-name" style="color:#7ee787">Banana / Plátano sin cáscara ✅<span class="item-sci">Rico en potasio · snack ocasional</span></span></div>
+          <div class="item-row"><span class="item-num">13</span><span class="item-name" style="color:#7ee787">Atún en agua (ocasional) ⚠️<span class="item-sci">Solo ocasional · diario causa esteatitis</span></span></div>
+          <div class="item-row"><span class="item-num">14</span><span class="item-name" style="color:#7ee787">Pechuga de pavo cocida sin condimentos ✅<span class="item-sci">Proteína magra alternativa al pollo</span></span></div>
+          <div class="item-row"><span class="item-num">15</span><span class="item-name" style="color:#7ee787">Agua limpia y fresca ✅<span class="item-sci">Lo más importante · cambiar diariamente</span></span></div>
+        </div>
+        <div class="panel-section">
+          <div class="panel-section-title">⚗️ Drogas & Medicamentos peligrosos (34)</div>
+          <div class="item-row"><span class="item-num">1</span><span class="item-name">Paracetamol (Tapsin · Panadol)<span class="item-sci">UNA tableta = mortal para gatos</span></span></div>
+          <div class="item-row"><span class="item-num">2</span><span class="item-name">Ibuprofeno (Brufen · Advil)<span class="item-sci">Úlceras GI + falla renal aguda</span></span></div>
+          <div class="item-row"><span class="item-num">3</span><span class="item-name">Aspirina / Ácido acetilsalicílico<span class="item-sci">Gatos: vida media 38h — acumulación fatal</span></span></div>
+          <div class="item-row"><span class="item-num">4</span><span class="item-name">Diclofenaco crema (Voltaren gel)<span class="item-sci">Lamido = falla renal en gatos</span></span></div>
+          <div class="item-row"><span class="item-num">5</span><span class="item-name">Naproxeno (Naprosyn · Aleve)<span class="item-sci">AINE · muy bajo margen de seguridad en perros</span></span></div>
+          <div class="item-row"><span class="item-num">6</span><span class="item-name">Metilfenidato (Ritalín · Concerta · Rubifen)<span class="item-sci">Estimulante TDAH · convulsiones y taquicardia</span></span></div>
+          <div class="item-row"><span class="item-num">7</span><span class="item-name">Antidepresivos ISRS (Fluoxetina · Prozac)<span class="item-sci">Síndrome serotoninérgico</span></span></div>
+          <div class="item-row"><span class="item-num">8</span><span class="item-name">Benzodiacepinas (Clonazepam · Rivotril)<span class="item-sci">Gatos: hepatotoxicidad idiosincrática fatal</span></span></div>
+          <div class="item-row"><span class="item-num">9</span><span class="item-name">Amitriptilina (antidepresivo tricíclico)<span class="item-sci">Arritmias cardíacas + convulsiones</span></span></div>
+          <div class="item-row"><span class="item-num">10</span><span class="item-name">Loperamida (Imodium)<span class="item-sci">Razas MDR1+ (Collie): toxicidad SNC grave</span></span></div>
+          <div class="item-row"><span class="item-num">11</span><span class="item-name">Loratadina CON pseudoefedrina (Clarityne-D)<span class="item-sci">Pseudoefedrina: hipertensión y taquicardia</span></span></div>
+          <div class="item-row"><span class="item-num">12</span><span class="item-name">Nicotina (cigarrillos · colillas · parches · vapeadores)<span class="item-sci">Muy tóxica · parches y colillas: alta concentración</span></span></div>
+          <div class="item-row"><span class="item-num">13</span><span class="item-name">Baclofen (relajante muscular)<span class="item-sci">Depresión SNC grave · coma</span></span></div>
+          <div class="item-row"><span class="item-num">14</span><span class="item-name">Colchicina (antigota)<span class="item-sci">Margen muy estrecho · falla multiorgánica</span></span></div>
+          <div class="item-row"><span class="item-num">15</span><span class="item-name">Tramadol<span class="item-sci">Gatos: acumulación y neurotoxicidad</span></span></div>
+          <div class="item-row"><span class="item-num">16</span><span class="item-name">Morfina<span class="item-sci">Gatos: deficiencia enzimática — acumulación</span></span></div>
+          <div class="item-row"><span class="item-num">17</span><span class="item-name">Fentanilo<span class="item-sci">Microgramos = mortal · parches usados: peligro</span></span></div>
+          <div class="item-row"><span class="item-num">18</span><span class="item-name">Heroína<span class="item-sci">Antídoto: Naloxona · urgencia máxima</span></span></div>
+          <div class="item-row"><span class="item-num">19</span><span class="item-name">Metadona (Biodone)<span class="item-sci">Vida media 24-36h · efectos prolongados</span></span></div>
+          <div class="item-row"><span class="item-num">20</span><span class="item-name">Cannabis / Marihuana (THC)<span class="item-sci">Perros: 10× más sensibles · colillas en suelo, brownies, galletas y otras preparaciones</span></span></div>
+          <div class="item-row"><span class="item-num">21</span><span class="item-name">Hachís / Cannabis concentrado<span class="item-sci">5-10× más THC que la marihuana herbal</span></span></div>
+          <div class="item-row"><span class="item-num">22</span><span class="item-name">Cocaína (clorhidrato)<span class="item-sci">Agitación extrema · hipertermia · convulsiones</span></span></div>
+          <div class="item-row"><span class="item-num">23</span><span class="item-name">Metanfetamina<span class="item-sci">Vida media 10-12h · efectos tóxicos prolongados</span></span></div>
+          <div class="item-row"><span class="item-num">24</span><span class="item-name">MDMA / Éxtasis<span class="item-sci">Síndrome serotoninérgico · hipertermia fatal</span></span></div>
+          <div class="item-row"><span class="item-num">25</span><span class="item-name">Etanol (bebidas alcohólicas)<span class="item-sci">Gatos: 15ml de vino = emergencia</span></span></div>
+          <div class="item-row"><span class="item-num">26</span><span class="item-name">Isopropanol (alcohol de frotar)<span class="item-sci">Si se lame: 2-3× más tóxico que el etanol</span></span></div>
+          <div class="item-row"><span class="item-num">27</span><span class="item-name">Vitamina D3 en suplementos (sobredosis)<span class="item-sci">Hipercalcemia · falla renal aguda</span></span></div>
+          <div class="item-row"><span class="item-num">28</span><span class="item-name">Warfarina (anticoagulante)<span class="item-sci">Hemorragia interna · igual que raticidas</span></span></div>
+          <div class="item-row"><span class="item-num">29</span><span class="item-name">Digoxina (cardíaco)<span class="item-sci">Margen terapéutico muy estrecho · arritmias</span></span></div>
+          <div class="item-row"><span class="item-num">30</span><span class="item-name">Pseudoefedrina (descongestionante)<span class="item-sci">Taquicardia severa · hipertensión</span></span></div>
+          <div class="item-row"><span class="item-num">31</span><span class="item-name">Duloxetina (Cymbalta)<span class="item-sci">ISRS/IRSN · síndrome serotoninérgico</span></span></div>
+          <div class="item-row"><span class="item-num">32</span><span class="item-name">Gabapentina (sobredosis)<span class="item-sci">Sedación profunda · depresión respiratoria</span></span></div>
+          <div class="item-row"><span class="item-num">33</span><span class="item-name">Antihistamínicos con difenhidramina<span class="item-sci">Benadryl · sedación o excitación paradójica</span></span></div>
+          <div class="item-row"><span class="item-num">34</span><span class="item-name">Monóxido de carbono (calefactores)<span class="item-sci">Gas sin olor · silencioso y mortal</span></span></div>
+        </div>
+        <div class="panel-section">
+          <div class="panel-section-title">☠️ Venenos, Limpiadores & Químicos (10 tóxicos + 9 seguros)</div>
+          <div class="item-row"><span class="item-num">1</span><span class="item-name">Brodifacoum<span class="item-sci">Raticida anticoagulante · Ratonik, Klerat</span></span></div>
+          <div class="item-row"><span class="item-num">2</span><span class="item-name">Anticongelante — Etilenglicol<span class="item-sci">⚠️ Sabor dulce · atrae a animales y niños pequeños</span></span></div>
+          <div class="item-row"><span class="item-num">3</span><span class="item-name">Metaldehído<span class="item-sci">Cebo babosas · Metarex</span></span></div>
+          <div class="item-row"><span class="item-num">4</span><span class="item-name">Permetrina / Piretroides<span class="item-sci">Insecticidas pulgas · Advantix</span></span></div>
+          <div class="item-row"><span class="item-num">5</span><span class="item-name">Organofosforados<span class="item-sci">Insecticidas · clorpirifos, malatión</span></span></div>
+          <div class="item-row"><span class="item-num">6</span><span class="item-name">Fosfuro de Zinc<span class="item-sci">Rodenticida · libera gas fosfina</span></span></div>
+          <div class="item-row"><span class="item-num">7</span><span class="item-name">Cloro / Lejía — Hipoclorito de Sodio<span class="item-sci">Limpiadores domésticos</span></span></div>
+          <div class="item-row"><span class="item-num">8</span><span class="item-name">Paraquat<span class="item-sci">Herbicida agrícola · Gramoxone</span></span></div>
+          <div class="item-row"><span class="item-num">9</span><span class="item-name">Naftalina<span class="item-sci">Bolas antimoth</span></span></div>
+          <div class="item-row"><span class="item-num">10</span><span class="item-name">Ácido Bórico / Bórax<span class="item-sci">Veneno cucarachas</span></span></div>
+        </div>
+        <div class="panel-section">
+          <div class="panel-section-title" style="color:#7ee787">✅ Químicos & Limpiadores SEGUROS (9)</div>
+          <div class="item-row"><span class="item-num">1</span><span class="item-name" style="color:#7ee787">Bicarbonato de sodio ✅<span class="item-sci">Limpiador natural · residuos seguros para mascotas</span></span></div>
+          <div class="item-row"><span class="item-num">2</span><span class="item-name" style="color:#7ee787">Vinagre blanco diluido 1:3 ✅<span class="item-sci">Desinfectante natural · no aplicar puro en piel</span></span></div>
+          <div class="item-row"><span class="item-num">3</span><span class="item-name" style="color:#7ee787">Pegamento escolar PVA ✅<span class="item-sci">Sin solventes orgánicos · baja toxicidad</span></span></div>
+          <div class="item-row"><span class="item-num">4</span><span class="item-name" style="color:#7ee787">Jabón de Marsella / Jabón neutro ✅<span class="item-sci">Uso ocasional · shampoo veterinario es mejor</span></span></div>
+          <div class="item-row"><span class="item-num">5</span><span class="item-name" style="color:#7ee787">Aceite de coco virgen ✅<span class="item-sci">Tópico: seguro · oral: máx. 1 cucharadita/día</span></span></div>
+          <div class="item-row"><span class="item-num">6</span><span class="item-name" style="color:#7ee787">Velas de cera de soja SIN fragancias ✅<span class="item-sci">Con aceites esenciales siguen siendo riesgosas para gatos</span></span></div>
+          <div class="item-row"><span class="item-num">7</span><span class="item-name" style="color:#7ee787">Jabón de ropa diluido (residuo en ropa) ✅<span class="item-sci">Ropa bien enjuagada: bajo riesgo</span></span></div>
+          <div class="item-row"><span class="item-num">8</span><span class="item-name" style="color:#f0b429">Alcohol isopropílico 70% ⚠️ solo tópico<span class="item-sci">Si la mascota lame la zona: consultar veterinario</span></span></div>
+          <div class="item-row"><span class="item-num">9</span><span class="item-name" style="color:#7ee787">Limpiadores enzimáticos para mascotas ✅<span class="item-sci">Una vez secos: seguros y eliminan olores que atraen</span></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── OVERLAY: FUENTES ── -->
+  <div class="overlay" id="panel-sources" onclick="closePanel('panel-sources',event)">
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">📚 Fuentes científicas</span>
+        <button class="panel-close" onclick="closePanel('panel-sources')">← Volver</button>
+      </div>
+      <div class="panel-body">
+        <div class="ref-block">
+          <div class="ref-title">Merck Veterinary Manual</div>
+          <div class="ref-text">Referencia veterinaria de uso mundial. Contiene fichas toxicológicas completas con dosis mínimas tóxicas, LD50, mecanismos de acción, signos clínicos y protocolos de tratamiento para cada tóxico incluido en esta encuesta.</div>
+          <a class="ref-link" href="https://www.merckvetmanual.com/toxicology" target="_blank">→ merckvetmanual.com/toxicology</a>
+        </div>
+        <div class="ref-block">
+          <div class="ref-title">Small Animal Toxicology (3ª ed.)</div>
+          <div class="ref-text">Peterson M.E. & Talcott P.A. (2013). Elsevier Saunders. Texto de referencia con tablas completas de dosis mg/kg, tiempos de aparición de signos, lesiones histopatológicas y protocolos de descontaminación, antídotos y soporte.</div>
+          <a class="ref-link" href="https://www.elsevier.com/books/small-animal-toxicology/peterson/978-1-4557-0717-1" target="_blank">→ elsevier.com · Small Animal Toxicology</a>
+        </div>
+        <div class="ref-block">
+          <div class="ref-title">ASPCA Animal Poison Control Center</div>
+          <div class="ref-text">Base de datos de intoxicaciones animales más grande del mundo con más de 3.7 millones de casos. Línea de consulta 24/7: +1 (888) 426-4435.</div>
+          <a class="ref-link" href="https://www.aspca.org/pet-care/animal-poison-control" target="_blank">→ aspca.org/pet-care/animal-poison-control</a>
+        </div>
+        <div class="ref-block">
+          <div class="ref-title">Plumb's Veterinary Drug Handbook (9ª ed.)</div>
+          <div class="ref-text">Plumb D.C. (2018). Pharma Vet Inc. Información farmacológica de precisión para cada fármaco incluido en la categoría de drogas y medicamentos.</div>
+          <a class="ref-link" href="https://www.wiley.com/en-us/Plumb%27s+Veterinary+Drug+Handbook%2C+9th+Edition-p-9781119346432" target="_blank">→ wiley.com · Plumb's Veterinary Drug Handbook</a>
+        </div>
+        <div class="ref-block">
+          <div class="ref-title">ASPCA — Plantas tóxicas y no tóxicas</div>
+          <div class="ref-text">Base de datos de más de 1.000 plantas clasificadas por toxicidad para perros, gatos y caballos. Consulta indispensable antes de comprar cualquier planta para el hogar.</div>
+          <a class="ref-link" href="https://www.aspca.org/pet-care/animal-poison-control/toxic-and-non-toxic-plants" target="_blank">→ aspca.org · Toxic and Non-Toxic Plants</a>
+        </div>
+        <div class="ref-block">
+          <div class="ref-title">Facultad de Ciencias Veterinarias — Chile</div>
+          <div class="ref-text">Universidad de Chile y Universidad Austral de Chile publican reportes periódicos sobre intoxicaciones frecuentes en contexto nacional, incluyendo plantas endémicas como Palán Palán y Cinamomo.</div>
+          <a class="ref-link" href="https://www.uchile.cl/facultades/ciencias-veterinarias-y-pecuarias" target="_blank">→ uchile.cl · Facultad de Cs. Veterinarias</a>
+        </div>
+        <div class="disclaimer">⚠️ Esta encuesta es de carácter educativo. Ante cualquier sospecha de intoxicación de tu mascota, contacta a un veterinario de urgencia inmediatamente.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── OVERLAY: AUTOR ── -->
+  <div class="overlay" id="panel-author" onclick="closePanel('panel-author',event)">
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">🐕 Autor</span>
+        <button class="panel-close" onclick="closePanel('panel-author')">← Volver</button>
+      </div>
+      <div class="panel-body">
+        <div class="author-card">
+          <span class="author-dog">🐕</span>
+          <div class="author-name">Jonatan Ortiz</div>
+          <div class="author-role">Colaborador en la creación de ToxiVet Chile</div>
+          <div class="author-badge"><span>🤖</span><span>Creado con la herramienta de IA Claude</span></div>
+        </div>
+        <div class="ref-block">
+          <div class="ref-title">Sobre este proyecto</div>
+          <div class="ref-text">ToxiVet Chile nació de la necesidad de crear conciencia sobre los peligros existentes en el entorno de nuestros hogares para las mascotas. Existen muchos más peligros, pero recopilamos esta información porque se ven muchos casos donde el tiempo en actuar determina la vida o la muerte. Desarrollado en colaboración con Claude (Anthropic).</div>
+        </div>
+        <div class="ref-block">
+          <div class="ref-title">Acerca de Claude (Anthropic)</div>
+          <div class="ref-text">Claude es un asistente de inteligencia artificial desarrollado por Anthropic, utilizado para estructurar, redactar y programar esta encuesta interactiva.</div>
+          <a class="ref-link" href="https://www.anthropic.com" target="_blank">→ anthropic.com</a>
+        </div>
+        <div class="disclaimer">Esta herramienta es de uso educativo y divulgativo. Todos los datos toxicológicos provienen de fuentes científicas verificables.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MODAL SALIR ── -->
+  <div id="exit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(4px);">
+    <div style="background:#161b22;border:1px solid rgba(255,255,255,0.12);border-radius:20px;padding:28px 24px;max-width:320px;width:90%;text-align:center;">
+      <div style="font-size:32px;margin-bottom:12px">⚠️</div>
+      <div style="font-family:'Fraunces',serif;font-size:19px;font-weight:700;color:#f0ebe0;margin-bottom:8px">¿Salir al menú?</div>
+      <div style="color:rgba(240,235,224,0.55);font-size:13px;margin-bottom:20px;line-height:1.5">Se perderá el progreso de la ronda actual.</div>
+      <div style="display:flex;gap:10px;">
+        <button onclick="exitCancel()" style="flex:1;background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.12);color:#f0ebe0;border-radius:12px;padding:13px;font-family:'Syne',sans-serif;font-size:14px;cursor:pointer;">Continuar</button>
+        <button onclick="exitConfirm()" style="flex:1;background:rgba(248,81,73,0.15);border:1.5px solid rgba(248,81,73,0.4);color:#ff9f9b;border-radius:12px;padding:13px;font-family:'Syne',sans-serif;font-size:14px;cursor:pointer;">Salir</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-wrap" id="progress-wrap">
+    <div class="prog-top">
+      <span class="prog-label" id="prog-label">Pregunta 1 de 10</span>
+      <div class="prog-pills">
+        <span class="prog-pill" id="prog-score">✓ 0</span>
+        <span class="prog-pill" id="prog-cat">🌿 Plantas</span>
+      </div>
+    </div>
+    <div class="prog-bar-bg"><div class="prog-bar-fill" id="prog-fill" style="width:0%"></div></div>
+  </div>
+
+  <!-- QUESTION -->
+  <div id="screen-question">
+    <div class="q-card">
+      <div class="q-visual" id="q-visual">
+        <div class="q-visual-bg" id="q-visual-bg"></div>
+        <div class="q-visual-emoji" id="q-emoji">🌿</div>
+      </div>
+      <div class="q-body">
+        <div class="q-meta">
+          <span class="q-badge" id="q-badge">Planta</span>
+          <span class="q-cat-label" id="q-cat-label">Categoría</span>
+        </div>
+        <div class="q-text" id="q-text">Pregunta aquí</div>
+      </div>
+    </div>
+    <div class="options" id="options"></div>
+    <div class="feedback" id="feedback">
+      <div class="fb-head">
+        <span class="fb-icon" id="fb-icon">✅</span>
+        <span class="fb-title" id="fb-title">¡Correcto!</span>
+      </div>
+      <div class="fb-text" id="fb-text"></div>
+      <div class="fb-tags" id="fb-tags"></div>
+      <div class="human-risk" id="human-risk" style="display:none">
+        <span>👤</span><span id="human-risk-text"></span>
+      </div>
+      <div class="human-risk" id="otros-risk" style="display:none;background:rgba(63,185,80,0.08);border-color:rgba(63,185,80,0.25);">
+        <span>🐾</span><span id="otros-risk-text" style="color:rgba(150,230,150,0.9)"></span>
+      </div>
+    </div>
+    <button class="btn-next" id="btn-next" onclick="nextQuestion()">Siguiente →</button>
+    <button class="btn-exit" id="btn-exit" onclick="exitToMenu()">✕ Salir al menú</button>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="screen-results">
+    <div class="result-score-wrap">
+      <div class="score-ring" id="score-ring">
+        <svg viewBox="0 0 130 130"><circle cx="65" cy="65" r="58" fill="none" stroke="#21262d" stroke-width="8"/><circle id="score-arc" cx="65" cy="65" r="58" fill="none" stroke="#3fb950" stroke-width="8" stroke-linecap="round" stroke-dasharray="364.4" stroke-dashoffset="364.4"/></svg>
+        <div class="score-ring-num" id="score-num">0</div>
+        <div class="score-ring-sub">DE 11</div>
+      </div>
+      <div class="result-title" id="result-title">¡Bien hecho!</div>
+      <div class="result-msg" id="result-msg">Resultado</div>
+    </div>
+    <div class="vet-banner">
+      <span class="vet-banner-icon">🏥</span>
+      <div class="vet-banner-text">Si tu mascota ingirió alguna sustancia peligrosa, contacta a tu veterinario <strong>de inmediato</strong>. No induzcas el vómito sin indicación profesional.</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-head">Resumen de la ronda</div>
+      <div id="summary-list"></div>
+    </div>
+    <button class="btn-newround" onclick="startQuiz()">Nueva ronda 🔄</button>
+    <button class="btn-back" onclick="showIntro()">← Cambiar categoría</button>
+  </div>
+
+</div>
+<script>
+// ══════════════════════════════════════════════════════
+// BANCO PLANTAS (30 tóxicas)
+// ══════════════════════════════════════════════════════
+const PLANTS = [
+  {type:'plant',name:"Lirios (Lilium spp.)",emoji:"🌸",bg:"linear-gradient(135deg,#2a0a20,#6a1845)",cat:"Flor ornamental · MÁXIMO RIESGO GATOS",q:"Los Lirios son flores muy comunes en florerías y hogares chilenos. ¿Cuál es el riesgo REAL para los gatos?",opts:[{t:"Solo el polen es peligroso si se inhala en exceso",c:false},{t:"Toda la planta es letal — incluso el agua del jarrón puede causar falla renal fatal",c:true},{t:"Son peligrosos para perros pero seguros para gatos",c:false},{t:"Solo tóxicos si se ingieren en gran cantidad",c:false}],fb:"Los Lirios (Lilium) son la causa más frecuente de falla renal aguda fatal en gatos. Incluso lamer el agua del jarrón, el polen caído en el pelaje o morder una hoja provoca insuficiencia renal irreversible en 24-72 hrs. En perros causan solo síntomas gastrointestinales leves.",tags:["tag-red:🔴 LETAL para gatos","tag-orange:🟠 Leve en perros"],human:"Sin riesgo significativo para humanos al tacto normal."},
+  {type:'plant',name:"Aloe Vera / Sábila",emoji:"🌵",bg:"linear-gradient(135deg,#0d2a10,#1e5a20)",cat:"Planta medicinal · Hogar chileno",q:"El Aloe Vera es usado medicinalmente en Chile. ¿Qué componentes lo hacen tóxico para mascotas?",opts:[{t:"El gel interno es tóxico, la piel exterior es segura",c:false},{t:"Las antraquinonas y saponinas de toda la planta provocan vómitos y diarrea",c:true},{t:"Es completamente beneficioso para mascotas como para humanos",c:false},{t:"Solo las raíces presentan toxicidad real",c:false}],fb:"El Aloe Vera contiene antraquinonas (aloína, barbaloína) y saponinas tóxicas para perros y gatos. Provoca vómitos, diarrea, letargo y en casos de ingestión masiva, anemia hemolítica.",tags:["tag-orange:🟠 Toxicidad moderada","tag-red:🔴 Anemia posible"],human:"El gel de Aloe Vera es seguro y beneficioso para humanos. Solo el látex puede ser irritante digestivo."},
+  {type:'plant',name:"Filodendro (Philodendron)",emoji:"🌿",bg:"linear-gradient(135deg,#0a2a15,#1a5a2a)",cat:"Planta tropical de interior",q:"El Filodendro es una de las plantas de interior más vendidas en Chile. ¿Cuál es su mecanismo de toxicidad?",opts:[{t:"Produce un gas tóxico al descomponerse",c:false},{t:"Sus cristales de oxalato de calcio liberan agujas microscópicas al masticarse",c:true},{t:"Solo tóxico para animales con problemas renales previos",c:false},{t:"Es completamente pet-friendly como declara la ASPCA",c:false}],fb:"El Filodendro contiene cristales de oxalato de calcio (raphides) en todas sus partes. Al masticarse, liberan miles de agujas microscópicas que penetran tejido oral y esofágico, causando ardor inmediato e intenso, hipersalivación, vómitos y dificultad para tragar.",tags:["tag-red:🔴 Alta toxicidad","tag-orange:🟠 Irritación oral severa"],human:"Irritación de piel y mucosas en humanos al manipular savia."},
+  {type:'plant',name:"Pothos / Potus / Poto",emoji:"🍃",bg:"linear-gradient(135deg,#0a2a10,#1a5530)",cat:"Enredadera muy popular · Chile",q:"El Poto o Pothos es probablemente la planta más vendida en Chile. ¿Es seguro tenerla con mascotas?",opts:[{t:"Sí, es una de las pocas plantas 100% pet-friendly",c:false},{t:"No — sus oxalatos causan ardor oral, vómitos y dificultad para tragar",c:true},{t:"Solo tóxico en cantidades muy grandes (más de 50 hojas)",c:false},{t:"Solo el tallo es tóxico, las hojas son seguras",c:false}],fb:"El Pothos contiene cristales de oxalato cálcico insolubles en todas sus partes. Al ser masticado libera cristales que causan ardor inmediato en boca y garganta, hipersalivación, vómitos y dificultad para deglutir.",tags:["tag-red:🔴 Alta toxicidad","tag-orange:🟠 Consulta frecuente en Chile"],human:"Irritación cutánea y ocular al contacto con savia."},
+  {type:'plant',name:"Costilla de Adán (Monstera)",emoji:"🌿",bg:"linear-gradient(135deg,#0d2a18,#1e5a38)",cat:"Planta tropical de moda",q:"La Monstera o Costilla de Adán está muy de moda. ¿Su fruto maduro es seguro para mascotas?",opts:[{t:"Toda la planta incluyendo el fruto maduro es tóxica",c:false},{t:"Solo el fruto maduro es comestible — hojas y tallo tienen oxalatos tóxicos",c:true},{t:"Es completamente segura en todas sus partes",c:false},{t:"Solo las raíces aéreas son peligrosas",c:false}],fb:"En la Monstera, el fruto completamente maduro puede ser comestible. Sin embargo, las hojas, tallos y frutos inmaduros contienen oxalato de calcio que causa irritación oral intensa, hipersalivación y vómitos.",tags:["tag-orange:🟠 Hojas y tallo tóxicos","tag-green:✅ Fruto maduro menos riesgoso"],human:"El fruto maduro de Monstera es comestible para humanos."},
+  {type:'plant',name:"Cala / Cartucho",emoji:"🤍",bg:"linear-gradient(135deg,#1a2a0a,#3a5a18)",cat:"Flor ornamental · Muy común en Chile",q:"La Cala blanca es icónica en jardines y eventos chilenos. ¿Qué parte concentra más toxicidad?",opts:[{t:"Las flores blancas (espatas) son las más tóxicas",c:true},{t:"Solo las raíces son peligrosas",c:false},{t:"Es completamente segura para perros y gatos",c:false},{t:"Solo tóxica durante su floración",c:false}],fb:"Todas las partes de la Cala contienen oxalato cálcico, pero las espatas (flores blancas) concentran mayor toxicidad. Provoca ardor e irritación severa en boca, salivación intensa, hinchazón facial y vómitos.",tags:["tag-red:🔴 Alta toxicidad","tag-orange:🟠 Hinchazón facial posible"],human:"Irritación oral e intestinal en niños pequeños que muerdan flores."},
+  {type:'plant',name:"Azalea / Rododendro",emoji:"🌺",bg:"linear-gradient(135deg,#2a0a15,#6a1835)",cat:"Arbusto ornamental · Jardines chilenos",q:"Las Azaleas adornan muchos jardines en Chile. ¿Qué sistema orgánico afectan principalmente?",opts:[{t:"El sistema digestivo solamente",c:false},{t:"El sistema nervioso y cardiovascular — pueden causar la muerte",c:true},{t:"Solo causan dermatitis al contacto",c:false},{t:"Solo afectan a gatos gestantes",c:false}],fb:"Las Azaleas contienen grayanotoxinas que afectan canales de sodio en células nerviosas y cardíacas. Provoca salivación excesiva, vómitos, diarrea, hipotensión, bradicardia, temblores, coma y puede ser fatal.",tags:["tag-red:🔴 Potencialmente mortal","tag-red:🔴 Afecta corazón y nervios"],human:"La 'miel loca' de abejas que visitan rododendros puede intoxicar humanos."},
+  {type:'plant',name:"Adelfa / Oleander",emoji:"🌺",bg:"linear-gradient(135deg,#2a0a0a,#6a1520)",cat:"Arbusto ornamental · MUY COMÚN EN CHILE",q:"La Adelfa es uno de los arbustos ornamentales más plantados en carreteras de Chile. ¿Cuál es su verdadero peligro?",opts:[{t:"Solo causa irritación digestiva leve",c:false},{t:"Extremadamente tóxica — una hoja puede matar a un perro mediano",c:true},{t:"Solo tóxica para caballos y ganado",c:false},{t:"Solo el humo de su madera quemada es peligroso",c:false}],fb:"La Adelfa es una de las plantas más tóxicas del mundo. Contiene oleandrina y neriósido (glucósidos cardíacos). Una sola hoja puede ser mortal para un perro o gato mediano. Afecta directamente al corazón causando arritmias fatales.",tags:["tag-red:🔴 UNA HOJA PUEDE SER MORTAL","tag-red:🔴 Glucósidos cardíacos"],human:"Altamente tóxica para humanos también. NO quemar su madera — el humo es tóxico."},
+  {type:'plant',name:"Palma de Sagú (Cycas revoluta)",emoji:"🌴",bg:"linear-gradient(135deg,#0a2a10,#1a4a20)",cat:"Palmera ornamental · Riesgo extremo",q:"La Palma de Sagú se vende como palmera ornamental. ¿Cuál es su tasa de mortalidad en perros con tratamiento?",opts:[{t:"Menos del 5% — tiene buen pronóstico",c:false},{t:"Entre el 50-75% incluso con tratamiento veterinario intensivo",c:true},{t:"0% — es solo irritante, no letal",c:false},{t:"Solo mortal si no se trata dentro de las primeras 24 horas",c:false}],fb:"La Palma de Sagú contiene cicasina, una potente hepatotoxina. La tasa de mortalidad en perros es del 50-75% INCLUSO con tratamiento veterinario intensivo. Las semillas son las más tóxicas pero toda la planta es venenosa.",tags:["tag-red:🔴 MORTALIDAD 50-75% en perros","tag-red:🔴 Falla hepática irreversible"],human:"Tóxica también para humanos."},
+  {type:'plant',name:"Dieffenbachia",emoji:"🌱",bg:"linear-gradient(135deg,#0a2a0a,#1a5018)",cat:"Planta tropical de oficinas y hogares",q:"La Dieffenbachia es muy popular en oficinas chilenas. ¿Por qué se le llamó históricamente 'planta del castigo'?",opts:[{t:"Porque sus espinas causan heridas graves",c:false},{t:"Porque sus oxalatos inflaman la boca y garganta impidiendo hablar temporalmente",c:true},{t:"Porque su olor causa dolores de cabeza intensos",c:false},{t:"Por su uso histórico como planta de mala suerte",c:false}],fb:"La Dieffenbachia fue llamada 'muda' porque esclavistas la usaban para castigar: al masticarla, los cristales de oxalato inflamaban la boca y garganta impidiendo hablar por horas. En mascotas, puede inflamar vías respiratorias al punto de ser mortal.",tags:["tag-red:🔴 Inflamación vías respiratorias","tag-red:🔴 Potencialmente fatal"],human:"Peligrosa para humanos también — especialmente para niños pequeños."},
+  {type:'plant',name:"Espatifilo / Lirio de Paz",emoji:"🌸",bg:"linear-gradient(135deg,#0a2a1a,#1a5535)",cat:"Planta de interior · Muy vendida en Chile",q:"El Lirio de Paz es famoso por purificar el aire. ¿Qué riesgo específico representa para los gatos?",opts:[{t:"Solo causa dermatitis si el gato roza las hojas",c:false},{t:"Sus oxalatos provocan insuficiencia renal aguda en gatos",c:true},{t:"Es 100% seguro — aprobado por la NASA como planta purificadora",c:false},{t:"Solo tóxico para perros, los gatos son inmunes",c:false}],fb:"El Lirio de Paz contiene oxalatos de calcio y posiblemente otros compuestos nefrotóxicos. En gatos puede causar insuficiencia renal aguda. En perros: irritación oral severa e hipersalivación.",tags:["tag-red:🔴 Falla renal en gatos","tag-orange:🟠 Irritación oral en perros"],human:"Irritación oral si se ingieren hojas."},
+  {type:'plant',name:"Drácena (Dracaena spp.)",emoji:"🌴",bg:"linear-gradient(135deg,#1a1a2a,#2a2a5a)",cat:"Planta ornamental · Interior",q:"La Drácena (incluyendo el 'Bambú de la suerte') ¿qué efecto extraño produce en gatos?",opts:[{t:"Produce alucinaciones similares a la hierba gatera",c:false},{t:"Provoca midriasis (dilatación de pupilas) además de vómitos y depresión",c:true},{t:"No produce ningún efecto en gatos",c:false},{t:"Causa agresividad extrema y temporal",c:false}],fb:"La Drácena contiene saponinas esteroidales. En gatos provoca midriasis (pupilas muy dilatadas), además de vómitos, anorexia, hipersalivación y depresión. El 'Bambú de la suerte' es en realidad una Dracaena sanderiana.",tags:["tag-orange:🟠 Toxicidad moderada","tag-purple:🔵 Midriasis en gatos"],human:"Esencialmente no tóxica para humanos en uso normal."},
+  {type:'plant',name:"Planta de Jade (Crassula ovata)",emoji:"🪴",bg:"linear-gradient(135deg,#0a200a,#1a4015)",cat:"Suculenta ornamental · Hogar",q:"La Planta de Jade es muy popular en hogares chilenos. ¿Qué sistema afecta principalmente en mascotas?",opts:[{t:"El sistema digestivo con vómitos leves pasajeros",c:false},{t:"El sistema nervioso — causa depresión, ataxia y taquicardia",c:true},{t:"Solo causa dermatitis de contacto",c:false},{t:"Es completamente segura para mascotas",c:false}],fb:"La Planta de Jade contiene componentes no del todo identificados que afectan el sistema nervioso central. En perros y gatos provoca depresión, ataxia (pérdida de coordinación), taquicardia y vómitos.",tags:["tag-orange:🟠 Toxicidad moderada","tag-orange:🟠 Afecta sistema nervioso"],human:"Sin toxicidad significativa para humanos."},
+  {type:'plant',name:"Hortensia",emoji:"💙",bg:"linear-gradient(135deg,#0a1a3a,#1a3a7a)",cat:"Arbusto ornamental · Chile",q:"Las Hortensias ¿qué compuesto tóxico contienen?",opts:[{t:"Contienen oxalatos que irritan la boca",c:false},{t:"Contienen glucósidos cianogénicos — liberan cianuro al metabolizarse",c:true},{t:"Son completamente seguras para mascotas",c:false},{t:"Solo tóxicas para gatos, los perros son resistentes",c:false}],fb:"La Hortensia contiene glucósidos cianogénicos (hidrangeína y phyllodulcina) que se metabolizan liberando cianuro. Provoca vómitos, diarrea, letargo y en ingestiones importantes puede causar depresión respiratoria.",tags:["tag-red:🔴 Glucósidos cianogénicos","tag-orange:🟠 Toxicidad moderada-alta"],human:"Intoxicación posible en humanos si se ingieren cantidades considerables."},
+  {type:'plant',name:"Cinamomo (Melia azedarach)",emoji:"🌳",bg:"linear-gradient(135deg,#1a2a0a,#3a5a18)",cat:"Árbol ornamental · MUY COMÚN CHILE",q:"El Cinamomo es el árbol ornamental más plantado en ciudades chilenas. ¿En qué época representa mayor riesgo?",opts:[{t:"En primavera cuando florece",c:false},{t:"En otoño-invierno cuando caen las bayas amarillas maduras al suelo",c:true},{t:"Solo en verano cuando el sol activa sus toxinas",c:false},{t:"No representa riesgo real para mascotas domésticas",c:false}],fb:"El mayor peligro del Cinamomo ocurre cuando caen las bayas maduras amarillas al suelo. Los perros pueden comerlas en paseos. Provoca vómitos, diarrea, letargo, convulsiones y puede ser fatal en ingestiones importantes.",tags:["tag-red:🔴 Alta toxicidad","tag-red:🔴 Bayas caídas: riesgo en paseos"],human:"Intoxicaciones reportadas en niños que ingieren bayas."},
+  {type:'plant',name:"Palán Palán (Nicotiana glauca)",emoji:"🌿",bg:"linear-gradient(135deg,#1a2a0a,#3a5218)",cat:"Arbusto silvestre · Chile árido",q:"El Palán Palán crece en zonas áridas de Chile. ¿Qué familia de plantas comparte?",opts:[{t:"Familia de las cactáceas",c:false},{t:"Familia Solanaceae como el tabaco — contiene anabasina altamente tóxica",c:true},{t:"Familia de las leguminosas",c:false},{t:"Familia de las orquídeas",c:false}],fb:"El Palán Palán pertenece a la familia Solanaceae y contiene anabasina. Es extremadamente tóxico: causa hiperexcitabilidad, salivación, vómitos, debilidad muscular, parálisis y puede ser mortal.",tags:["tag-red:🔴 ALTAMENTE TÓXICO","tag-red:🔴 Parálisis y muerte posible"],human:"Tóxico para humanos también."},
+  {type:'plant',name:"Lengua de Suegra (Sansevieria)",emoji:"🌿",bg:"linear-gradient(135deg,#0a2a15,#1a4a28)",cat:"Planta de interior muy popular",q:"La Lengua de Suegra ¿es inofensiva para mascotas?",opts:[{t:"Sí — es completamente segura",c:false},{t:"No — sus saponinas causan vómitos, diarrea y salivación excesiva",c:true},{t:"Solo tóxica si el animal come más de 10 hojas",c:false},{t:"Solo el tallo central es tóxico",c:false}],fb:"La Sansevieria contiene saponinas que al ingerirse causan náuseas, vómitos, diarrea y salivación excesiva. No suele ser mortal pero puede causar molestia significativa.",tags:["tag-orange:🟠 Toxicidad moderada","tag-yellow:🟡 Raramente grave"],human:"Sin riesgo significativo para humanos en uso decorativo."},
+  {type:'plant',name:"Anturio (Anthurium spp.)",emoji:"❤️",bg:"linear-gradient(135deg,#2a0505,#6a1010)",cat:"Planta tropical decorativa",q:"El Anturio ¿qué daño inmediato produce al ser mordido?",opts:[{t:"Produce toxicidad hepática de aparición lenta",c:false},{t:"Libera cristales de oxalato que causan ardor e inflamación oral inmediatos",c:true},{t:"No produce ningún daño",c:false},{t:"Solo tóxico si se consume la espata (parte roja)",c:false}],fb:"El Anturio contiene raphides en todas sus partes. Al morderse, se liberan miles de cristales microscópicos causando ardor intenso e inmediato, hipersalivación, hinchazón de labios y lengua y vómitos.",tags:["tag-red:🔴 Irritación oral inmediata e intensa","tag-orange:🟠 Dificultad para tragar"],human:"Causa irritación oral e intestinal en personas que ingieran hojas."},
+  {type:'plant',name:"Eucalipto (Eucalyptus spp.)",emoji:"🌿",bg:"linear-gradient(135deg,#0a2a20,#1a5a40)",cat:"Árbol nativo de Australia · Muy común Chile",q:"El Eucalipto ¿por qué es especialmente riesgoso para gatos?",opts:[{t:"Solo el humo de su quema es peligroso",c:false},{t:"Los gatos no pueden metabolizar el eucaliptol — provoca ataxia y depresión grave",c:true},{t:"Es completamente seguro para perros y gatos",c:false},{t:"Solo las raíces son tóxicas",c:false}],fb:"El Eucalipto contiene eucaliptol (1,8-cineol) que los gatos no pueden metabolizar correctamente. Provoca hipersalivación, vómitos, depresión y ataxia. Los aceites esenciales de eucalipto son especialmente peligrosos para gatos.",tags:["tag-red:🔴 Especialmente tóxico para gatos","tag-orange:🟠 Aceites esenciales: alto riesgo"],human:"Seguro en uso terapéutico para humanos."},
+  {type:'plant',name:"Geranio (Pelargonium spp.)",emoji:"🌸",bg:"linear-gradient(135deg,#2a0a15,#5a1a30)",cat:"Planta de balcón · Chile",q:"Los Geranios ¿qué efecto tienen sobre los gatos específicamente?",opts:[{t:"Son completamente seguros para gatos y perros",c:false},{t:"Solo causan dermatitis si el gato roza las hojas",c:false},{t:"El geraniol y linalool causan vómitos, depresión y dermatitis en gatos",c:true},{t:"Son tóxicos para perros pero inofensivos para gatos",c:false}],fb:"Los Geranios contienen geraniol y linalool (aceites esenciales) que los gatos no pueden metabolizar eficientemente. Provoca vómitos, depresión, anorexia e hipersalivación.",tags:["tag-orange:🟠 Tóxico esp. para gatos","tag-yellow:🟡 Leve en perros"],human:"Esencialmente seguro para humanos."},
+  {type:'plant',name:"Narciso (Narcissus spp.)",emoji:"🌼",bg:"linear-gradient(135deg,#2a2a00,#5a5a10)",cat:"Bulbo ornamental primaveral",q:"Los Narcisos ¿por qué sus bulbos son especialmente peligrosos?",opts:[{t:"Sus bulbos parecen cebollas y pueden confundirse al ser ingeridos por perros",c:true},{t:"Solo las hojas presentan toxicidad significativa",c:false},{t:"Son completamente seguros excepto las flores",c:false},{t:"Solo tóxicos si el animal tiene alergias previas",c:false}],fb:"Los bulbos de Narciso concentran alcaloides y oxalatos. Los perros pueden desenterrarlos creyendo que son cebollas o papas. Provoca vómitos intensos, diarrea, convulsiones e hipotensión.",tags:["tag-red:🔴 Bulbos muy tóxicos","tag-orange:🟠 Riesgo de confusión con alimentos"],human:"Reportes de intoxicación humana por confusión de bulbos con cebollas."},
+  {type:'plant',name:"Tulipán (Tulipa spp.)",emoji:"🌷",bg:"linear-gradient(135deg,#2a0a0a,#6a2020)",cat:"Bulbo ornamental popular",q:"Los Tulipanes ¿en qué momento representan mayor riesgo?",opts:[{t:"Durante la floración — las flores son la parte más tóxica",c:false},{t:"En otoño-invierno cuando se plantan los bulbos — que son la parte más tóxica",c:true},{t:"Son seguros todo el año",c:false},{t:"Solo en primavera cuando liberan polen",c:false}],fb:"El mayor riesgo ocurre cuando se plantan o replantan bulbos. Los bulbos concentran tulipalina A y B. Los perros que excavan pueden encontrarlos. Provoca irritación oral, vómitos, diarrea y letargo.",tags:["tag-orange:🟠 Bulbos más tóxicos que flores","tag-yellow:🟡 Perros que excavan: mayor riesgo"],human:"Irritación de piel en jardineros ('dermatitis del tulipán')."},
+  {type:'plant',name:"Hiedra (Hedera helix)",emoji:"🌿",bg:"linear-gradient(135deg,#0a2a0a,#1a5015)",cat:"Trepadora exterior · Chile",q:"La Hiedra ¿cuáles son sus componentes tóxicos principales?",opts:[{t:"Solo su savia es irritante al contacto",c:false},{t:"Hederagenina (saponinas) que causa vómitos, diarrea y posibles arritmias",c:true},{t:"Es completamente segura para todas las mascotas",c:false},{t:"Solo tóxica para conejos y roedores",c:false}],fb:"La Hiedra contiene hederagenina y otras saponinas que al ingerirse provocan hipersalivación, vómitos, diarrea y dolor abdominal. La savia también causa dermatitis de contacto.",tags:["tag-orange:🟠 Toxicidad moderada","tag-yellow:🟡 Dermatitis de contacto"],human:"Dermatitis alérgica de contacto frecuente en personas que manejan Hiedra sin guantes."},
+  {type:'plant',name:"Flor de Pascua / Nochebuena",emoji:"🎄",bg:"linear-gradient(135deg,#2a0808,#5a1515)",cat:"Planta navideña · Chile",q:"La Flor de Pascua ¿su fama de 'muy tóxica' es exagerada o real?",opts:[{t:"Es completamente segura — su fama es un mito",c:false},{t:"Es moderadamente tóxica — irrita boca y estómago pero raramente es grave",c:true},{t:"Es extremadamente tóxica — puede matar con solo una hoja",c:false},{t:"Solo tóxica para gatos",c:false}],fb:"La Flor de Pascua tiene fama exagerada. Su savia lechosa irrita la piel, ojos y boca. Al ingerirse causa vómitos y diarrea. Raramente es grave o mortal. Sin embargo, si los síntomas persisten visitar al veterinario.",tags:["tag-orange:🟠 Toxicidad MODERADA (no extrema)","tag-yellow:🟡 Raramente grave"],human:"La savia puede irritar piel y ojos en humanos."},
+  {type:'plant',name:"Tradescantia / Planta del Amor",emoji:"💜",bg:"linear-gradient(135deg,#2a0a35,#5a1870)",cat:"Planta colgante decorativa · Muy popular Chile",q:"La Tradescantia ¿es altamente tóxica o solo causa molestias leves?",opts:[{t:"Es altamente tóxica — puede causar falla renal grave",c:false},{t:"Causa dermatitis de contacto e irritación gastrointestinal leve — no es gravemente tóxica",c:true},{t:"Es completamente pet-friendly",c:false},{t:"Solo tóxica para perros",c:false}],fb:"La Tradescantia tiene toxicidad relativamente baja. Puede causar dermatitis de contacto en animales con piel sensible y síntomas gastrointestinales leves si se ingiere en cantidad. No es una planta de urgencia como los Lirios o la Adelfa.",tags:["tag-yellow:🟡 Toxicidad baja","tag-orange:🟠 Dermatitis en pieles sensibles"],human:"Dermatitis de contacto en personas con piel sensible."},
+  {type:'plant',name:"Prímula (Primula spp.)",emoji:"🌸",bg:"linear-gradient(135deg,#2a0a25,#5a1858)",cat:"Planta de floración invernal · Chile",q:"Las Prímulas ¿qué tipo de reacción producen principalmente?",opts:[{t:"Toxicidad sistémica severa",c:false},{t:"Reacción irritante y alérgica — dermatitis e irritación gastrointestinal",c:true},{t:"Son completamente seguras para todas las mascotas",c:false},{t:"Solo tóxicas para perros de raza pequeña",c:false}],fb:"Las Prímulas contienen primatoxina A, una sustancia irritante. La exposición causa principalmente dermatitis de contacto e irritación gastrointestinal. No suelen causar toxicidad sistémica grave.",tags:["tag-orange:🟠 Dermatitis e irritación","tag-yellow:🟡 Raramente grave"],human:"Dermatitis de contacto frecuente en personas que manejan Prímulas."},
+  {type:'plant',name:"Planta Ti (Cordyline fruticosa)",emoji:"🌿",bg:"linear-gradient(135deg,#2a0a2a,#5a1a5a)",cat:"Planta ornamental tropical",q:"La Planta Ti ¿qué síntoma específico alerta de intoxicación grave en gatos?",opts:[{t:"La fiebre muy alta (por encima de 41°C)",c:false},{t:"Vómitos con sangre y pupilas dilatadas (midriasis)",c:true},{t:"Solo produce pérdida temporal del apetito",c:false},{t:"Produce coloración amarilla en los ojos",c:false}],fb:"La Planta Ti es tóxica para ambas mascotas. En gatos los síntomas más alarmantes son vómitos (a veces con sangre), anorexia, hipersalivación y pupilas dilatadas.",tags:["tag-red:🔴 Vómitos con sangre posibles","tag-orange:🟠 Midriasis en gatos"],human:"Sin toxicidad conocida para humanos."},
+  {type:'plant',name:"Scindapsus (Pothos de plata)",emoji:"🍃",bg:"linear-gradient(135deg,#0a2a12,#1a5228)",cat:"Enredadera ornamental",q:"El Scindapsus vendido como 'Pothos de plata' ¿comparte su toxicidad?",opts:[{t:"No — el Scindapsus es la versión segura del Pothos",c:false},{t:"Sí — contiene los mismos oxalatos de calcio con igual toxicidad",c:true},{t:"Solo tóxico para perros",c:false},{t:"Mucho menos tóxico que el Pothos real",c:false}],fb:"El Scindapsus pictus contiene cristales de oxalato de calcio prácticamente idénticos al Pothos. Presenta la misma toxicidad: ardor oral, hipersalivación, vómitos y dificultad para tragar.",tags:["tag-orange:🟠 Misma toxicidad que el Pothos","tag-red:🔴 No confundir con planta segura"],human:"Irritación de piel y ojos con la savia."},
+  {type:'plant',name:"Taro (Colocasia esculenta)",emoji:"🌿",bg:"linear-gradient(135deg,#0a2a18,#1a5a35)",cat:"Planta tropical ornamental",q:"El Taro ornamental ¿es diferente al Taro comestible en cuanto a toxicidad?",opts:[{t:"Sí — el taro ornamental es seguro",c:false},{t:"No — ambos contienen oxalatos; el comestible solo es seguro tras cocción prolongada",c:true},{t:"El taro ornamental es completamente seguro",c:false},{t:"Solo las raíces del taro ornamental son tóxicas",c:false}],fb:"Tanto el Taro ornamental como el comestible contienen cristales de oxalato cálcico. El taro comestible pierde los oxalatos con cocción prolongada. Para mascotas, ambas variedades son tóxicas en estado crudo.",tags:["tag-red:🔴 Ardor oral severo","tag-orange:🟠 Dificultad para tragar"],human:"El taro comestible solo es seguro para humanos bien cocinado."},
+];
+
+// ══════════════════════════════════════════════════════
+// BANCO ALIMENTOS (30)
+// ══════════════════════════════════════════════════════
+const FOODS = [
+  {type:'food',name:"Chocolate (Teobromina)",emoji:"🍫",bg:"linear-gradient(135deg,#1a0a02,#4a2008)",cat:"Alimento frecuente en intoxicaciones",q:"¿Cuánto chocolate negro (con 70% cacao) puede ser mortal para un perro de 10 kg?",opts:[{t:"Más de 500g — es una cantidad muy grande",c:false},{t:"Alrededor de 100-150g pueden ser mortales — menos de 2 tabletas",c:true},{t:"Solo el chocolate blanco es peligroso para perros",c:false},{t:"Ninguna cantidad es mortal — solo causa diarrea",c:false}],fb:"El chocolate negro al 70% contiene ~140-160 mg/g de teobromina. La dosis letal para un perro de 10 kg es ~100-150g. Los perros metabolizan la teobromina muy lentamente (vida media 18h). Síntomas: vómitos, diarrea, taquicardia, temblores, convulsiones.",tags:["tag-red:🔴 URGENCIA VETERINARIA","tag-red:🔴 Dosis letal: 100mg/kg de teobromina"],human:"La teobromina no afecta a humanos en cantidades normales de consumo de chocolate."},
+  {type:'food',name:"Uvas frescas",emoji:"🍇",bg:"linear-gradient(135deg,#1a0a2a,#3a1560)",cat:"Fruta de alto riesgo · causa desconocida",q:"Lo más inquietante sobre la toxicidad de las uvas en perros es que...",opts:[{t:"La dosis tóxica es conocida con precisión: 30g/kg",c:false},{t:"El mecanismo y compuesto tóxico aún se desconocen — incluso 1 uva puede matar",c:true},{t:"Solo las uvas rojas son tóxicas, las verdes son seguras",c:false},{t:"Solo afectan a perros de razas pequeñas",c:false}],fb:"Las uvas son altamente tóxicas para perros pero el compuesto causante aún no se ha identificado. No existe dosis segura conocida. Se han reportado muertes con 1-2 uvas en perros sensibles. Falla renal aguda irreversible.",tags:["tag-red:🔴 MECANISMO DESCONOCIDO","tag-red:🔴 Falla renal aguda","tag-red:🔴 TOLERANCIA CERO"],human:"Las uvas son completamente seguras para humanos."},
+  {type:'food',name:"Pasas de uva",emoji:"🫙",bg:"linear-gradient(135deg,#2a1020,#5a2848)",cat:"Fruta seca · Concentración de toxicidad",q:"¿Las pasas son más o menos peligrosas que las uvas frescas para los perros?",opts:[{t:"Menos peligrosas — el secado reduce las toxinas",c:false},{t:"Igual de peligrosas",c:false},{t:"MÁS peligrosas — el secado concentra las toxinas",c:true},{t:"Solo peligrosas en presentaciones orgánicas",c:false}],fb:"Las pasas son significativamente MÁS peligrosas que las uvas frescas por dosis. Al deshidratar la uva, las toxinas se concentran. Una caja pequeña de pasas puede causar falla renal grave en un perro de 10 kg.",tags:["tag-red:🔴 MÁS PELIGROSAS que uvas frescas","tag-red:🔴 Revisar ingredientes de galletas"],human:"Completamente seguras para humanos."},
+  {type:'food',name:"Cebolla (cruda o cocida)",emoji:"🧅",bg:"linear-gradient(135deg,#2a1a00,#5a3a08)",cat:"Condimento básico del hogar",q:"¿Cocinar la cebolla elimina su toxicidad para perros y gatos?",opts:[{t:"Sí — la cocción destruye los tiosulfatos tóxicos",c:false},{t:"Parcialmente — reduce la toxicidad en un 50%",c:false},{t:"No — cocida, en polvo o cruda mantiene la misma toxicidad",c:true},{t:"Solo el polvo de cebolla es peligroso",c:false}],fb:"Los tiosulfatos de la cebolla son estables al calor — la cocción NO los elimina. La cebolla en todas sus formas destruye los glóbulos rojos causando anemia hemolítica. Los síntomas pueden aparecer días después.",tags:["tag-red:🔴 Anemia hemolítica","tag-red:🔴 Cocida = igual de tóxica"],human:"Sin riesgo para humanos con metabolismo normal."},
+  {type:'food',name:"Ajo (Allium sativum)",emoji:"🧄",bg:"linear-gradient(135deg,#1a1a0a,#3a3a15)",cat:"Condimento · Mayor toxicidad que cebolla",q:"Comparando ajo vs cebolla para perros ¿cuál es más tóxico por peso?",opts:[{t:"La cebolla — el ajo tiene compuestos más benignos",c:false},{t:"Son igualmente tóxicos",c:false},{t:"El ajo es 5 veces más tóxico por gramo que la cebolla",c:true},{t:"El ajo es levemente menos tóxico",c:false}],fb:"El ajo es aproximadamente 5 veces más potente que la cebolla por peso. La dosis tóxica para perros es ~5g/kg de ajo fresco. Los gatos son aún más sensibles. Los síntomas pueden aparecer hasta 5 días después.",tags:["tag-red:🔴 5x más tóxico que cebolla","tag-red:🔴 Anemia hemolítica"],human:"Seguro para humanos en cantidades normales de cocina."},
+  {type:'food',name:"Palta / Aguacate",emoji:"🥑",bg:"linear-gradient(135deg,#0a2a0a,#1a4a18)",cat:"Fruta popular en Chile",q:"La palta ¿qué parte es simultáneamente tóxica Y representa riesgo de obstrucción fatal?",opts:[{t:"La piel verde exterior",c:false},{t:"El cuesco (hueso) — contiene persina y puede obstruir intestinos",c:true},{t:"Las hojas del árbol palto",c:false},{t:"Solo la parte oxidada (marrón) es tóxica",c:false}],fb:"El cuesco de palta representa doble peligro: contiene persina (tóxica) y su tamaño puede causar obstrucción intestinal o gástrica que requiere cirugía de urgencia. La pulpa también causa vómitos, diarrea y pancreatitis.",tags:["tag-red:🔴 Cuesco: tóxico + obstrucción fatal","tag-orange:🟠 Pulpa: persina y pancreatitis"],human:"Completamente segura y nutritiva para humanos."},
+  {type:'food',name:"Café molido y Granos de café",emoji:"☕",bg:"linear-gradient(135deg,#150a00,#3a2008)",cat:"Bebida cotidiana chilena",q:"Un perro de 5 kg come 2-3 cucharadas de café molido. ¿Qué nivel de urgencia representa?",opts:[{t:"Baja urgencia — el café molido no se absorbe bien",c:false},{t:"Media urgencia — puede causar nerviosismo leve",c:false},{t:"URGENCIA INMEDIATA — puede causar convulsiones y falla cardíaca",c:true},{t:"Solo urgente si el perro tiene problemas cardíacos previos",c:false}],fb:"El café molido concentra cafeína que en perros y gatos se metaboliza muy lentamente. 2-3 cucharadas para un perro de 5 kg pueden superar la dosis tóxica. Síntomas: agitación, temblores, taquicardia, convulsiones, falla cardíaca.",tags:["tag-red:🔴 URGENCIA VETERINARIA","tag-red:🔴 Convulsiones y falla cardíaca"],human:"La cafeína en cantidades normales de café es segura para humanos."},
+  {type:'food',name:"Xilitol (edulcorante artificial)",emoji:"🍬",bg:"linear-gradient(135deg,#0a0a2a,#1a1a5a)",cat:"Presente en chicles, dulces, pastas dentales",q:"El xilitol ¿qué hace específicamente en el organismo del perro?",opts:[{t:"Solo causa diarrea osmótica",c:false},{t:"Estimula liberación masiva de insulina causando hipoglucemia severa y falla hepática",c:true},{t:"Provoca reacción alérgica grave",c:false},{t:"Es similar a su efecto en humanos pero más intenso",c:false}],fb:"En perros, el xilitol estimula una liberación masiva de insulina causando hipoglucemia severa en 30-60 minutos. A dosis más altas causa necrosis hepática fulminante. Presente en: chicles, caramelos, pasta dental, mantequilla de maní 'natural'.",tags:["tag-red:🔴 URGENCIA MÁXIMA","tag-red:🔴 Hipoglucemia + falla hepática"],human:"El xilitol es completamente seguro para humanos."},
+  {type:'food',name:"Huesos cocidos (pollo, res)",emoji:"🍖",bg:"linear-gradient(135deg,#2a1a08,#5a3818)",cat:"Alimento con riesgo físico grave",q:"¿Por qué los huesos COCIDOS son más peligrosos que los crudos?",opts:[{t:"Los cocidos tienen más bacterias",c:false},{t:"La cocción los hace más duros",c:false},{t:"La cocción los vuelve frágiles — se astillan en esquirlas que perforan intestinos",c:true},{t:"No hay diferencia",c:false}],fb:"Los huesos cocidos se vuelven frágiles y se fragmentan en astillas punzantes. Estas esquirlas pueden: lacerar lengua y encías, obstruir esófago, perforar estómago o intestinos causando peritonitis fatal.",tags:["tag-red:🔴 Perforación intestinal = cirugía urgente","tag-orange:🟠 Huesos cocidos: prohibidos"],human:"Los huesos cocidos también representan riesgo de atragantamiento para personas."},
+  {type:'food',name:"Nueces de Macadamia",emoji:"🥜",bg:"linear-gradient(135deg,#2a1a05,#5a3810)",cat:"Fruto seco · Exclusivo de perros",q:"Las nueces de macadamia ¿afectan de la misma manera a perros y gatos?",opts:[{t:"Sí — son igualmente tóxicas para ambas mascotas",c:false},{t:"Solo afectan a perros — son altamente tóxicas para ellos, los gatos parecen resistentes",c:true},{t:"Solo afectan a gatos",c:false},{t:"Son seguras para ambas mascotas",c:false}],fb:"Las nueces de macadamia parecen afectar principalmente a perros. En perros provoca debilidad en patas traseras, vómitos, hipotermia y temblores. El mecanismo tóxico sigue siendo desconocido.",tags:["tag-red:🔴 Tóxica SOLO para perros","tag-orange:🟠 Mecanismo desconocido"],human:"Altamente nutritivas y seguras para humanos."},
+  {type:'food',name:"Masa de pan cruda con levadura",emoji:"🍞",bg:"linear-gradient(135deg,#2a1a05,#5a3a12)",cat:"Alimento en proceso · Doble peligro",q:"¿Por qué la masa cruda con levadura representa un DOBLE peligro?",opts:[{t:"Porque la harina cruda y el gluten son indigestos",c:false},{t:"Porque fermenta en el estómago produciendo gas (dilatación) y alcohol etílico (intoxicación)",c:true},{t:"Solo es peligrosa si contiene huevos crudos",c:false},{t:"Solo por el riesgo de obstrucción intestinal",c:false}],fb:"La masa cruda con levadura es un doble riesgo: 1) La levadura fermenta en el estómago produciendo CO₂ que puede causar dilatación-vólvulo gástrico mortal. 2) La fermentación produce alcohol etílico que causa depresión del SNC.",tags:["tag-red:🔴 Dilatación gástrica MORTAL","tag-red:🔴 Intoxicación alcohólica simultánea"],human:"Sin riesgo de intoxicación alcohólica en humanos en cantidades normales."},
+  {type:'food',name:"Cebollín y Puerro",emoji:"🌱",bg:"linear-gradient(135deg,#0a2a0a,#1a4818)",cat:"Condimentos · Familia Allium",q:"El cebollín y el puerro ¿son tan peligrosos como la cebolla?",opts:[{t:"No — son mucho más seguros",c:false},{t:"El cebollín sí, el puerro no",c:false},{t:"Sí — toda la familia Allium es igualmente tóxica",c:true},{t:"Solo peligrosos para gatos",c:false}],fb:"Todos los miembros de la familia Allium son tóxicos: cebolla, ajo, cebollín, puerro, chalote y cebolla de verdeo. Todos contienen tiosulfatos que causan anemia hemolítica.",tags:["tag-red:🔴 TODA la familia Allium es tóxica","tag-orange:🟠 Cebollín: riesgo frecuente"],human:"Seguros para humanos en cantidades culinarias normales."},
+  {type:'food',name:"Té (Cafeína)",emoji:"🍵",bg:"linear-gradient(135deg,#0a1a0a,#1a3818)",cat:"Bebida · Cafeína",q:"¿El té es una alternativa segura al café para compartir con las mascotas?",opts:[{t:"Sí — el té tiene mucha menos cafeína y es seguro",c:false},{t:"No — el té negro y verde contienen cafeína tóxica para perros y gatos",c:true},{t:"Solo el té negro es peligroso, el de hierbas es seguro",c:false},{t:"Solo en cantidades mayores a una taza completa",c:false}],fb:"El té negro contiene 40-70mg de cafeína por taza. Para un gato de 4 kg, la dosis tóxica de cafeína es ~80mg (~2 tazas de té negro). Las xantinas del té pueden causar arritmias.",tags:["tag-red:🔴 Cafeína tóxica","tag-orange:🟠 Gatos especialmente sensibles"],human:"Seguro en cantidades normales para humanos."},
+  {type:'food',name:"Etanol en bebidas alcohólicas",emoji:"🍷",bg:"linear-gradient(135deg,#2a0808,#5a1010)",cat:"Alcohol · Pisco, cerveza, vino",q:"Un perro de 10 kg lame pisco derramado (~30ml). ¿Qué tan grave puede ser?",opts:[{t:"Leve — los perros toleran el alcohol mejor que los humanos",c:false},{t:"GRAVE — 30ml de pisco puede causar depresión severa del SNC y coma",c:true},{t:"Solo causa somnolencia temporal",c:false},{t:"Solo es problema si ingiere más de 100ml",c:false}],fb:"Los perros y gatos son extremadamente sensibles al etanol. 30ml de pisco para un perro de 10kg puede causar depresión severa del SNC, hipotermia, hipoglucemia, coma y paro respiratorio.",tags:["tag-red:🔴 URGENCIA VETERINARIA","tag-red:🔴 Coma y paro respiratorio posible"],human:"El etanol es metabolizado mucho más eficientemente por humanos."},
+  {type:'food',name:"Hongos/Setas silvestres tóxicos",emoji:"🍄",bg:"linear-gradient(135deg,#0a1a0a,#1a3515)",cat:"Riesgo en paseos al campo · Chile",q:"Un perro come hongos silvestres en un bosque chileno. ¿Cuál es el protocolo correcto?",opts:[{t:"Esperar y observar — si no hay síntomas en 1 hora, no hay riesgo",c:false},{t:"Veterinario INMEDIATO — los hongos más tóxicos (Amanita) tienen síntomas tardíos de 6-24h",c:true},{t:"Inducir vómito en casa y observar 24 horas",c:false},{t:"Solo urgente si el perro come más de 3-4 setas",c:false}],fb:"Los hongos Amanita presentes en bosques chilenos son mortales. Lo más peligroso: los síntomas gastrointestinales iniciales desaparecen dando falsa sensación de mejoría, luego reaparece insuficiencia hepática y renal 24-72h después.",tags:["tag-red:🔴 URGENCIA MÁXIMA aunque no haya síntomas","tag-red:🔴 Amanita: falla hepática tardía"],human:"Los hongos tóxicos silvestres son igualmente letales para humanos."},
+  {type:'food',name:"Sal en exceso (snacks salados)",emoji:"🧂",bg:"linear-gradient(135deg,#1a1a0a,#3a3a18)",cat:"Condimento · Riesgo por exceso",q:"¿Dar papas fritas o maní salado regularmente a las mascotas qué consecuencias tiene?",opts:[{t:"Solo engorda — no hay toxicidad real",c:false},{t:"Causa hipernatremia — intoxicación por sodio con convulsiones y daño neurológico",c:true},{t:"Solo aumenta la sed, sin consecuencias graves",c:false},{t:"Solo afecta a gatos",c:false}],fb:"El exceso de sodio causa hipernatremia que puede producir vómitos, diarrea, temblores, convulsiones y daño neurológico. La dosis tóxica para perros es ~4g/kg de NaCl.",tags:["tag-red:🔴 Hipernatremia: convulsiones","tag-orange:🟠 Hipertensión crónica"],human:"El exceso de sal también causa problemas cardiovasculares e hipertensión en humanos."},
+  {type:'food',name:"Morcilla y Salchichas parrilleras",emoji:"🌭",bg:"linear-gradient(135deg,#2a0808,#5a1515)",cat:"Embutido · Parrilla chilena",q:"En un asado chileno ¿por qué las morcillas y longanizas son especialmente peligrosas?",opts:[{t:"Solo por el exceso de grasa",c:false},{t:"Combinan alta grasa (pancreatitis), ajo/cebolla (anemia) y sal (hipernatremia)",c:true},{t:"Solo si están muy condimentadas con merkén",c:false},{t:"Son seguras si se les quita la piel",c:false}],fb:"Las morcillas y salchichas chilenas representan riesgo múltiple: 1) Alta grasa → pancreatitis aguda, 2) Ajo y cebolla → anemia hemolítica, 3) Sal elevada → hipernatremia.",tags:["tag-red:🔴 Triple riesgo: grasa+allium+sal","tag-red:🔴 NUNCA compartir en asados"],human:"El consumo frecuente de morcilla también está asociado a mayor riesgo cardiovascular en humanos."},
+  {type:'food',name:"Bebidas energéticas",emoji:"⚡",bg:"linear-gradient(135deg,#0a0a2a,#1a1a5a)",cat:"Bebida · Alta concentración de cafeína",q:"Una lata de bebida energética ¿representa más riesgo que una taza de café para los perros?",opts:[{t:"No — tienen similar cafeína que el café",c:false},{t:"Sí — concentran cafeína, taurina y otros estimulantes que actúan sinérgicamente",c:true},{t:"Son más seguras porque están diluidas en mucho líquido",c:false},{t:"Solo peligrosas para gatos",c:false}],fb:"Una lata de 250ml puede contener 80-150mg de cafeína más taurina y otras xantinas. La combinación de múltiples estimulantes actúa sinérgicamente causando agitación extrema, taquicardia y convulsiones.",tags:["tag-red:🔴 URGENCIA VETERINARIA","tag-red:🔴 Efecto sinérgico de estimulantes"],human:"Las bebidas energéticas también representan riesgo en personas con problemas cardíacos."},
+  {type:'food',name:"Leche y Lácteos",emoji:"🥛",bg:"linear-gradient(135deg,#1a1a1a,#3a3a3a)",cat:"Intolerancia frecuente",q:"La leche ¿es TÓXICA para perros y gatos adultos o simplemente causa intolerancia?",opts:[{t:"Es tóxica — causa falla renal",c:false},{t:"No es tóxica per se — causa intolerancia a la lactosa con diarrea y gases",c:true},{t:"Es completamente segura y nutritiva",c:false},{t:"Solo la leche de vaca es problemática",c:false}],fb:"La leche NO es tóxica en sentido estricto. Al dejar de ser lactantes, los perros y gatos reducen su producción de lactasa. El resultado es intolerancia a la lactosa: diarrea, gases, dolor abdominal.",tags:["tag-yellow:🟡 Intolerancia, no toxicidad real","tag-orange:🟠 Diarrea y gases frecuentes"],human:"La intolerancia a la lactosa también existe en muchos humanos adultos."},
+  {type:'food',name:"Alimentos muy grasosos (tocino, frituras)",emoji:"🥓",bg:"linear-gradient(135deg,#2a0a0a,#5a1818)",cat:"Alimentos procesados · Riesgo de pancreatitis",q:"Dar tocino o sobras de frituras al perro de forma habitual ¿qué condición grave puede desencadenar?",opts:[{t:"Diabetes tipo 2 por exceso de azúcares",c:false},{t:"Pancreatitis aguda — dolorosa, grave y potencialmente mortal",c:true},{t:"Solo sobrepeso sin mayores consecuencias",c:false},{t:"Problemas renales por exceso de sodio",c:false}],fb:"Los alimentos muy grasosos pueden desencadenar pancreatitis aguda en perros, especialmente en razas predispuestas (Schnauzer, Yorkshire, Cocker Spaniel). Puede progresar a falla multiorgánica.",tags:["tag-red:🔴 Pancreatitis aguda posible","tag-orange:🟠 Razas predispuestas: alto riesgo"],human:"El exceso de grasas saturadas también causa pancreatitis en humanos."},
+  {type:'food',name:"Queso azul (Roquefort, Gorgonzola)",emoji:"🧀",bg:"linear-gradient(135deg,#2a2008,#5a4818)",cat:"Lácteo · Micotoxina tóxica",q:"El queso azul ¿qué lo hace especialmente peligroso para perros comparado con otros quesos?",opts:[{t:"Solo por su alto contenido de grasa",c:false},{t:"Contiene roquefortina C — una micotoxina que puede causar convulsiones",c:true},{t:"Es completamente equivalente a otros quesos",c:false},{t:"Solo peligroso para gatos",c:false}],fb:"El queso azul (Roquefort, Gorgonzola) contiene roquefortina C, una micotoxina producida por el hongo Penicillium. Puede causar vómitos, diarrea, tremores y convulsiones en perros. El queso curado sin moho en pequeñas cantidades es más tolerable.",tags:["tag-red:🔴 Roquefortina C: convulsiones","tag-orange:🟠 Quesos curados sin moho: menor riesgo"],human:"La roquefortina C es el compuesto que da sabor característico al queso azul — inocua para humanos."},
+  {type:'food',name:"Ruibarbo (hojas)",emoji:"🌿",bg:"linear-gradient(135deg,#2a0a0a,#5a1520)",cat:"Planta/alimento · Hojas tóxicas",q:"En el Ruibarbo ¿qué parte es comestible y cuál es altamente tóxica?",opts:[{t:"Las hojas son comestibles, los tallos rojos son tóxicos",c:false},{t:"Los tallos rojos son comestibles — las hojas son altamente tóxicas",c:true},{t:"Toda la planta es comestible y segura",c:false},{t:"Solo las raíces son tóxicas",c:false}],fb:"Los tallos de Ruibarbo se usan en cocina y son relativamente seguros para humanos. Las hojas contienen ácido oxálico en concentraciones muy altas que puede causar insuficiencia renal aguda en perros y gatos.",tags:["tag-red:🔴 Hojas: insuficiencia renal aguda","tag-green:✅ Tallos: comestibles para humanos"],human:"Las hojas son peligrosas también para humanos en grandes cantidades."},
+  {type:'food',name:"Embutidos con condimentos",emoji:"🥩",bg:"linear-gradient(135deg,#2a1008,#5a2815)",cat:"Carnes procesadas · Múltiples riesgos",q:"¿Por qué los embutidos son más peligrosos que la carne fresca para mascotas?",opts:[{t:"Solo por la sal",c:false},{t:"Combinan sal, grasas saturadas, nitratos y posiblemente ajo/cebolla en su composición",c:true},{t:"Son completamente equivalentes",c:false},{t:"Solo el salame es problemático",c:false}],fb:"Los embutidos presentan múltiples riesgos combinados: alta concentración de sal, grasas saturadas, nitratos y frecuentemente contienen ajo o cebolla en su receta. La carne fresca cocida sin condimentos es la única alternativa segura.",tags:["tag-red:🔴 Múltiples tóxicos combinados","tag-orange:🟠 Revisar ingredientes siempre"],human:"El consumo excesivo de embutidos está vinculado a mayor riesgo de cáncer colorrectal."},
+  {type:'food',name:"Pan en exceso con levadura activa",emoji:"🥖",bg:"linear-gradient(135deg,#2a1508,#5a3018)",cat:"Alimento cotidiano",q:"¿El pan ya horneado representa el mismo riesgo que la masa cruda?",opts:[{t:"Sí — el pan horneado es igualmente peligroso",c:false},{t:"No — el horneado destruye la levadura activa. Solo la masa cruda es peligrosa",c:true},{t:"El pan horneado es más peligroso",c:false},{t:"Ambos son completamente seguros",c:false}],fb:"El horneado a alta temperatura destruye la levadura activa, eliminando el riesgo de fermentación en el estómago. El pan horneado en pequeñas cantidades es relativamente seguro. El riesgo está SOLO en la masa cruda con levadura activa viva.",tags:["tag-green:✅ Pan horneado: relativamente seguro","tag-red:🔴 Masa cruda: PELIGRO"],human:"Sin diferencias relevantes para humanos."},
+  {type:'food',name:"Cerezas (semillas)",emoji:"🍒",bg:"linear-gradient(135deg,#2a0808,#5a1010)",cat:"Fruta · Semillas peligrosas",q:"En las cerezas ¿qué parte específica representa el mayor riesgo para las mascotas?",opts:[{t:"La pulpa roja — contiene taninos tóxicos",c:false},{t:"Las semillas, hojas y tallos — contienen amigdalina que libera cianuro",c:true},{t:"Solo la cáscara exterior",c:false},{t:"Toda la cereza incluyendo la pulpa es tóxica",c:false}],fb:"Las semillas, hojas y tallos de cerezas contienen amigdalina que se metaboliza en cianuro de hidrógeno. La pulpa madura es relativamente segura en pequeñas cantidades. Síntomas de toxicidad: pupilas dilatadas, dificultad respiratoria, encías rojas brillantes.",tags:["tag-red:🔴 Semillas: amigdalina → cianuro","tag-green:✅ Pulpa madura: relativamente segura sin semillas"],human:"Las semillas de cereza también contienen amigdalina — no masticar semillas."},
+  {type:'food',name:"Manzana (semillas y corazón)",emoji:"🍎",bg:"linear-gradient(135deg,#2a0808,#5a1515)",cat:"Fruta común · Semillas peligrosas",q:"En la manzana ¿qué parte contiene cianuro y debe eliminarse siempre?",opts:[{t:"La cáscara roja — contiene pectina que libera cianuro",c:false},{t:"Las semillas y el corazón — contienen amigdalina que se metaboliza en cianuro",c:true},{t:"Solo la cáscara verde",c:false},{t:"Ninguna parte — toda la manzana incluyendo semillas es completamente segura",c:false}],fb:"La pulpa y cáscara de manzana SIN semillas son completamente seguras. Las semillas y el corazón contienen amigdalina que se metaboliza en cianuro. Eliminar siempre las semillas antes de dar manzana a mascotas.",tags:["tag-green:✅ Pulpa y cáscara: seguros","tag-red:🔴 Semillas y corazón: RETIRAR SIEMPRE"],human:"La manzana es una de las frutas más consumidas en Chile. Nutritiva y saludable."},
+  {type:'food',name:"Productos con edulcorantes artificiales",emoji:"🍭",bg:"linear-gradient(135deg,#1a0a2a,#3a1860)",cat:"Presentes en muchos alimentos 'light' o 'diet'",q:"Además del xilitol ¿hay otros edulcorantes artificiales peligrosos para mascotas?",opts:[{t:"No — solo el xilitol es problemático",c:false},{t:"Sí — eritritol y otros alcoholes de azúcar pueden causar problemas digestivos",c:true},{t:"Los edulcorantes artificiales son seguros si son aprobados para humanos",c:false},{t:"Solo el aspartamo es peligroso además del xilitol",c:false}],fb:"El xilitol es el más peligroso, pero otros edulcorantes también presentan riesgos. Lo más seguro: nunca dar productos 'light', 'diet' o 'sin azúcar' sin verificar todos los ingredientes.",tags:["tag-red:🔴 Xilitol: urgencia máxima","tag-orange:🟠 Verificar TODOS los edulcorantes"],human:"Los edulcorantes artificiales aprobados para humanos son seguros a las dosis normales."},
+];
+
+// ══════════════════════════════════════════════════════
+// BANCO DROGAS (23 sustancias + 9 medicamentos = 32)
+// ══════════════════════════════════════════════════════
+const DRUGS = [
+  {type:'drug',name:"Cannabis / Marihuana (THC)",emoji:"🌿",bg:"linear-gradient(135deg,#0a2a0a,#1a5018)",cat:"Droga de uso común · Chile",q:"Con la legalización progresiva del cannabis en Chile ¿cómo afecta el THC a los perros comparado con los humanos?",opts:[{t:"Los perros tienen menos receptores cannabinoides — son menos sensibles",c:false},{t:"Los perros tienen MÁS receptores cannabinoides en el cerebelo — son mucho más sensibles",c:true},{t:"El THC afecta igual a perros, gatos y humanos",c:false},{t:"Solo el humo secondhand afecta a las mascotas",c:false}],fb:"Los perros tienen una densidad de receptores cannabinoides CB1 en el cerebelo hasta 10 veces mayor que los humanos. Dosis que darían leve euforia a un humano pueden causar ataxia severa, incontinencia, hipotermia y coma.",tags:["tag-red:🔴 10x más sensibles que humanos","tag-orange:🟠 Coma posible en dosis altas"],human:"El cannabis afecta el SNC humano produciendo euforia, alteraciones perceptivas y en dosis altas psicosis temporal."},
+  {type:'drug',name:"Cocaína (clorhidrato)",emoji:"⚗️",bg:"linear-gradient(135deg,#1a1a2a,#3a3a6a)",cat:"Estimulante del SNC · Alta toxicidad",q:"Un perro ingiere accidentalmente cocaína. ¿Cuáles son los primeros síntomas?",opts:[{t:"Somnolencia y letargo",c:false},{t:"Agitación extrema, tremores, taquicardia severa e hipertermia",c:true},{t:"Solo midriasis sin otros síntomas",c:false},{t:"Los perros son resistentes a la cocaína",c:false}],fb:"La cocaína bloquea la recaptación de norepinefrina, dopamina y serotonina. Síntomas: agitación extrema, tremores, convulsiones, taquicardia, hipertermia (>41°C) que puede causar daño cerebral irreversible.",tags:["tag-red:🔴 URGENCIA VETERINARIA INMEDIATA","tag-red:🔴 Hipertermia = daño cerebral"],human:"La cocaína causa vasoconstricción severa y taquicardia. Principal riesgo: infarto cardíaco."},
+  {type:'drug',name:"MDMA / Éxtasis",emoji:"💊",bg:"linear-gradient(135deg,#2a0a2a,#5a1a5a)",cat:"Droga sintética · Fiestas",q:"¿Cuál es el mayor riesgo letal del MDMA en perros y gatos?",opts:[{t:"Insuficiencia renal por sus metabolitos tóxicos",c:false},{t:"Hipertermia severa y síndrome serotoninérgico — pueden ser fatales rápidamente",c:true},{t:"Solo causa somnolencia profunda",c:false},{t:"Principalmente efectos gastrointestinales",c:false}],fb:"El MDMA causa síndrome serotoninérgico en perros y gatos: hipertermia severa (>41°C), agitación, temblores, rigidez muscular y convulsiones. La temperatura puede escalar causando falla multiorgánica en horas.",tags:["tag-red:🔴 Síndrome serotoninérgico","tag-red:🔴 Hipertermia fatal rápida"],human:"En humanos, el MDMA causa hipertermia especialmente en contextos de fiesta (baile, calor, deshidratación)."},
+  {type:'drug',name:"Metanfetamina",emoji:"⚗️",bg:"linear-gradient(135deg,#2a1a00,#6a4a08)",cat:"Estimulante sintético potente",q:"La metanfetamina ¿por qué es aún más peligrosa que la cocaína para las mascotas?",opts:[{t:"No es más peligrosa — tienen el mismo nivel de riesgo",c:false},{t:"Su vida media más larga significa que los efectos tóxicos duran mucho más tiempo",c:true},{t:"No afecta significativamente a las mascotas",c:false},{t:"Es menos peligrosa porque actúa más lentamente",c:false}],fb:"La metanfetamina tiene una vida media de 10-12 horas. En perros y gatos esto significa que los efectos tóxicos persisten por muchas más horas requiriendo tratamiento veterinario prolongado.",tags:["tag-red:🔴 Efectos prolongados 10-12 horas","tag-red:🔴 Tratamiento prolongado"],human:"La metanfetamina causa adicción severa, daño cerebral permanente y deterioro cardiovascular."},
+  {type:'drug',name:"Metilfenidato (Ritalín · Concerta · Rubifen)",emoji:"💊",bg:"linear-gradient(135deg,#0a1a2a,#1a3a5a)",cat:"Medicamento TDAH · Riesgo doméstico",q:"El Ritalín ¿tiene el mismo mecanismo de toxicidad que las anfetaminas en perros?",opts:[{t:"No — el Ritalín es mucho más seguro",c:false},{t:"Sí — ambos bloquean la recaptación de monoaminas causando síntomas similares",c:true},{t:"Solo afecta a gatos",c:false},{t:"Solo causa hiperactividad temporal",c:false}],fb:"El metilfenidato bloquea recaptación de dopamina y norepinefrina. En perros y gatos causa agitación, taquicardia, tremores, hipertensión e hipertermia. Una pastilla de 10mg puede ser peligrosa para un gato de 4 kg.",tags:["tag-red:🔴 Mecanismo similar a anfetaminas","tag-red:🔴 Guardar bajo llave"],human:"El metilfenidato en sobredosis causa efectos cardiovasculares y psiquiátricos en humanos."},
+  {type:'drug',name:"Fentanilo",emoji:"⚗️",bg:"linear-gradient(135deg,#1a0a0a,#4a1010)",cat:"Opioide sintético · Extrema potencia",q:"El fentanilo es 100 veces más potente que la morfina. ¿Cuánto puede ser mortal para un gato de 4 kg?",opts:[{t:"Se necesita al menos 1 gramo completo",c:false},{t:"Microgramos — cantidades invisibles al ojo humano pueden ser letales",c:true},{t:"Una dosis similar a la humana terapéutica",c:false},{t:"Los gatos son resistentes al fentanilo",c:false}],fb:"El fentanilo es extremadamente peligroso — incluso cantidades en microgramos pueden causar depresión respiratoria fatal. Los parches de fentanilo usados contienen suficiente fentanilo residual para matar a un gato.",tags:["tag-red:🔴 MICROGRAMOS = MORTAL","tag-red:🔴 Parches usados: peligro extremo"],human:"El fentanilo es la principal causa de muertes por sobredosis en EE.UU. actualmente."},
+  {type:'drug',name:"Heroína",emoji:"⚗️",bg:"linear-gradient(135deg,#1a0808,#3a1515)",cat:"Opioide ilegal · Urgencia máxima",q:"Un perro accede a heroína en el hogar. ¿Cuál es el antídoto específico disponible?",opts:[{t:"No existe antídoto",c:false},{t:"Naloxona (Narcan) — revierte los efectos opioides y debe administrarse inmediatamente",c:true},{t:"Carbón activado oral es el único tratamiento",c:false},{t:"No se puede tratar — tasa de mortalidad del 100%",c:false}],fb:"La naloxona (Narcan) es un antagonista opioide que puede revertir rápidamente la depresión respiratoria causada por heroína y otros opioides. Es el mismo antídoto usado en humanos. Síntomas: miosis, bradicardia, depresión respiratoria, sedación extrema.",tags:["tag-red:🔴 URGENCIA MÁXIMA","tag-blue:💉 Antídoto: Naloxona disponible"],human:"La heroína causa depresión respiratoria fatal en sobredosis. La naloxona también salva vidas humanas."},
+  {type:'drug',name:"Loperamida (Imodium)",emoji:"💊",bg:"linear-gradient(135deg,#0a2a1a,#1a4a30)",cat:"Antidiarreico · Medicamento doméstico común",q:"El Imodium (loperamida) ¿por qué es peligroso darlo a perros con ciertos genes?",opts:[{t:"Todos los perros metabolizan mal la loperamida",c:false},{t:"Perros con mutación MDR1/ABCB1 (razas como Collie) acumulan loperamida en el cerebro causando toxicidad grave",c:true},{t:"La loperamida es completamente segura para todos los perros",c:false},{t:"Solo causa constipación prolongada",c:false}],fb:"Perros con mutación MDR1 — frecuente en Collies, Border Collies, Pastores Australianos — no pueden bombear loperamida fuera del cerebro, causando acumulación y toxicidad del SNC: sedación profunda, ataxia y coma.",tags:["tag-red:🔴 Razas MDR1+: PELIGRO EXTREMO","tag-orange:🟠 Consultar veterinario antes"],human:"La loperamida es efectiva y segura para humanos porque no cruza la barrera hematoencefálica normalmente."},
+  {type:'drug',name:"Etanol (Alcohol etílico)",emoji:"🍺",bg:"linear-gradient(135deg,#1a0808,#3a1515)",cat:"Pisco, vino, cerveza · Chile",q:"¿Cuánto vino tinto podría causar coma en un gato doméstico de 4 kg?",opts:[{t:"Más de un vaso",c:false},{t:"Menos de 15ml (una cucharada sopera) — los gatos son extremadamente sensibles",c:true},{t:"Solo si es vino con mayor graduación",c:false},{t:"Los gatos metabolizan el alcohol de forma similar a los humanos",c:false}],fb:"Los gatos son extremadamente sensibles al etanol. Para un gato de 4 kg, 10-15ml de vino puede causar depresión del SNC, hipotermia, hipoglucemia y coma. La fuente más frecuente: derrames en fiestas.",tags:["tag-red:🔴 Gatos: EXTREMADAMENTE sensibles","tag-red:🔴 15ml de vino = emergencia"],human:"El alcohol etílico es un carcinógeno conocido y causa daño hepático crónico."},
+  {type:'drug',name:"Paracetamol (Tapsin · Panadol)",emoji:"💊",bg:"linear-gradient(135deg,#2a0a0a,#6a1515)",cat:"Analgésico OTC · LETAL para gatos",q:"El Tapsin o Panadol es el analgésico más vendido en Chile. ¿Por qué una sola tableta de 500mg puede matar a un gato adulto?",opts:[{t:"Los gatos son alérgicos al paracetamol",c:false},{t:"Los gatos carecen de la enzima para metabolizarlo — el metabolito NAPQI destruye glóbulos rojos y el hígado",c:true},{t:"Solo letal si el gato consume más de 3 tabletas",c:false},{t:"Porque causa falla renal como en humanos con sobredosis",c:false}],fb:"Una tableta de 500mg de paracetamol puede matar a un gato. Les falta la glucuronosiltransferasa (UGT1A6): el paracetamol se convierte en NAPQI que causa methemoglobinemia, hemólisis y necrosis hepática. Señales: encías marrones/azules, salivación intensa, dificultad respiratoria.",tags:["tag-red:🔴 UNA TABLETA = MORTAL para gatos","tag-red:🔴 Encías marrones/azules: signo inmediato"],human:"Seguro y efectivo para personas en dosis correctas. Hepatotóxico en sobredosis humana.",otros:"Aves, roedores y reptiles también son muy sensibles al paracetamol."},
+  {type:'drug',name:"Ibuprofeno (Brufen · Advil)",emoji:"💊",bg:"linear-gradient(135deg,#1a0a2a,#3a1560)",cat:"Antiinflamatorio AINE · OTC muy común",q:"El Ibuprofeno (Brufen 400mg) ¿qué doble daño causa específicamente en perros?",opts:[{t:"Solo daño hepático",c:false},{t:"Úlceras gastrointestinales sangrantes + insuficiencia renal aguda por bloqueo de prostaglandinas",c:true},{t:"Solo afecta al sistema nervioso causando convulsiones",c:false},{t:"En dosis bajas (5mg/kg) es completamente seguro",c:false}],fb:"Los AINEs bloquean las prostaglandinas que protegen la mucosa gástrica y regulan el flujo renal. En perros: dosis tóxica GI ~25mg/kg. Una pastilla de 400mg puede afectar a un perro de 15kg. Síntomas: vómitos con sangre, melena, letargo.",tags:["tag-red:🔴 Úlceras sangrantes + falla renal","tag-red:🔴 SIN margen seguro en gatos"],human:"Seguro en dosis correctas para humanos. Usar con protector gástrico si es necesario.",otros:"Los AINEs también son tóxicos para aves rapaces."},
+  {type:'drug',name:"Aspirina / Ácido acetilsalicílico",emoji:"💊",bg:"linear-gradient(135deg,#1a0a15,#3a1535)",cat:"Analgésico clásico · Riesgo extremo en gatos",q:"¿Por qué la Aspirina es especialmente peligrosa para gatos?",opts:[{t:"Los gatos son alérgicos al salicilato",c:false},{t:"En gatos la vida media es 37-38 horas vs 3h en humanos — se acumula causando toxicidad fatal",c:true},{t:"Solo la forma effervescente es peligrosa",c:false},{t:"Es igual de peligrosa en todas las especies",c:false}],fb:"La aspirina en gatos tiene vida media de 37-38 horas (vs 6h en perros, 3h en humanos) por deficiencia enzimática felina. Cada dosis se acumula sobre la anterior. Causa úlceras GI, acidosis metabólica e insuficiencia hepática.",tags:["tag-red:🔴 Gatos: vida media 38h — acumulación letal","tag-orange:🟠 Perros: úlceras GI frecuentes"],human:"La aspirina en dosis bajas (100mg/día) es usada en humanos para prevención cardiovascular."},
+  {type:'drug',name:"Diclofenaco crema (Voltaren gel)",emoji:"💊",bg:"linear-gradient(135deg,#0a1a2a,#1a3560)",cat:"Antiinflamatorio tópico · Riesgo por lamido",q:"Un gato duerme junto a su dueño que se aplicó crema Voltaren en la rodilla. ¿Hay riesgo real?",opts:[{t:"No — la concentración transdérmica es demasiado baja",c:false},{t:"Sí — los gatos al acicalarse al dueño ingieren diclofenaco que causa falla renal",c:true},{t:"Solo si el gato lame directamente la zona 5+ veces",c:false},{t:"Solo la forma oral es peligrosa",c:false}],fb:"El gel de Voltaren tiene alta biodisponibilidad transdérmica. Los gatos que lamen zonas tratadas ingieren diclofenaco causando falla renal aguda. Cubrir la zona tratada o mantener al gato separado mientras actúa el medicamento.",tags:["tag-red:🔴 Crema lamida = falla renal en gatos","tag-red:🔴 Cubrir la zona tratada siempre"],human:"Efectivo para dolores musculares. Seguro en uso tópico normal para personas.",otros:"Extremadamente tóxico para buitres — prohibido para uso veterinario en ganado en muchos países."},
+  {type:'drug',name:"Loratadina SIN pseudoefedrina (Clarityne)",emoji:"💊",bg:"linear-gradient(135deg,#0a1a1a,#1a3535)",cat:"Antihistamínico · Relativamente seguro en perros",q:"La Loratadina (Clarityne) ¿es segura para perros con alergias? ¿Cuál es el gran peligro oculto?",opts:[{t:"No — todos los antihistamínicos son altamente tóxicos",c:false},{t:"La loratadina sola es relativamente segura, pero el Clarityne-D (con pseudoefedrina) es LETAL",c:true},{t:"Solo segura en perros mayores de 2 años",c:false},{t:"Es igual de segura en todas sus presentaciones",c:false}],fb:"La Loratadina SOLA (0.5mg/kg) es relativamente segura en perros. PERO: Clarityne-D u otras versiones 'D' o 'Plus' contienen pseudoefedrina que es ALTAMENTE TÓXICA — causa taquicardia, hipertensión e hipertermia.",tags:["tag-green:✅ Loratadina SOLA: relativamente segura en perros","tag-red:🔴 Clarityne-D / con pseudoefedrina: LETAL"],human:"Loratadina es uno de los antihistamínicos más seguros para humanos."},
+  {type:'drug',name:"Omeprazol (Losec · Ulsen)",emoji:"💊",bg:"linear-gradient(135deg,#0a2a1a,#1a4a30)",cat:"Protector gástrico · Seguro bajo supervisión",q:"El Omeprazol (Losec) ¿puede un veterinario recetarlo a perros y gatos?",opts:[{t:"No — es exclusivo para humanos y tóxico para mascotas",c:false},{t:"Sí — es uno de los medicamentos humanos más frecuentemente usados en medicina veterinaria",c:true},{t:"Solo para perros grandes",c:false},{t:"Solo en urgencias, no para tratamientos prolongados",c:false}],fb:"El omeprazol es uno de los medicamentos humanos más transferibles a veterinaria. Se usa para tratar gastritis, úlceras y como protector gástrico. Dosis usual en perros: 0.5-1mg/kg/día. En gatos también es seguro bajo indicación veterinaria.",tags:["tag-green:✅ Uno de los más seguros bajo supervisión","tag-yellow:🟡 Sin indicación veterinaria puede enmascarar enfermedades"],human:"El omeprazol es el IBP más vendido en Chile. Esencial para reflujo y úlceras."},
+  {type:'drug',name:"Antidepresivos ISRS (Fluoxetina · Prozac)",emoji:"💊",bg:"linear-gradient(135deg,#1a0a2a,#3a1a5a)",cat:"Psicofármaco · Muy recetado en Chile",q:"Los antidepresivos ISRS como la Fluoxetina ¿qué síndrome peligroso causan en mascotas?",opts:[{t:"Solo sedación profunda",c:false},{t:"Síndrome serotoninérgico — exceso de serotonina que causa hipertermia, tremores y convulsiones",c:true},{t:"Son completamente seguros en dosis bajas",c:false},{t:"Solo causan pérdida temporal del apetito",c:false}],fb:"Los ISRS en perros y gatos causan síndrome serotoninérgico: hipertermia (>41°C), tremores musculares, agitación, vómitos, diarrea y convulsiones. La fluoxetina sí se usa en veterinaria para ansiedad pero en dosis muy controladas.",tags:["tag-red:🔴 Síndrome serotoninérgico = emergencia","tag-orange:🟠 Fluoxetina veterinaria: uso controlado sí existe"],human:"Los ISRS son el tratamiento de primera línea para depresión en Chile.",otros:"El síndrome serotoninérgico también ocurre en conejos, cobayos y hámsteres."},
+  {type:'drug',name:"Benzodiacepinas (Clonazepam · Rivotril)",emoji:"💊",bg:"linear-gradient(135deg,#1a1a2a,#3a3a6a)",cat:"Ansiolítico · Muy prescrito en Chile",q:"El Clonazepam (Rivotril) ¿qué efecto paradójico puede causar en gatos?",opts:[{t:"Sedación profunda idéntica a la de los humanos",c:false},{t:"Excitación paradójica y agresividad en lugar de sedación — y hepatotoxicidad en gatos",c:true},{t:"Es completamente seguro para gatos",c:false},{t:"Solo causa leve somnolencia pasajera",c:false}],fb:"Las benzodiacepinas en gatos pueden causar excitación paradójica (agitación, agresividad) en lugar de sedación. Además, el diazepam oral en gatos se ha asociado a necrosis hepática idiosincrática aguda y fatal. Guardar los Rivotril siempre bajo llave.",tags:["tag-red:🔴 Gatos: hepatotoxicidad idiosincrática fatal","tag-orange:🟠 Excitación paradójica"],human:"Las benzodiacepinas son tratamiento estándar para ansiedad en humanos. Alto potencial de dependencia.",otros:"Los conejos también muestran respuestas paradójicas a las benzodiacepinas."},
+  {type:'drug',name:"Morfina",emoji:"💉",bg:"linear-gradient(135deg,#1a0a15,#3a1535)",cat:"Opioide · Analgésico potente",q:"Las dosis humanas de morfina son peligrosas para los gatos. ¿Por qué?",opts:[{t:"Los gatos metabolizan la morfina igual que los humanos",c:false},{t:"Los gatos tienen deficiencia de glucuronosiltransferasa — no pueden metabolizar morfina eficientemente",c:true},{t:"La morfina es más segura en gatos que en perros",c:false},{t:"Solo las formas inyectables son peligrosas para los gatos",c:false}],fb:"Los gatos tienen una deficiencia enzimática importante en el sistema de glucuronidación (UGT1A6) que usan los humanos y perros para metabolizar morfina. Esto hace que los gatos acumulen metabolitos tóxicos.",tags:["tag-red:🔴 Gatos: metabolismo deficiente","tag-orange:🟠 Acumulación de metabolitos tóxicos"],human:"La morfina en sobredosis humana causa depresión respiratoria y coma."},
+  {type:'drug',name:"Metadona (Biodone)",emoji:"💊",bg:"linear-gradient(135deg,#1a1008,#3a2818)",cat:"Opioide de tratamiento · Larga duración",q:"La metadona ¿por qué es especialmente peligrosa para mascotas vs. otros opioides?",opts:[{t:"No es más peligrosa",c:false},{t:"Su vida media muy larga (24-36h) hace que los efectos tóxicos sean prolongados",c:true},{t:"La metadona es segura para perros en tratamiento supervisado",c:false},{t:"Es menos peligrosa porque actúa más lentamente",c:false}],fb:"La metadona tiene una vida media de 24-36 horas. En perros y gatos los efectos tóxicos persisten muchas más horas y pueden reaparecer tras tratar el primer episodio. Requiere hospitalización prolongada.",tags:["tag-red:🔴 Efectos duran 24-36 horas","tag-red:🔴 Hospitalización prolongada"],human:"La metadona tiene alto potencial de sobredosis fatal por su larga vida media."},
+  {type:'drug',name:"Tramadol",emoji:"💊",bg:"linear-gradient(135deg,#0a1a1a,#1a3a3a)",cat:"Analgésico opioide · Muy recetado en Chile",q:"El tramadol ¿por qué los gatos son especialmente vulnerables?",opts:[{t:"Los gatos tienen más receptores opioides",c:false},{t:"Los gatos no pueden metabolizar el tramadol eficientemente — se acumula causando neurotoxicidad",c:true},{t:"El tramadol es seguro para gatos — se usa veterinariamente sin problemas",c:false},{t:"Los gatos eliminan el tramadol muy rápido",c:false}],fb:"Los gatos tienen deficiencia en el sistema enzimático necesario para metabolizar el tramadol. Esto causa acumulación del fármaco provocando efectos opioides prolongados y efectos convulsivos. En perros el tramadol sí se usa con supervisión veterinaria.",tags:["tag-red:🔴 Gatos: acumulación y neurotoxicidad","tag-orange:🟠 Convulsiones posibles"],human:"El tramadol en sobredosis humana causa depresión respiratoria y convulsiones."},
+  {type:'drug',name:"Isopropanol (Alcohol de frotar)",emoji:"🧴",bg:"linear-gradient(135deg,#0a1a2a,#1a3050)",cat:"Antiséptico · Uso externo ÚNICAMENTE",q:"El alcohol de frotar (isopropanol 70%) ¿puede lamerse si queda en la piel de la mascota?",opts:[{t:"Sí — en la cantidad que queda al limpiar una herida es completamente seguro",c:false},{t:"No — impedir que lama la zona tratada; el isopropanol oral es 2-3 veces más tóxico que el etanol",c:true},{t:"Es completamente seguro tanto tópico como oral",c:false},{t:"Solo peligroso para gatos",c:false}],fb:"El isopropanol se metaboliza en acetona y es aproximadamente 2-3 veces más tóxico que el etanol como depresor del SNC. Los perros pueden exponerse al lamer vendajes tratados con alcohol. NUNCA usar para 'bajar la fiebre' frotando en mascotas.",tags:["tag-yellow:🟡 Tópico sobre herida: aceptable si se impide el lamido","tag-red:🔴 Si lame: urgencia veterinaria"],human:"El alcohol 70% es el antiséptico estándar para heridas humanas."},
+  {type:'drug',name:"Hachís / Cannabis concentrado",emoji:"🟫",bg:"linear-gradient(135deg,#1a1008,#3a2a12)",cat:"Cannabis · Concentrado",q:"El hachís y los concentrados de cannabis ¿son más peligrosos que la marihuana herbal?",opts:[{t:"No — el THC es el mismo compuesto independiente de la presentación",c:false},{t:"Sí — pueden contener 5-10 veces más THC que la marihuana herbal",c:true},{t:"Son más seguros porque se administran en menor cantidad",c:false},{t:"Solo los concentrados en aceite son más peligrosos",c:false}],fb:"El hachís concentra 20-40% de THC vs. 5-15% de la marihuana herbal. Los concentrados modernos pueden tener 60-90% de THC. Para las mascotas, cantidades mucho menores pueden causar intoxicación severa.",tags:["tag-red:🔴 5-10x más THC que marihuana herbal","tag-red:🔴 Edibles: dosis impredecible"],human:"Los concentrados de cannabis han aumentado dramáticamente las hospitalizaciones en países donde se ha legalizado."},
+];
+
+// ══════════════════════════════════════════════════════
+// ✅ FIX PRINCIPAL: BANCO POISONS (10 preguntas)
+// ══════════════════════════════════════════════════════
+const POISONS = [
+  {
+    type:'poison', name:"Brodifacoum (Ratonik · Klerat)", emoji:"🐀",
+    bg:"linear-gradient(135deg,#1a0500,#4a1008)",
+    cat:"Raticida anticoagulante · Muy común Chile",
+    q:"El Brodifacoum es el raticida más usado en Chile. ¿Por qué los síntomas aparecen 2-5 días DESPUÉS de la ingestión?",
+    opts:[
+      {t:"Porque el veneno se absorbe muy lentamente por el intestino",c:false},
+      {t:"Porque agota los factores de coagulación existentes — el animal muere de hemorragia interna cuando se acaban",c:true},
+      {t:"Porque actúa primero en el hígado antes de pasar al torrente sanguíneo",c:false},
+      {t:"Los síntomas son inmediatos — aparecen en menos de 1 hora",c:false}
+    ],
+    fb:"El Brodifacoum bloquea la vitamina K1, necesaria para producir nuevos factores de coagulación. Los factores existentes duran 2-5 días, por eso el animal parece bien al principio. Cuando se agotan, comienza la hemorragia interna. Encías pálidas y letargo son señales de alarma temprana. Antídoto: Vitamina K1 oral por 4-6 semanas bajo supervisión veterinaria.",
+    tags:["tag-red:🔴 Síntomas tardíos 2-5 días — actuar igual","tag-blue:💉 Antídoto: Vitamina K1 — 4-6 semanas"],
+    human:"Peligroso para humanos y fauna silvestre. Búhos y rapaces que comen ratas envenenadas también mueren (toxicidad por relay)."
+  },
+  {
+    type:'poison', name:"Etilenglicol (Anticongelante)", emoji:"🚗",
+    bg:"linear-gradient(135deg,#0a0a2a,#1a1a5a)",
+    cat:"Anticongelante · Sabor dulce · Mortal",
+    q:"El anticongelante tiene sabor dulce que atrae a gatos. ¿Cuánto tiempo tiene un gato para recibir antídoto antes de daño renal irreversible?",
+    opts:[
+      {t:"24 horas — hay tiempo suficiente para buscar veterinario al día siguiente",c:false},
+      {t:"Solo 3-4 horas — después el daño renal es irreversible",c:true},
+      {t:"72 horas — los síntomas son lentos",c:false},
+      {t:"Los gatos son más resistentes que los perros al anticongelante",c:false}
+    ],
+    fb:"El etilenglicol se metaboliza en ácido oxálico que cristaliza en los túbulos renales destruyéndolos. En gatos la ventana es SOLO 3-4 horas. En perros 8-12 horas. La 'mejoría' aparente tras la borrachera inicial es una trampa — el daño sigue progresando. Señal temprana: el animal parece borracho. Antídoto: fomepizol o etanol IV — solo en clínica veterinaria.",
+    tags:["tag-red:🔴 GATOS: solo 3-4 horas de ventana","tag-red:🔴 Sabor dulce atrae especialmente a mascotas"],
+    human:"Tóxico también para humanos. Ha sido usado en envenenamientos intencionales por su sabor dulce e incoloro."
+  },
+  {
+    type:'poison', name:"Metaldehído (Cebo babosas · Metarex)", emoji:"🐌",
+    bg:"linear-gradient(135deg,#1a1a0a,#3a3a15)",
+    cat:"Plaguicida · Jardines y huertos chilenos",
+    q:"El Metarex (cebo para babosas) tiene forma de granitos azules/verdes atractivos. ¿Qué sistema afecta principalmente?",
+    opts:[
+      {t:"El sistema digestivo — provoca úlceras gastrointestinales",c:false},
+      {t:"El sistema nervioso central — convulsiones continuas que pueden ser fatales en horas",c:true},
+      {t:"Solo irrita la boca y garganta",c:false},
+      {t:"El sistema renal — falla renal progresiva en 48 horas",c:false}
+    ],
+    fb:"El metaldehído causa convulsiones continuas (status epilepticus) por inhibición del GABA en el SNC. Los síntomas aparecen en 30 minutos a 3 horas: temblores, babeo intenso, hipersalivación, hipertermia y convulsiones que pueden ser fatales. Los gránulos azules/verdes parecen alimento para mascotas curiosas.",
+    tags:["tag-red:🔴 Convulsiones en 30-180 minutos","tag-red:🔴 Sin antídoto — urgencia máxima"],
+    human:"Tóxico también para niños que confunden los gránulos con dulces."
+  },
+  {
+    type:'poison', name:"Permetrina / Piretroides (Advantix)", emoji:"🦟",
+    bg:"linear-gradient(135deg,#1a0a2a,#3a1a5a)",
+    cat:"Insecticida antipulgas · LETAL para gatos",
+    q:"Un gato convive con un perro al que se le aplicó Advantix antipulgas. ¿Existe riesgo real para el gato?",
+    opts:[
+      {t:"No — los productos para perros no afectan a los gatos del mismo hogar",c:false},
+      {t:"Sí — el gato al acicalarse al perro o frotarse ingiere permetrina que es extremadamente tóxica para gatos",c:true},
+      {t:"Solo si el gato lame directamente el punto de aplicación reciente",c:false},
+      {t:"La permetrina solo es tóxica para insectos",c:false}
+    ],
+    fb:"La permetrina es LETAL para gatos aunque sea bien tolerada por perros. Los gatos carecen de glucuronil transferasa para metabolizarla. Al acicalarse mutuamente, el gato ingiere permetrina causando temblores severos, convulsiones, hipertermia y muerte. Separar al perro del gato mínimo 24-48h tras aplicar Advantix.",
+    tags:["tag-red:🔴 LETAL para gatos — separar 48h tras aplicar en perro","tag-red:🔴 Nunca aplicar productos de perro en gatos"],
+    human:"Segura en uso correcto para humanos. Usada en mosquiteros y ropa de trekking."
+  },
+  {
+    type:'poison', name:"Organofosforados (Clorpirifos · Malatión)", emoji:"🌾",
+    bg:"linear-gradient(135deg,#0a2a0a,#1a4a15)",
+    cat:"Insecticida agrícola · Zonas rurales Chile",
+    q:"Los organofosforados inhiben la acetilcolinesterasa. ¿Qué signo clínico característico permite sospechar esta intoxicación?",
+    opts:[
+      {t:"Pupilas muy dilatadas (midriasis) y taquicardia",c:false},
+      {t:"Pupilas muy contraídas (miosis), salivación excesiva, diarrea y convulsiones — síndrome muscarínico",c:true},
+      {t:"Solo convulsiones sin otros signos",c:false},
+      {t:"Hemorragias espontáneas como los anticoagulantes",c:false}
+    ],
+    fb:"Los organofosforados acumulan acetilcolina causando el síndrome SLUDGE: Salivación, Lagrimeo, Urinación, Defecación, vómito Gastrointestinal, Emesis. Más miosis, bradicardia y convulsiones. Antídoto específico: Atropina + Pralidoxima.",
+    tags:["tag-red:🔴 Síndrome SLUDGE — reconocerlo salva vidas","tag-blue:💉 Antídoto: Atropina + Pralidoxima"],
+    human:"Los organofosforados fueron base de armas químicas (gas nervioso). Intoxicaciones frecuentes en trabajadores agrícolas."
+  },
+  {
+    type:'poison', name:"Fosfuro de Zinc (Rodenticida)", emoji:"💀",
+    bg:"linear-gradient(135deg,#1a1a08,#3a3a10)",
+    cat:"Rodenticida · Zonas rurales · Doble peligro",
+    q:"El Fosfuro de Zinc es especialmente peligroso porque representa riesgo no solo para la mascota sino también para...",
+    opts:[
+      {t:"Solo para la mascota — no hay riesgo para las personas cercanas",c:false},
+      {t:"El veterinario y dueño — el estómago del animal intoxicado produce gas fosfina tóxico al vomitar",c:true},
+      {t:"Solo para otras mascotas del hogar",c:false},
+      {t:"El medio ambiente por contaminación del suelo únicamente",c:false}
+    ],
+    fb:"El Fosfuro de Zinc reacciona con el ácido gástrico produciendo gas fosfina (PH3), altamente tóxico. Si el veterinario induce el vómito sin protección, él mismo puede intoxicarse. Informar SIEMPRE al veterinario qué tóxico ingirió el animal.",
+    tags:["tag-red:🔴 Gas fosfina: peligro para veterinario y dueño","tag-red:🔴 NO inducir vómito en casa"],
+    human:"El gas fosfina también es tóxico para humanos — requiere atención en área ventilada."
+  },
+  {
+    type:'poison', name:"Lejía / Hipoclorito de Sodio", emoji:"🧴",
+    bg:"linear-gradient(135deg,#0a1a2a,#1a3a5a)",
+    cat:"Limpiador doméstico · Concentración importa",
+    q:"La lejía doméstica al 3-5% y la lejía concentrada al 10%+ ¿representan la misma peligrosidad?",
+    opts:[
+      {t:"Sí — cualquier concentración de hipoclorito es igualmente peligrosa",c:false},
+      {t:"No — la doméstica diluida irrita mucosas; la concentrada puede causar quemaduras graves en boca y esófago",c:true},
+      {t:"La lejía nunca es peligrosa para mascotas",c:false},
+      {t:"Solo peligrosa para gatos",c:false}
+    ],
+    fb:"La lejía doméstica (3-5%) representa riesgo moderado — principalmente irritación de mucosas si se lame. La lejía concentrada (10%+ industrial) puede causar quemaduras químicas graves. Nunca mezclar lejía con amoníaco o vinagre — produce gases tóxicos.",
+    tags:["tag-orange:🟠 Doméstica diluida: irritación mucosas","tag-red:🔴 Concentrada: quemaduras químicas graves"],
+    human:"La mezcla lejía + amoníaco produce gas cloramina tóxico para humanos también. Nunca mezclar productos de limpieza."
+  },
+  {
+    type:'poison', name:"Paraquat (Herbicida · Gramoxone)", emoji:"🌿",
+    bg:"linear-gradient(135deg,#0a2a05,#1a4a10)",
+    cat:"Herbicida agrícola · Sin antídoto efectivo",
+    q:"El Paraquat (Gramoxone) tiene una característica única que lo hace especialmente temido. ¿Cuál es?",
+    opts:[
+      {t:"Es el más rápido en causar síntomas — actúa en menos de 1 hora",c:false},
+      {t:"No tiene antídoto efectivo y causa destrucción pulmonar progresiva e irreversible",c:true},
+      {t:"Solo es tóxico para aves",c:false},
+      {t:"Solo tóxico por inhalación, no por ingestión",c:false}
+    ],
+    fb:"El Paraquat genera radicales libres que destruyen el tejido pulmonar progresivamente durante días o semanas. No existe antídoto efectivo. Incluso con tratamiento intensivo la mortalidad es muy alta. El oxígeno suplementario puede EMPEORAR el daño.",
+    tags:["tag-red:🔴 SIN antídoto efectivo — mortalidad muy alta","tag-red:🔴 Destrucción pulmonar irreversible progresiva"],
+    human:"El paraquat ha sido utilizado en suicidios. Alta mortalidad humana incluso con tratamiento en UCI."
+  },
+  {
+    type:'poison', name:"Naftalina (Bolas antimoth)", emoji:"🦋",
+    bg:"linear-gradient(135deg,#1a1a2a,#3a3a5a)",
+    cat:"Producto doméstico · Cajones y armarios",
+    q:"Las bolas de naftalina en cajones con ropa ¿pueden intoxicar a una mascota que duerme cerca del armario?",
+    opts:[
+      {t:"No — solo son peligrosas si se ingieren directamente",c:false},
+      {t:"Sí — los vapores de naftalina se acumulan y son tóxicos por inhalación crónica",c:true},
+      {t:"Solo peligrosas para gatos",c:false},
+      {t:"Completamente seguras — el olor solo molesta",c:false}
+    ],
+    fb:"Las bolas de naftalina liberan vapores de naftaleno o paradiclorobenceno continuamente. La exposición crónica por inhalación causa anemia hemolítica, daño hepático y neurológico. Los gatos que duermen en armarios son especialmente vulnerables. Si el animal ingiere una bola directamente: urgencia veterinaria inmediata.",
+    tags:["tag-orange:🟠 Vapores crónicos: anemia hemolítica","tag-red:🔴 Ingestión directa: urgencia inmediata"],
+    human:"Los vapores de naftalina también afectan a humanos con exposición prolongada."
+  },
+  {
+    type:'poison', name:"Ácido Bórico / Bórax (Veneno cucarachas)", emoji:"🪳",
+    bg:"linear-gradient(135deg,#1a1a0a,#3a3518)",
+    cat:"Insecticida doméstico · Uso muy extendido",
+    q:"Las trampas caseras de ácido bórico para cucarachas ¿representan riesgo para mascotas?",
+    opts:[
+      {t:"No — el ácido bórico no se absorbe en mamíferos",c:false},
+      {t:"Sí — la ingestión repetida causa daño renal, neurológico y dermatitis en perros y gatos",c:true},
+      {t:"Solo peligroso en polvo puro, las trampas mezcladas con alimento son seguras",c:false},
+      {t:"Solo afecta a insectos — completamente seguro para mamíferos",c:false}
+    ],
+    fb:"El ácido bórico en trampas para cucarachas (mezclado con azúcar o mantequilla de maní) puede ser ingerido por mascotas. La ingestión repetida acumula boro causando vómitos, diarrea, temblores, dermatitis en patas y hocico y daño renal. Colocar trampas solo en lugares completamente inaccesibles.",
+    tags:["tag-orange:🟠 Acumulación crónica — daño renal y neurológico","tag-yellow:🟡 Colocar trampas en lugares inaccesibles"],
+    human:"El ácido bórico en dosis altas también es tóxico para humanos. Los niños que acceden a trampas pueden intoxicarse."
+  },
+];
+
+// ══════════════════════════════════════════════════════
+// PLANTAS SEGURAS (9)
+// ══════════════════════════════════════════════════════
+const SAFE_PLANTS = [
+  {type:'plant',name:"Calatea (Calathea spp.) ✅ SEGURA",emoji:"🌿",bg:"linear-gradient(135deg,#0a2a15,#1a5a30)",cat:"Planta tropical ornamental · Pet-friendly confirmada",q:"La Calatea de hojas decorativas ¿es segura para hogares con perros y gatos?",opts:[{t:"No — todas las plantas tropicales contienen oxalatos similares al Pothos",c:false},{t:"Sí — la ASPCA la lista como no tóxica para perros y gatos",c:true},{t:"Solo segura si está fuera del alcance de las mascotas",c:false},{t:"Solo para perros — los gatos deben evitarla",c:false}],fb:"¡La Calatea es completamente pet-friendly! La ASPCA la lista como no tóxica para perros y gatos. Es una de las mejores alternativas decorativas al Pothos o Filodendro.",tags:["tag-green:✅ NO TÓXICA — recomendada para hogares con mascotas","tag-yellow:🟡 Ingestión excesiva: leve malestar digestivo"],human:"Completamente segura para humanos."},
+  {type:'plant',name:"Helecho de Boston ✅ SEGURO",emoji:"🌿",bg:"linear-gradient(135deg,#0a2a10,#1a4820)",cat:"Helecho colgante · No tóxico confirmado",q:"El Helecho de Boston ¿comparte la toxicidad de otros helechos como el Helecho macho?",opts:[{t:"Sí — todos los helechos contienen tiaminasa",c:false},{t:"No — el Helecho de Boston es no tóxico para perros y gatos",c:true},{t:"Solo las esporas son peligrosas",c:false},{t:"Es tóxico para gatos pero seguro para perros",c:false}],fb:"El Helecho de Boston (Nephrolepis exaltata) es no tóxico para perros y gatos según la ASPCA. Importante distinción: el Helecho macho (Dryopteris) SÍ contiene filixinato que es tóxico.",tags:["tag-green:✅ NO TÓXICO para perros y gatos","tag-yellow:🟡 No confundir con Helecho macho (sí tóxico)"],human:"Inofensivo para humanos."},
+  {type:'plant',name:"Orquídea Phalaenopsis ✅ SEGURA",emoji:"🌸",bg:"linear-gradient(135deg,#2a0a25,#5a1850)",cat:"Flor ornamental · Muy vendida en Chile",q:"Las Orquídeas Phalaenopsis ¿son de la misma familia que los Lirios letales?",opts:[{t:"Sí — son Liliaceae igual que los Lirios",c:false},{t:"No — son Orchidaceae, familia diferente, y son no tóxicas para perros y gatos",c:true},{t:"Solo las flores son tóxicas",c:false},{t:"Solo peligrosas para gatos",c:false}],fb:"Las Orquídeas Phalaenopsis pertenecen a la familia Orchidaceae, completamente diferente de los Lirios (Liliaceae). Son no tóxicas para perros y gatos según la ASPCA. Los pesticidas comerciales representan mayor riesgo que la planta en sí — lavar las hojas al comprar.",tags:["tag-green:✅ NO TÓXICA — segura para perros y gatos","tag-yellow:🟡 Pesticidas comerciales: lavar hojas al comprar"],human:"Completamente segura para humanos."},
+  {type:'plant',name:"Echeveria y suculentas roseta ✅ SEGURAS",emoji:"🪴",bg:"linear-gradient(135deg,#1a2a0a,#3a5018)",cat:"Suculentas ornamentales · Pet-friendly",q:"Las Echeverias ¿son una buena alternativa al Aloe Vera para hogares con mascotas?",opts:[{t:"No — todas las suculentas son igualmente tóxicas",c:false},{t:"Sí — las Echeverias son no tóxicas, a diferencia del Aloe Vera que sí lo es",c:true},{t:"Son seguras solo para perros",c:false},{t:"Solo las Echeverias verdes son seguras",c:false}],fb:"Las Echeverias y la mayoría de suculentas roseta son no tóxicas para mascotas — al contrario del Aloe Vera y la Kalanchoe. Son plantas ideales para hogares con mascotas.",tags:["tag-green:✅ Echeveria: no tóxica — alternativa al Aloe Vera","tag-yellow:🟡 Espinas: riesgo físico leve en animales curiosos"],human:"Completamente seguras para humanos."},
+  {type:'plant',name:"Hierba gatera / Catnip ✅ SEGURA",emoji:"😸",bg:"linear-gradient(135deg,#1a0a2a,#3a1a5a)",cat:"Planta especial para gatos · Completamente segura",q:"La Hierba gatera que causa euforia en gatos ¿puede generar adicción o daño físico?",opts:[{t:"Sí — el nepetalactona crea dependencia neurológica",c:false},{t:"No — es completamente segura, el efecto es inofensivo, temporal y no genera adicción",c:true},{t:"Solo segura en adultos — los gatitos menores de 6 meses no deben exponerse",c:false},{t:"Puede dañar el hígado con uso frecuente",c:false}],fb:"La hierba gatera (Nepeta cataria) es completamente segura. El nepetalactona activa receptores felinos causando euforia temporal (5-15 min) sin daño físico ni adicción. Solo el 65-70% de los gatos responde (genéticamente determinado).",tags:["tag-green:✅ COMPLETAMENTE SEGURA — sin adicción ni daño","tag-yellow:🟡 Ingestión excesiva: leve malestar digestivo"],human:"El nepetalactona tiene propiedades repelentes de insectos para humanos."},
+  {type:'plant',name:"Bambú real ✅ SEGURO",emoji:"🎍",bg:"linear-gradient(135deg,#0a2a10,#1a5020)",cat:"Planta exterior · NO confundir con Dracena",q:"El bambú de jardín ¿es la misma planta que el 'Bambú de la suerte' de las floristerías?",opts:[{t:"Sí — son la misma planta",c:false},{t:"No — el bambú real es no tóxico; el 'de la suerte' es una Dracena tóxica para gatos",c:true},{t:"El bambú real es más tóxico que el de la suerte",c:false},{t:"Ambos son completamente seguros",c:false}],fb:"El Bambú real (familia Bambusoideae) es no tóxico para mascotas. El 'Bambú de la suerte' es en realidad Dracaena sanderiana — una planta diferente que SÍ es tóxica para gatos.",tags:["tag-green:✅ Bambú REAL: seguro","tag-red:🔴 'Bambú de la suerte' = Dracena: tóxico para gatos"],human:"Los brotes de bambú son comestibles para humanos después de hervir."},
+  {type:'plant',name:"Pilea peperomioides ✅ SEGURA",emoji:"🪴",bg:"linear-gradient(135deg,#0a2a0a,#1a4518)",cat:"Planta de interior de moda · Pet-friendly",q:"La Pilea peperomioides ¿es una alternativa segura al Pothos?",opts:[{t:"No — también contiene oxalatos de calcio como el Pothos",c:false},{t:"Sí — la Pilea es no tóxica para perros y gatos, a diferencia del Pothos",c:true},{t:"Solo segura si se mantiene en altura",c:false},{t:"Es tóxica en la misma medida que la Planta de Jade",c:false}],fb:"La Pilea peperomioides es no tóxica para mascotas — una excelente alternativa al Pothos o Filodendro. No contiene oxalatos de calcio como esas plantas.",tags:["tag-green:✅ NO TÓXICA — excelente alternativa al Pothos","tag-yellow:🟡 Sustrato con pesticidas: mayor riesgo que la planta"],human:"Completamente segura para humanos."},
+  {type:'plant',name:"Caléndula ✅ SEGURA",emoji:"🌼",bg:"linear-gradient(135deg,#2a2a00,#5a5010)",cat:"Flor medicinal · Jardines chilenos",q:"La Caléndula de flores naranjas ¿puede confundirse con plantas peligrosas del mismo nombre?",opts:[{t:"No — todas las plantas llamadas 'Marigold' son igualmente seguras",c:false},{t:"Sí — Calendula officinalis es segura, pero el 'Marigold africano' (Tagetes) puede irritar levemente",c:true},{t:"La Caléndula es altamente tóxica",c:false},{t:"Solo las flores son seguras, las hojas son tóxicas",c:false}],fb:"La Calendula officinalis es no tóxica para mascotas. Distinción importante: el 'Marigold africano' (Tagetes) puede causar irritación gastrointestinal leve. Siempre verificar el nombre científico.",tags:["tag-green:✅ Calendula officinalis: segura","tag-yellow:🟡 No confundir con Tagetes (Marigold africano)"],human:"La caléndula es medicinal para humanos: antiinflamatoria y cicatrizante."},
+  {type:'plant',name:"Romero ✅ SEGURO en planta",emoji:"🌿",bg:"linear-gradient(135deg,#0a2a15,#1a4a28)",cat:"Hierba aromática · Jardín y cocina",q:"El Romero del jardín ¿es el aceite esencial de Romero igualmente seguro para los gatos?",opts:[{t:"Sí — el aceite esencial es una versión igualmente segura",c:false},{t:"No — la planta fresca es segura; el aceite esencial concentrado puede ser irritante y tóxico para gatos",c:true},{t:"Ambos son completamente tóxicos para mascotas",c:false},{t:"El aceite esencial es más seguro porque está diluido",c:false}],fb:"El Romero en jardín o maceta es generalmente seguro para perros y gatos. Sin embargo, el ACEITE ESENCIAL de romero concentrado (difusores, aplicación directa) es problemático para gatos — no metabolizan bien los terpenos.",tags:["tag-green:✅ Planta fresca: segura en cantidades normales","tag-red:🔴 Aceite esencial concentrado: evitar en hogares con gatos"],human:"El romero es ampliamente usado en gastronomía chilena."},
+];
+
+// ══════════════════════════════════════════════════════
+// ALIMENTOS SEGUROS (15)
+// ══════════════════════════════════════════════════════
+const SAFE_FOODS = [
+  {type:'food',name:"Pollo hervido sin huesos ni condimentos ✅",emoji:"🍗",bg:"linear-gradient(135deg,#2a1a05,#5a3a10)",cat:"Proteína base · Dieta blanda veterinaria",q:"El pollo hervido sin condimentos ¿por qué es lo primero que recetan los veterinarios en diarrea?",opts:[{t:"Porque el pollo tiene antibióticos naturales",c:false},{t:"Porque es una proteína altamente digestible, hipoalergénica y de bajo residuo",c:true},{t:"Solo sirve para perros",c:false},{t:"Solo si se combina con arroz blanco",c:false}],fb:"El pollo hervido (sin piel, sin huesos, sin sal, sin ajo) es la proteína estándar de dieta blanda por su alta digestibilidad y bajo contenido graso.",tags:["tag-green:✅ Proteína ideal para dieta blanda","tag-yellow:🟡 En exceso crónico: déficit de calcio y taurina en gatos"],human:"Proteína de alta calidad para humanos también."},
+  {type:'food',name:"Zanahoria cruda ✅",emoji:"🥕",bg:"linear-gradient(135deg,#2a1500,#5a3008)",cat:"Snack vegetal · Bajo en calorías",q:"Las zanahorias crudas ¿qué beneficio adicional tienen para perros más allá de ser bajas en calorías?",opts:[{t:"Tienen vitamina C que los perros necesitan diariamente",c:false},{t:"El masticarlas actúa como cepillo dental natural reduciendo el sarro",c:true},{t:"Contienen enzimas digestivas que mejoran la absorción de proteínas",c:false},{t:"Solo beneficiosas cocidas",c:false}],fb:"La zanahoria cruda es uno de los mejores snacks para perros: baja en calorías, rica en betacaroteno, fibra y agua. El masticarla ayuda mecánicamente a reducir sarro dental.",tags:["tag-green:✅ Snack ideal: bajo en calorías y limpia dientes","tag-yellow:🟡 Diabéticos: limitar por fructosa"],human:"Rica en vitamina A y betacaroteno para humanos."},
+  {type:'food',name:"Arándanos (Blueberries) ✅",emoji:"🫐",bg:"linear-gradient(135deg,#1a0a2a,#3a1a5a)",cat:"Fruta antioxidante · Superalimento",q:"Los arándanos ¿aportan beneficios reales a la salud de los perros?",opts:[{t:"Solo son un snack seguro sin beneficios reales",c:false},{t:"Sí — estudios muestran beneficios antioxidantes reales incluyendo salud cognitiva",c:true},{t:"Solo beneficiosos para gatos",c:false},{t:"Solo si son orgánicos",c:false}],fb:"Los arándanos son un superalimento también para mascotas: ricos en antioxidantes (antocianinas), vitaminas C y K, fibra y manganeso. Seguros para perros y gatos. En exceso pueden causar diarrea suave.",tags:["tag-green:✅ Antioxidantes reales para mascotas","tag-yellow:🟡 Diabéticos: limitar cantidad"],human:"Superfood bien documentado para humanos."},
+  {type:'food',name:"Arroz blanco hervido sin sal ✅",emoji:"🍚",bg:"linear-gradient(135deg,#1a1a1a,#3a3a3a)",cat:"Carbohidrato digestivo · Dieta blanda",q:"El arroz blanco cocido ¿es mejor o peor que el arroz integral para perros con diarrea?",opts:[{t:"El integral es mejor siempre — más fibra ayuda",c:false},{t:"El blanco es mejor en este caso — menos fibra y más digestible, ideal para intestino irritado",c:true},{t:"Ambos son igual de efectivos",c:false},{t:"Ninguno ayuda realmente",c:false}],fb:"El arroz blanco hervido SIN sal es el carbohidrato estándar en dieta blanda veterinaria. Menos fibra que el integral = menos irritación del intestino inflamado.",tags:["tag-green:✅ Carbohidrato ideal para diarrea aguda","tag-yellow:🟡 Alto índice glucémico: limitar en diabéticos y obesos"],human:"El arroz blanco es el alimento más consumido del mundo."},
+  {type:'food',name:"Pepino fresco ✅",emoji:"🥒",bg:"linear-gradient(135deg,#0a2a10,#1a4820)",cat:"Verdura hidratante · Snack bajo calorías",q:"El pepino es especialmente útil para perros en verano chileno. ¿Por qué?",opts:[{t:"Porque tiene vitamina C que los perros no producen naturalmente",c:false},{t:"Porque es 95% agua, muy bajo en calorías e hidratante — ideal para días de calor",c:true},{t:"Porque tiene enzimas que mejoran la digestión",c:false},{t:"Solo útil si está frío de la refrigeradora",c:false}],fb:"El pepino fresco es 95% agua, muy bajo en calorías. Excelente snack de verano especialmente para perros activos o con sobrepeso.",tags:["tag-green:✅ Hidratante y bajo en calorías — ideal snack de verano","tag-yellow:🟡 Exceso: leve malestar digestivo"],human:"Refrescante y muy bajo en calorías. Ideal en dietas de control de peso."},
+  {type:'food',name:"Sandía sin semillas ni cáscara ✅",emoji:"🍉",bg:"linear-gradient(135deg,#2a0a10,#5a1525)",cat:"Fruta de verano · Hidratante",q:"La sandía ¿qué partes deben retirarse antes de dársela a las mascotas?",opts:[{t:"Solo la cáscara verde",c:false},{t:"Las semillas (pueden obstruir intestinos) y la cáscara verde (difícil digestión y puede causar diarrea)",c:true},{t:"Solo las semillas negras — las blancas son inofensivas",c:false},{t:"Ninguna parte — toda la sandía es completamente segura",c:false}],fb:"La pulpa roja de sandía (92% agua) es segura para perros y gatos. Retirar: 1) Semillas negras — pueden causar obstrucción intestinal. 2) Cáscara verde — difícil digestión y puede causar diarrea.",tags:["tag-green:✅ Pulpa roja: segura y muy hidratante","tag-yellow:🟡 Retirar semillas y cáscara siempre"],human:"La sandía es la fruta favorita del verano chileno."},
+  {type:'food',name:"Mantequilla de maní SIN XILITOL ✅",emoji:"🥜",bg:"linear-gradient(135deg,#2a1500,#5a3010)",cat:"Premio popular · VERIFICAR ingredientes",q:"La mantequilla de maní ¿cuál es el peligro oculto que debes verificar SIEMPRE?",opts:[{t:"El maní en sí es tóxico para los perros",c:false},{t:"Algunas marcas 'naturales' o 'light' usan XILITOL como edulcorante — mortal para perros",c:true},{t:"Solo la mantequilla de maní con sal es peligrosa",c:false},{t:"Es tóxica para gatos pero segura para perros en cualquier marca",c:false}],fb:"La mantequilla de maní SIN XILITOL es segura para perros. El PELIGRO: marcas 'natural', 'light', 'keto' o 'sin azúcar' usan xilitol que es mortal. Verificar ingredientes: solo debe decir 'maní' o 'maní y sal'.",tags:["tag-green:✅ Sin xilitol: segura y útil para dar medicamentos","tag-red:🔴 SIEMPRE verificar que no contenga xilitol"],human:"Rica en proteínas vegetales y grasas saludables para humanos."},
+  {type:'food',name:"Huevo cocido ✅",emoji:"🥚",bg:"linear-gradient(135deg,#2a2a05,#5a5010)",cat:"Proteína completa · Cocinado siempre",q:"¿El huevo crudo o cocido es más seguro para perros y gatos?",opts:[{t:"El crudo — la cocción destruye enzimas importantes",c:false},{t:"El cocido — el crudo tiene avidina que bloquea vitamina B7 y riesgo de Salmonella",c:true},{t:"Son igualmente seguros",c:false},{t:"Ambos son peligrosos",c:false}],fb:"El huevo cocido (revuelto, hervido, pochado) es una fuente proteica excelente: todos los aminoácidos esenciales, vitaminas A, B12, riboflavina, selenio. El CRUDO tiene: avidina que bloquea biotina con exposición crónica y riesgo de Salmonella.",tags:["tag-green:✅ Cocido: proteína completa excelente","tag-yellow:🟡 Crudo: Avidina + Salmonella"],human:"El huevo es uno de los alimentos más nutritivos y económicos para humanos."},
+  {type:'food',name:"Zapallo/Calabaza cocido ✅",emoji:"🎃",bg:"linear-gradient(135deg,#2a1500,#5a2a08)",cat:"Vegetal regulador digestivo",q:"El zapallo cocido ¿cómo puede ayudar tanto en diarrea COMO en estreñimiento?",opts:[{t:"No puede — solo ayuda con el estreñimiento",c:false},{t:"Su fibra soluble regula bidireccionalmente: absorbe agua en diarrea y suaviza en estreñimiento",c:true},{t:"Solo sirve para perros",c:false},{t:"El efecto depende de la cantidad",c:false}],fb:"El zapallo/calabaza cocido puro (sin azúcar, sin especias) es un regulador digestivo bidireccional gracias a su fibra soluble (pectina). Rico en betacaroteno y vitaminas A y C. 1-2 cucharadas mezcladas al alimento.",tags:["tag-green:✅ Regulador digestivo bidireccional natural","tag-yellow:🟡 Exceso crónico: hipervitaminosis A en gatos"],human:"El zapallo es alimento básico de la dieta chilena."},
+  {type:'food',name:"Frutillas / Fresas ✅",emoji:"🍓",bg:"linear-gradient(135deg,#2a0510,#5a1020)",cat:"Fruta chilena popular · Temporada verano",q:"Las frutillas ¿son un snack seguro para perros y gatos?",opts:[{t:"No — todas las frutas de color rojo brillante contienen pigmentos tóxicos",c:false},{t:"Sí para perros — en gatos con moderación ya que no procesan bien los azúcares de frutas",c:true},{t:"Solo las frutillas orgánicas son seguras",c:false},{t:"Completamente seguras en cualquier cantidad",c:false}],fb:"Las frutillas son seguras y ricas en vitamina C y antioxidantes para perros. En gatos son seguras también pero los gatos son carnívoros obligados — darlas en cantidad moderada. Lavar bien para eliminar pesticidas.",tags:["tag-green:✅ Seguras para perros","tag-yellow:🟡 Gatos: moderación · Diabéticos: limitar"],human:"Ricas en vitamina C y antioxidantes. Las frutillas chilenas son una de las exportaciones agrícolas más importantes."},
+  {type:'food',name:"Manzana sin semillas ✅ SEGURA (pulpa)",emoji:"🍎",bg:"linear-gradient(135deg,#2a0808,#5a1515)",cat:"Fruta común · Semillas peligrosas",q:"En la manzana ¿qué parte específica contiene cianuro y debe eliminarse siempre?",opts:[{t:"La cáscara roja — contiene pectina que libera cianuro",c:false},{t:"Las semillas y el corazón — contienen amigdalina que se metaboliza en cianuro",c:true},{t:"Solo la cáscara verde de algunas variedades",c:false},{t:"Ninguna parte — la manzana completa es completamente segura",c:false}],fb:"La pulpa y cáscara de manzana SIN semillas son completamente seguras. Las semillas y el corazón contienen amigdalina que se metaboliza en cianuro. Eliminar siempre las semillas antes de dar manzana a mascotas.",tags:["tag-green:✅ Pulpa y cáscara: seguros y nutritivos","tag-red:🔴 Semillas y corazón: RETIRAR SIEMPRE"],human:"La manzana es una de las frutas más consumidas en Chile."},
+  {type:'food',name:"Banana / Plátano (sin cáscara) ✅",emoji:"🍌",bg:"linear-gradient(135deg,#2a2a00,#5a5008)",cat:"Fruta energética · Con moderación",q:"La banana ¿es segura para perros o tiene algún componente peligroso?",opts:[{t:"No — la banana contiene potasio en niveles tóxicos",c:false},{t:"Sí es segura pero alta en azúcar — ocasional y en porciones pequeñas",c:true},{t:"Solo la banana verde es segura, la madura es tóxica",c:false},{t:"Es segura para perros pero tóxica para gatos",c:false}],fb:"La banana (sin cáscara) es segura para perros y gatos: rica en potasio, vitaminas B6 y C, fibra y magnesio. Riesgo en exceso: MUY alta en azúcares naturales — en diabéticos y obesos limitar a 1-2 rodajas.",tags:["tag-green:✅ Pulpa: segura y nutritiva","tag-yellow:🟡 Muy azucarada: snack ocasional"],human:"La banana es la fruta más consumida del mundo."},
+  {type:'food',name:"Pepino sin cáscara ✅ (variante)",emoji:"🥗",bg:"linear-gradient(135deg,#0a2a10,#1a4820)",cat:"Verdura · Hidratante adicional",q:"El pepino de campo chileno ¿necesita pelarse antes de dárselo a las mascotas?",opts:[{t:"No — la cáscara es la parte más nutritiva",c:false},{t:"Es recomendable pelarlo para evitar pesticidas — la pulpa sin cáscara es ideal",c:true},{t:"Solo la semilla interior es peligrosa",c:false},{t:"El pepino completo incluyendo cáscara es completamente seguro sin lavar",c:false}],fb:"El pepino de campo puede tener mayor concentración de pesticidas en la cáscara. La pulpa sin cáscara es completamente segura y muy hidratante. Si es orgánico y bien lavado, la cáscara también es segura.",tags:["tag-green:✅ Pulpa: hidratante y completamente segura","tag-yellow:🟡 Cáscara de campo: preferir pelar o lavar bien"],human:"Refrescante y muy bajo en calorías."},
+  {type:'food',name:"Atún en agua (ocasional) ⚠️",emoji:"🐟",bg:"linear-gradient(135deg,#0a1a2a,#1a3a5a)",cat:"Pescado · Solo ocasionalmente",q:"El atún en agua es muy popular en Chile para dar a los gatos. ¿Cuál es el riesgo de darlo diariamente?",opts:[{t:"No hay riesgo — el atún es el alimento más completo para gatos",c:false},{t:"El atún diario causa deficiencia de vitamina E (esteatitis) y acumulación de mercurio",c:true},{t:"Solo peligroso el atún en aceite",c:false},{t:"El atún es tóxico para gatos — nunca debe dárseles",c:false}],fb:"El atún en agua en pequeñas cantidades ocasionales es seguro. Pero diariamente causa: 1) Deficiencia de vitamina E → esteatitis (inflamación dolorosa). 2) Acumulación de mercurio. 3) Adicción al sabor que hace rechazar el alimento balanceado.",tags:["tag-yellow:🟡 Ocasional: seguro","tag-red:🔴 Diario: esteatitis + mercurio + adicción al sabor"],human:"El atún es nutritivo para humanos. La FDA recomienda no exceder 3-4 porciones semanales por el mercurio."},
+  {type:'food',name:"Agua limpia fresca ✅ LO MÁS IMPORTANTE",emoji:"💧",bg:"linear-gradient(135deg,#0a1a2a,#1a3a5a)",cat:"Hidratación · Fundamental para la salud",q:"¿Cuánta agua diaria necesita aproximadamente un perro de 10 kg que come alimento seco (kibble)?",opts:[{t:"Aproximadamente 100ml al día",c:false},{t:"Aproximadamente 500-1000ml (0.5-1 litro) al día con acceso libre y constante",c:true},{t:"El alimento seco ya aporta suficiente agua",c:false},{t:"Solo necesitan agua cuando tienen calor",c:false}],fb:"El agua es lo más crítico para la salud de cualquier mascota. Un perro de 10kg necesita ~500-1000ml/día. Los gatos con alimento seco son especialmente propensos a problemas renales por falta de agua. Cambiar el agua DIARIAMENTE.",tags:["tag-green:✅ LO MÁS IMPORTANTE — siempre disponible","tag-red:🔴 Gatos con seco: alto riesgo de problemas renales"],human:"Los humanos necesitamos aproximadamente 2 litros de agua al día."},
+];
+
+// ══════════════════════════════════════════════════════
+// QUÍMICOS SEGUROS (9)
+// ══════════════════════════════════════════════════════
+const SAFE_POISONS = [
+  {type:'poison',name:"Bicarbonato de sodio ✅",emoji:"🥄",bg:"linear-gradient(135deg,#0a1a2a,#1a3a5a)",cat:"Limpiador natural · Alternativa segura",q:"El bicarbonato de sodio usado para limpiar superficies ¿es seguro para mascotas que lamen el área limpiada?",opts:[{t:"No — el sodio en cualquier forma es tóxico",c:false},{t:"Sí en residuos de limpieza — en grandes cantidades ingeridas puede alterar el pH sanguíneo",c:true},{t:"Completamente tóxico para gatos en cualquier cantidad",c:false},{t:"Solo seguro si se enjuaga completamente antes de que entre la mascota",c:false}],fb:"El bicarbonato en residuos de limpieza doméstica es generalmente seguro. El cuerpo neutraliza pequeñas cantidades fácilmente. Es una alternativa de limpieza más segura que muchos químicos comerciales.",tags:["tag-green:✅ Residuos de limpieza: seguros","tag-yellow:🟡 Ingestión directa de más de 1 cucharada: evitar"],human:"El bicarbonato es ingrediente esencial en cocina y limpieza natural."},
+  {type:'poison',name:"Vinagre blanco diluido ✅",emoji:"🍶",bg:"linear-gradient(135deg,#1a1a0a,#3a3a15)",cat:"Desinfectante natural · Alternativa pet-friendly",q:"El vinagre blanco diluido ¿es efectivo como desinfectante y seguro para mascotas?",opts:[{t:"No — el ácido acético es siempre dañino",c:false},{t:"Sí diluido 1:3 en agua — el olor molesta brevemente pero sin toxicidad real",c:true},{t:"Solo seguro si se deja secar completamente",c:false},{t:"Solo efectivo para bacterias pero no seguro para gatos",c:false}],fb:"El vinagre blanco diluido (1:3 en agua) es desinfectante natural y seguro para superficies. NUNCA aplicar vinagre directamente sobre heridas ni sobre la piel o patas de la mascota como 'remedio casero'.",tags:["tag-green:✅ Diluido 1:3: limpiador seguro para mascotas","tag-red:🔴 NUNCA aplicar puro sobre piel o heridas"],human:"Desinfectante natural, antigrasa y económico."},
+  {type:'poison',name:"Pegamento escolar PVA ✅",emoji:"✂️",bg:"linear-gradient(135deg,#1a1a2a,#2a2a4a)",cat:"Material escolar · Sin solventes",q:"La cola PVA escolar ¿qué la diferencia de pegamentos peligrosos?",opts:[{t:"Nada — todos los pegamentos son igualmente peligrosos",c:false},{t:"Que no contiene solventes orgánicos — los pegamentos con solventes (contacto, SuperGlue) sí son peligrosos",c:true},{t:"Solo el formato en barra (Pritt) es seguro",c:false},{t:"La cola PVA es igual de peligrosa que el SuperGlue",c:false}],fb:"La cola PVA (poli-acetato de vinilo) escolar tiene toxicidad MUY BAJA — no contiene solventes orgánicos. Muy diferente de: SuperGlue (cianoacrilato) — puede unir tejidos bucales. Pegamento de contacto — contiene solventes tóxicos.",tags:["tag-green:✅ Cola PVA escolar: baja toxicidad","tag-red:🔴 SuperGlue y pegamento de contacto: SÍ son emergencia"],human:"La cola PVA es segura para manos y mucosas en uso normal escolar."},
+  {type:'poison',name:"Jabón de Marsella / Jabón neutro ✅",emoji:"🧼",bg:"linear-gradient(135deg,#0a1a2a,#1a3550)",cat:"Jabón natural · Baño de mascotas",q:"El jabón de Marsella ¿puede usarse para bañar perros y gatos si no hay shampoo específico?",opts:[{t:"No — cualquier jabón humano es tóxico",c:false},{t:"Sí ocasionalmente — es suave pero el pH humano difiere del de mascotas; shampoo específico es mejor",c:true},{t:"Solo para perros — nunca para gatos",c:false},{t:"Es idéntico en resultado al shampoo veterinario",c:false}],fb:"El jabón de Marsella (sin perfumes, base aceite de oliva) puede usarse OCASIONALMENTE. El pH de la piel de los perros (6.5-7.5) difiere del humano (5.5) — uso frecuente puede resecar y alterar la barrera cutánea.",tags:["tag-green:✅ Ocasionalmente: seguro y suave","tag-yellow:🟡 Uso frecuente: reseca la piel · Shampoo veterinario es mejor"],human:"El jabón de Marsella es uno de los jabones más naturales. Suave para pieles sensibles."},
+  {type:'poison',name:"Aceite de coco virgen ✅",emoji:"🥥",bg:"linear-gradient(135deg,#1a1a0a,#3a3518)",cat:"Aceite natural · Uso tópico y suplemento",q:"El aceite de coco ¿cuánto puede darse ORALMENTE a un perro mediano?",opts:[{t:"Sin límite — es completamente seguro en cualquier cantidad",c:false},{t:"Máximo 1 cucharadita al día para un perro de 10-15 kg — más puede causar pancreatitis",c:true},{t:"No debe darse oralmente — solo tópico",c:false},{t:"Solo 1-2 gotas — más es inmediatamente tóxico",c:false}],fb:"El aceite de coco virgen en pequeñas cantidades es seguro: tópicamente mejora piel seca, patas agrietadas y pelaje. Para administrar oralmente: máximo 1 cucharadita para perros medianos. Riesgo en exceso: MUY alto en grasa saturada — puede causar pancreatitis.",tags:["tag-green:✅ Tópico: seguro y beneficioso","tag-yellow:🟡 Oral: máximo 1 cucharadita/día · Pancreatitis en exceso"],human:"El aceite de coco virgen tiene propiedades antimicrobianas."},
+  {type:'poison',name:"Velas de cera de soja SIN aceites esenciales ✅",emoji:"🕯️",bg:"linear-gradient(135deg,#2a2a1a,#5a5030)",cat:"Ambientador · Comparación de riesgos",q:"¿Las velas de cera de soja sin fragancia son completamente seguras en hogares con gatos?",opts:[{t:"No — cualquier vela encendida es completamente peligrosa",c:false},{t:"Sí sin fragancia — pero las velas de soja CON aceites esenciales siguen siendo problemáticas para gatos",c:true},{t:"Solo las velas de parafina son peligrosas",c:false},{t:"Las velas sin fragancia no sirven como ambientador",c:false}],fb:"Las velas de cera de soja SIN fragancias son la opción más segura en hogares con mascotas. Las de soja CON aceites esenciales (limoneno, eucaliptol, árbol de té) siguen siendo tóxicas para gatos por inhalación.",tags:["tag-green:✅ Soja sin fragancia: la opción más segura","tag-red:🔴 CON aceites esenciales: siguen siendo peligrosas para gatos"],human:"Las velas de soja son más ecológicas que las de parafina."},
+  {type:'poison',name:"Jabón de ropa diluido (bajo riesgo)",emoji:"🫧",bg:"linear-gradient(135deg,#0a1a2a,#1a3550)",cat:"Detergente · Exposición accidental",q:"Un perro lame la ropa recién lavada con detergente normal ¿representa una emergencia veterinaria?",opts:[{t:"Sí — todos los detergentes son altamente tóxicos",c:false},{t:"No — la cantidad residual en ropa enjuagada es mínima y raramente causa algo más que leve náusea",c:true},{t:"Solo los detergentes con blanqueador son peligrosos",c:false},{t:"Depende — el detergente aniónico siempre es emergencia",c:false}],fb:"El residuo de detergente en ropa bien enjuagada es mínimo y raramente causa más que leve malestar digestivo. Diferente escenario: si el perro bebe agua de lavado de la lavadora o come el jabón directamente — AHÍ sí puede ser problema.",tags:["tag-green:✅ Residuo en ropa enjuagada: bajo riesgo","tag-yellow:🟡 Detergente concentrado o agua de lavado: sí consultar veterinario"],human:"El residuo de detergente en ropa bien enjuagada tampoco afecta a humanos con piel sensible."},
+  {type:'poison',name:"Alcohol isopropílico 70% (tópico) ⚠️",emoji:"💧",bg:"linear-gradient(135deg,#0a1a0a,#1a3518)",cat:"Antiséptico · Uso externo ÚNICAMENTE",q:"El alcohol de frotar usado para limpiar heridas ¿puede lamerse si queda en la piel de la mascota?",opts:[{t:"Sí — en la cantidad que queda al limpiar es completamente seguro",c:false},{t:"No — impedir que lama la zona tratada; el isopropanol oral es 2-3 veces más tóxico que el etanol",c:true},{t:"Es completamente seguro tanto tópico como oral",c:false},{t:"Solo peligroso para gatos",c:false}],fb:"El isopropanol tópico sobre una herida es aceptable. El PROBLEMA es cuando la mascota lame la zona tratada — el isopropanol se metaboliza en acetona y es 2-3 veces más tóxico que el etanol. Usar collar isabelino o cubrir la zona después de tratar.",tags:["tag-yellow:🟡 Tópico sobre herida: aceptable si se impide el lamido","tag-red:🔴 Si lame: urgencia veterinaria · NUNCA usar para fiebre"],human:"El alcohol 70% es el antiséptico estándar para heridas humanas."},
+  {type:'poison',name:"Limpiadores enzimáticos para mascotas ✅",emoji:"🧪",bg:"linear-gradient(135deg,#0a1a15,#1a3528)",cat:"Limpiadores específicos para mascotas",q:"Los limpiadores enzimáticos para mascotas ¿son seguros una vez secos?",opts:[{t:"No — las enzimas son proteínas que pueden causar reacciones alérgicas graves",c:false},{t:"Sí — una vez secos son seguros y además eliminan olores que atraen a la mascota a repetir",c:true},{t:"Solo seguros si se enjuagan completamente",c:false},{t:"Son seguros para mascotas pero tóxicos para humanos",c:false}],fb:"Los limpiadores enzimáticos específicos para mascotas son la opción MÁS RECOMENDADA: seguros una vez secos, las enzimas descomponen completamente los compuestos olorosos y eliminan los marcadores que harían que la mascota vuelva al mismo lugar.",tags:["tag-green:✅ Una vez secos: completamente seguros","tag-green:✅ Eliminan marcadores olorosos — previenen reincidencia"],human:"Las enzimas son proteínas naturales sin toxicidad para humanos."},
+];
+
+// ══════════════════════════════════════════════════════
+// PREGUNTA 11 — Peligro cotidiano
+// ══════════════════════════════════════════════════════
+const PREGUNTA_11_POOL = [
+  {type:'common',name:"⚠️ PELIGRO COMÚN: Chocolate negro en casa",emoji:"🍫",bg:"linear-gradient(135deg,#1a0500,#4a1008)",cat:"⚠️ Alerta del Hogar · Peligro muy frecuente",q:"ALERTA HOGAR: ¿Cuánto chocolate negro 70% puede ser mortal para un perro de 15 kg?",opts:[{t:"Solo cantidades muy grandes como 500g o más",c:false},{t:"Aproximadamente 150-200g — poco más de una tableta grande de repostería",c:true},{t:"El chocolate de repostería es menos peligroso que el de consumo",c:false},{t:"Solo peligroso si el perro lo come en ayunas",c:false}],fb:"RECORDATORIO URGENTE: Para un perro de 15kg: dosis letal ≈ solo 150-200g de chocolate negro. Una tableta de repostería puede matar a un perro de tamaño mediano. ACCIÓN: guardar TODO el chocolate en lugar cerrado alto e inaccesible.",tags:["tag-red:🔴 UNA tableta de chocolate negro puede matar","tag-red:🔴 Guardar bajo llave — emergencia veterinaria si lo come"],human:"La teobromina no afecta a humanos en cantidades normales."},
+  {type:'common',name:"⚠️ PELIGRO COMÚN: Medicamentos humanos en el suelo",emoji:"💊",bg:"linear-gradient(135deg,#1a0a1a,#3a1a3a)",cat:"⚠️ Alerta del Hogar · Urgencia frecuente",q:"ALERTA HOGAR: Se cae una pastilla de Ibuprofeno 400mg al suelo y el perro la come. ¿Cuál es la acción CORRECTA?",opts:[{t:"Esperar y observar — una pastilla no es suficiente",c:false},{t:"Llamar al veterinario INMEDIATAMENTE — el ibuprofeno puede causar úlceras y falla renal aunque parezca bien",c:true},{t:"Darle leche para neutralizar el medicamento",c:false},{t:"Solo urgente si el perro pesa menos de 5 kg",c:false}],fb:"ACCIÓN INMEDIATA: Una pastilla de Ibuprofeno 400mg para un perro de 10kg = 40mg/kg — sobre el umbral tóxico GI (25mg/kg). Los síntomas aparecen HORAS después cuando el daño ya ocurrió. NO dar leche. NO esperar síntomas. GUARDAR todos los medicamentos en cajón alto cerrado.",tags:["tag-red:🔴 LLAMAR AL VETERINARIO AHORA aunque parezca bien","tag-red:🔴 Medicamentos: guardar bajo llave SIEMPRE"],human:"Una pastilla de 400mg de ibuprofeno es una dosis estándar y segura para adultos humanos."},
+  {type:'common',name:"⚠️ PELIGRO COMÚN: Las 3 plantas del living chileno",emoji:"🌿",bg:"linear-gradient(135deg,#0a1a0a,#1a3518)",cat:"⚠️ Alerta del Hogar · Plantas comunes",q:"ALERTA HOGAR: Las 3 plantas MÁS COMUNES en livings chilenos y también MÁS PELIGROSAS para mascotas son:",opts:[{t:"Cactus, Palmeras pequeñas y Helechos de Boston",c:false},{t:"Pothos/Poto, Filodendro y Lirio de Paz/Espatifilo — todas con oxalatos o nefrotóxicas para gatos",c:true},{t:"Orquídeas, Caléndulas y Calateas",c:false},{t:"Bambú real, Hierba gatera y Pilea",c:false}],fb:"REVISIÓN URGENTE DE TU HOGAR: Las 3 plantas más vendidas EN CHILE son también 3 de las más peligrosas: 1) POTHOS — oxalatos. 2) FILODENDRO — oxalatos que pueden inflamar vías respiratorias. 3) LIRIO DE PAZ — nefrotóxico para gatos. ALTERNATIVAS SEGURAS: Calatea, Orquídea Phalaenopsis, Pilea.",tags:["tag-red:🔴 REVISAR las plantas de tu hogar HOY","tag-green:✅ Reemplazar por Calatea, Orquídea o Helecho Boston"],human:"Las mismas plantas pueden irritar mucosas en niños pequeños."},
+  {type:'common',name:"⚠️ PELIGRO COMÚN: Asado chileno y mascotas",emoji:"🍖",bg:"linear-gradient(135deg,#2a0a00,#5a1800)",cat:"⚠️ Alerta del Hogar · Tradición chilena",q:"ALERTA HOGAR: En un asado chileno típico ¿cuántos peligros simultáneos existen para las mascotas?",opts:[{t:"Solo 1-2 — el asado es relativamente seguro",c:false},{t:"5 o más peligros simultáneos: morcilla, huesos cocidos, cebolla, ajo, alcohol y grasas",c:true},{t:"Solo la carne asada representa riesgo leve",c:false},{t:"Ninguno — la comida asada chilena es compatible con mascotas",c:false}],fb:"UN ASADO CHILENO TÍPICO tiene múltiples peligros: 1) MORCILLA → ajo+sal+grasa. 2) HUESOS COCIDOS → astillas que perforan intestinos. 3) CEBOLLA en ensaladas → anemia hemolítica. 4) AJO en aliños. 5) ALCOHOL derramado → coma en gatos. 6) GRASAS → pancreatitis.",tags:["tag-red:🔴 5+ peligros simultáneos en el asado","tag-red:🔴 No compartir NADA del asado — dar solo agua fresca"],human:"El asado chileno es una tradición maravillosa. Solo hay que mantener alimentos fuera del alcance de mascotas."},
+  {type:'common',name:"⚠️ PELIGRO COMÚN: Raticidas en el vecindario",emoji:"🐀",bg:"linear-gradient(135deg,#1a0500,#3a1008)",cat:"⚠️ Alerta del Hogar · Riesgo en paseos",q:"ALERTA HOGAR: Tu perro vuelve del paseo y al día siguiente tiene encías muy pálidas y letargo. ¿Qué sospechas primero?",opts:[{t:"Cansancio acumulado — esperar a que pase",c:false},{t:"Posible intoxicación por raticida anticoagulante — urgencia veterinaria INMEDIATA",c:true},{t:"Deshidratación — dar agua y observar",c:false},{t:"Solo urgente si hay sangrado visible externo",c:false}],fb:"SEÑAL DE ALARMA: Encías pálidas + letargo = HEMORRAGIA INTERNA posible por raticida anticoagulante. Los síntomas aparecen 2-5 días DESPUÉS de la ingestión. El SANGRADO VISIBLE es señal TARDÍA — actuar ante encías pálidas sin esperar sangrado. Antídoto: Vitamina K1 por 4-6 semanas.",tags:["tag-red:🔴 Encías pálidas = URGENCIA aunque no haya sangrado visible","tag-blue:💉 Antídoto Vitamina K1 — solo bajo supervisión veterinaria"],human:"Los anticoagulantes de 2ª gen también son peligrosos para humanos."},
+  {type:'common',name:"⚠️ PELIGRO COMÚN: Anticongelante en invierno",emoji:"🚗",bg:"linear-gradient(135deg,#0a0a2a,#1a1a5a)",cat:"⚠️ Alerta del Hogar · Riesgo invernal",q:"ALERTA HOGAR: En invierno en el sur de Chile se cambia el anticongelante del auto. ¿Cuánto tiempo tiene un gato si lo ingiere antes de que el daño sea irreversible?",opts:[{t:"24 horas — hay tiempo suficiente",c:false},{t:"Solo 3-4 horas — la ventana en gatos es mínima y el daño renal luego es irreversible",c:true},{t:"72 horas — los síntomas son lentos",c:false},{t:"Los gatos son más resistentes que los perros al etilenglicol",c:false}],fb:"VENTANA CRÍTICA: Gatos tienen SOLO 3-4 horas antes de que el etilenglicol cause daño renal irreversible. Perros tienen 8-12 horas. El etilenglicol tiene sabor DULCE que atrae a gatos y perros. La 'mejoría' inicial es FALSA y peligrosa.",tags:["tag-red:🔴 GATOS: solo 3-4 horas — IR AL VETERINARIO AHORA","tag-red:🔴 Sabor dulce — atrae especialmente a gatos"],human:"El etilenglicol también es tóxico para humanos — ha sido usado en envenenamientos intencionales."},
+];
+
+// ══════════════════════════════════════════════════════
+// LÓGICA GENERAL
+// ══════════════════════════════════════════════════════
+const ALL_PLANTS = [...PLANTS, ...SAFE_PLANTS];
+const ALL_FOODS  = [...FOODS,  ...SAFE_FOODS];
+const ALL_DRUGS  = [...DRUGS];
+
+// ✅ FIX: POISONS ahora está definido correctamente arriba
+const ALL_POISON = [...POISONS, ...SAFE_POISONS];
+
+const POOL = {
+  plants: ALL_PLANTS,
+  foods:  ALL_FOODS,
+  drugs:  ALL_DRUGS,
+  poison: ALL_POISON,
+  mix:    [...ALL_PLANTS,...ALL_FOODS,...ALL_DRUGS,...ALL_POISON]
+};
+
+const CAT_LABELS  = { plants:'🌿 Plantas', foods:'🍽️ Alimentos', drugs:'⚗️ Drogas & Medicamentos', poison:'☠️ Venenos & Químicos', mix:'🔀 Mix completo' };
+const CAT_COLORS  = { plants:'#56d364', foods:'#f0883e', drugs:'#bc8cff', poison:'#ff6b35', mix:'#58a6ff' };
+const TYPE_LABELS = { plant:'Planta', food:'Alimento', drug:'Droga/Medicamento', poison:'Veneno/Químico', common:'⚠️ Peligro Común' };
+const TYPE_CLASSES= { plant:'badge-plant', food:'badge-food', drug:'badge-drug', poison:'badge-poison', common:'badge-common' };
+
+let currentCat=null, session=[], qIdx=0, score=0, answers=[];
+const QS=11;
+
+function openPanel(id){document.getElementById(id).classList.add('open');document.body.style.overflow='hidden';}
+function closePanel(id,e){if(!e||e.target===document.getElementById(id)){document.getElementById(id).classList.remove('open');document.body.style.overflow='';}}
+
+function copyList(){
+  const el=document.getElementById('panel-lists');
+  let txt='ToxiVet Chile — Listado completo\n\n';
+  el.querySelectorAll('.panel-section').forEach(sec=>{
+    const title=sec.querySelector('.panel-section-title');
+    if(title){txt+='\n'+title.textContent.trim()+'\n'+'─'.repeat(40)+'\n';}
+    sec.querySelectorAll('.item-row').forEach(row=>{
+      const num=row.querySelector('.item-num');
+      const name=row.querySelector('.item-name');
+      if(num&&name) txt+=num.textContent.trim()+'. '+name.childNodes[0].textContent.trim()+'\n';
+    });
+  });
+  navigator.clipboard.writeText(txt).then(()=>{
+    const btn=document.getElementById('copy-btn');
+    btn.textContent='✅ ¡Copiado!';
+    setTimeout(()=>{btn.textContent='📋 Copiar lista completa';},2500);
+  }).catch(()=>{alert('Para copiar: selecciona el texto manualmente con tu dedo.');});
+}
+
+function selectCat(cat,el){
+  currentCat=cat;
+  document.querySelectorAll('.cat-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  const btn=document.getElementById('btn-start');
+  btn.disabled=false;
+  btn.textContent=`Iniciar encuesta · ${CAT_LABELS[cat]} →`;
+}
+
+function shuffle(arr){
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+
+function startQuiz(){
+  if(!currentCat) return;
+  const main=shuffle(POOL[currentCat]).slice(0,10);
+  const q11=shuffle([...PREGUNTA_11_POOL])[0];
+  session=[...main,q11];
+  qIdx=0; score=0; answers=[];
+  document.getElementById('screen-intro').style.display='none';
+  document.getElementById('screen-results').style.display='none';
+  document.getElementById('screen-question').style.display='flex';
+  document.getElementById('screen-question').style.flexDirection='column';
+  document.getElementById('progress-wrap').style.display='block';
+  document.getElementById('prog-cat').textContent=CAT_LABELS[currentCat];
+  document.getElementById('prog-fill').style.background=CAT_COLORS[currentCat];
+  renderQuestion();
+}
+
+function exitToMenu(){
+  document.getElementById('exit-modal').style.display='flex';
+}
+function exitConfirm(){
+  document.getElementById('exit-modal').style.display='none';
+  document.getElementById('screen-question').style.display='none';
+  document.getElementById('progress-wrap').style.display='none';
+  document.getElementById('screen-results').style.display='none';
+  document.getElementById('screen-intro').style.display='flex';
+  document.getElementById('screen-intro').style.flexDirection='column';
+}
+function exitCancel(){
+  document.getElementById('exit-modal').style.display='none';
+}
+
+function renderQuestion(){
+  const q=session[qIdx];
+  document.getElementById('prog-label').textContent=`Pregunta ${qIdx+1} de ${QS}`;
+  document.getElementById('prog-score').textContent=`✓ ${score}`;
+  document.getElementById('prog-fill').style.width=`${(qIdx/QS)*100}%`;
+  document.getElementById('q-visual-bg').style.background=q.bg;
+  document.getElementById('q-emoji').textContent=q.emoji;
+  const badge=document.getElementById('q-badge');
+  badge.textContent=TYPE_LABELS[q.type]||'Pregunta';
+  badge.className='q-badge '+(TYPE_CLASSES[q.type]||'badge-plant');
+  document.getElementById('q-cat-label').textContent=q.cat;
+  document.getElementById('q-text').textContent=q.q;
+  document.getElementById('feedback').style.display='none';
+  document.getElementById('btn-next').style.display='none';
+  document.getElementById('btn-exit').style.display='none';
+  document.getElementById('human-risk').style.display='none';
+  document.getElementById('otros-risk').style.display='none';
+  const opts=shuffle(q.opts.map(o=>({...o})));
+  const letters=['A','B','C','D'];
+  const cont=document.getElementById('options');
+  cont.innerHTML='';
+  opts.forEach((opt,i)=>{
+    const btn=document.createElement('button');
+    btn.className='opt-btn';
+    btn.innerHTML=`<span class="opt-letter">${letters[i]}</span><span>${opt.t}</span>`;
+    btn.onclick=()=>answer(btn,opt.c,opts);
+    cont.appendChild(btn);
+  });
+}
+
+// ══════════════════════════════════════════════════════
+// FIREBASE — Configuración
+// ══════════════════════════════════════════════════════
+const FB_CONFIG = {
+  apiKey: "AIzaSyC5vQmcMneC6GnPHVQnesmY06HY7RQtieI",
+  authDomain: "toxivet-chile.firebaseapp.com",
+  projectId: "toxivet-chile",
+  storageBucket: "toxivet-chile.firebasestorage.app",
+  messagingSenderId: "722441030489",
+  appId: "1:722441030489:web:e53f88894111ea2cfb5a48"
+};
+
+// Inicializa Firebase usando los CDN (sin módulos ES)
+let fbApp = null, fbDb = null;
+function initFirebase(){
+  if(fbDb) return fbDb;
+  try {
+    if(!firebase.apps.length) fbApp = firebase.initializeApp(FB_CONFIG);
+    else fbApp = firebase.apps[0];
+    fbDb = firebase.firestore();
+    return fbDb;
+  } catch(e){ console.warn('Firebase init error:', e); return null; }
+}
+
+// ══════════════════════════════════════════════════════
+// ESTADÍSTICAS — Firestore (datos de TODOS los usuarios)
+// ══════════════════════════════════════════════════════
+async function saveAnswer(q, correct){
+  try {
+    const db = initFirebase(); if(!db) return;
+    // ID del documento: nombre de la pregunta normalizado
+    const docId = q.name.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ]/g,'_').slice(0,80);
+    const ref = db.collection('preguntas').doc(docId);
+    await db.runTransaction(async tx => {
+      const snap = await tx.get(ref);
+      if(!snap.exists){
+        tx.set(ref, { name: q.name, emoji: q.emoji, type: q.type, correct: correct?1:0, wrong: correct?0:1 });
+      } else {
+        tx.update(ref, {
+          correct: firebase.firestore.FieldValue.increment(correct ? 1 : 0),
+          wrong:   firebase.firestore.FieldValue.increment(correct ? 0 : 1)
+        });
+      }
+    });
+  } catch(e){ console.warn('saveAnswer error:', e); }
+}
+
+async function saveRound(scoreVal){
+  try {
+    const db = initFirebase(); if(!db) return;
+    const ref = db.collection('meta').doc('rondas');
+    await db.runTransaction(async tx => {
+      const snap = await tx.get(ref);
+      if(!snap.exists){
+        tx.set(ref, { total: 1, sumaScores: scoreVal });
+      } else {
+        tx.update(ref, {
+          total:      firebase.firestore.FieldValue.increment(1),
+          sumaScores: firebase.firestore.FieldValue.increment(scoreVal)
+        });
+      }
+    });
+  } catch(e){ console.warn('saveRound error:', e); }
+}
+
+// ── Logo click counter para panel oculto ──
+let logoClicks = 0, logoTimer = null;
+function handleLogoClick(){
+  logoClicks++;
+  clearTimeout(logoTimer);
+  logoTimer = setTimeout(()=>{ logoClicks=0; }, 2000);
+  if(logoClicks >= 5){ logoClicks=0; openStatsPanel(); }
+}
+
+async function openStatsPanel(){
+  document.getElementById('stats-panel').style.display='flex';
+  document.body.style.overflow='hidden';
+  await renderStats();
+}
+function closeStatsPanel(){
+  document.getElementById('stats-panel').style.display='none';
+  document.body.style.overflow='';
+}
+
+async function renderStats(){
+  const container = document.getElementById('stats-content');
+  container.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(240,235,224,0.4)">Conectando con Firebase…</div>';
+  try {
+    const db = initFirebase();
+    if(!db) throw new Error('No se pudo conectar con Firebase');
+
+    // Cargar rondas
+    let totalRondas = 0, avgScore = 0;
+    try {
+      const metaSnap = await db.collection('meta').doc('rondas').get();
+      if(metaSnap.exists){
+        const d = metaSnap.data();
+        totalRondas = d.total || 0;
+        avgScore = d.total ? (d.sumaScores / d.total).toFixed(1) : 0;
+      }
+    } catch(e){}
+
+    // Cargar preguntas
+    const pregSnap = await db.collection('preguntas').get();
+    const questions = [];
+    pregSnap.forEach(doc => questions.push(doc.data()));
+
+    if(totalRondas === 0 && questions.length === 0){
+      container.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(240,235,224,0.4);font-size:14px">📭 Aún no hay datos.<br><br>Cuando los usuarios jueguen,<br>las estadísticas aparecerán aquí.</div>';
+      return;
+    }
+
+    const totalAns = questions.reduce((a,q)=>a+(q.correct||0)+(q.wrong||0), 0);
+    const totalOk  = questions.reduce((a,q)=>a+(q.correct||0), 0);
+    const globalPct = totalAns ? Math.round(totalOk/totalAns*100) : 0;
+
+    const sorted = [...questions].sort((a,b)=>{
+      const pa = (a.correct||0)/((a.correct||0)+(a.wrong||0)||1);
+      const pb = (b.correct||0)/((b.correct||0)+(b.wrong||0)||1);
+      return pa - pb;
+    });
+
+    const byType = {};
+    for(const q of questions){
+      if(!byType[q.type]) byType[q.type] = {correct:0, wrong:0};
+      byType[q.type].correct += (q.correct||0);
+      byType[q.type].wrong   += (q.wrong||0);
+    }
+
+    const typeLabels = {plant:'🌿 Plantas', food:'🍽️ Alimentos', drug:'⚗️ Drogas & Medicamentos', poison:'☠️ Venenos & Químicos', common:'⚠️ Alertas del Hogar'};
+    const typeColors = {plant:'#56d364', food:'#f0883e', drug:'#bc8cff', poison:'#ff6b35', common:'#ffc107'};
+
+    let html = `
+      <div style="background:rgba(63,185,80,0.08);border:1px solid rgba(63,185,80,0.2);border-radius:10px;padding:10px 12px;margin-bottom:16px;font-size:12px;color:rgba(120,220,140,0.9);display:flex;align-items:center;gap:8px">
+        <span>🟢</span><span>Conectado a Firebase · datos de todos los usuarios en tiempo real</span>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px">
+        <div style="background:#21262d;border-radius:12px;padding:14px;text-align:center;border:1px solid rgba(255,255,255,0.07)">
+          <div style="font-family:'Fraunces',serif;font-size:28px;font-weight:900;color:#f0ebe0">${totalRondas}</div>
+          <div style="font-size:11px;color:rgba(240,235,224,0.5);margin-top:3px">Rondas jugadas</div>
+        </div>
+        <div style="background:#21262d;border-radius:12px;padding:14px;text-align:center;border:1px solid rgba(255,255,255,0.07)">
+          <div style="font-family:'Fraunces',serif;font-size:28px;font-weight:900;color:${globalPct>=70?'#3fb950':globalPct>=50?'#d29922':'#f85149'}">${globalPct}%</div>
+          <div style="font-size:11px;color:rgba(240,235,224,0.5);margin-top:3px">Acierto global</div>
+        </div>
+        <div style="background:#21262d;border-radius:12px;padding:14px;text-align:center;border:1px solid rgba(255,255,255,0.07)">
+          <div style="font-family:'Fraunces',serif;font-size:28px;font-weight:900;color:#58a6ff">${avgScore}</div>
+          <div style="font-size:11px;color:rgba(240,235,224,0.5);margin-top:3px">Puntaje promedio</div>
+        </div>
+      </div>
+
+      <div style="color:rgba(240,235,224,0.4);font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px">Aciertos por categoría</div>
+      ${Object.entries(byType).map(([type, data])=>{
+        const total = data.correct+data.wrong;
+        const pct = total ? Math.round(data.correct/total*100) : 0;
+        const color = typeColors[type]||'#58a6ff';
+        return `<div style="margin-bottom:10px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+            <span style="font-size:13px;color:#f0ebe0">${typeLabels[type]||type}</span>
+            <span style="font-size:12px;color:${color};font-weight:600">${pct}% <span style="color:rgba(240,235,224,0.35);font-weight:400">(${data.correct}/${total})</span></span>
+          </div>
+          <div style="height:6px;background:#21262d;border-radius:3px;overflow:hidden">
+            <div style="height:100%;width:${pct}%;background:${color};border-radius:3px;transition:width 0.6s ease"></div>
+          </div>
+        </div>`;
+      }).join('')}
+
+      <div style="color:rgba(240,235,224,0.4);font-size:10px;letter-spacing:2px;text-transform:uppercase;margin:18px 0 10px">% acierto por pregunta · más falladas primero</div>
+      ${sorted.map(q=>{
+        const total = (q.correct||0)+(q.wrong||0);
+        const pct = total ? Math.round((q.correct||0)/total*100) : 0;
+        const color = pct>=80?'#3fb950':pct>=50?'#d29922':'#f85149';
+        return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
+          <span style="font-size:22px;min-width:28px">${q.emoji||'❓'}</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:12px;color:#f0ebe0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${q.name}</div>
+            <div style="height:4px;background:#21262d;border-radius:2px;margin-top:5px;overflow:hidden">
+              <div style="height:100%;width:${pct}%;background:${color};border-radius:2px"></div>
+            </div>
+          </div>
+          <div style="text-align:right;min-width:48px">
+            <div style="font-size:14px;font-weight:700;color:${color}">${pct}%</div>
+            <div style="font-size:10px;color:rgba(240,235,224,0.35)">${q.correct||0}/${total}</div>
+          </div>
+        </div>`;
+      }).join('')}
+
+      <button onclick="clearStats()" style="margin-top:20px;width:100%;background:rgba(248,81,73,0.08);border:1px solid rgba(248,81,73,0.25);color:rgba(248,81,73,0.7);border-radius:10px;padding:11px;font-family:'Syne',sans-serif;font-size:13px;cursor:pointer;">
+        🗑️ Borrar todas las estadísticas de Firebase
+      </button>
+    `;
+    container.innerHTML = html;
+  } catch(e){
+    container.innerHTML = `<div style="text-align:center;padding:30px;color:#f85149;font-size:13px">⚠️ Error al cargar estadísticas.<br><small style="color:rgba(240,235,224,0.35)">${e.message}</small></div>`;
+  }
+}
+
+async function clearStats(){
+  if(!confirm('¿Borrar TODAS las estadísticas de Firebase? Esta acción no se puede deshacer.')) return;
+  try {
+    const db = initFirebase(); if(!db) return;
+    const batch = db.batch();
+    const preg = await db.collection('preguntas').get();
+    preg.forEach(doc => batch.delete(doc.ref));
+    batch.delete(db.collection('meta').doc('rondas'));
+    await batch.commit();
+    await renderStats();
+  } catch(e){ alert('Error al borrar: '+e.message); }
+}
+
+function answer(btn,correct,opts){
+  if(document.getElementById('btn-next').style.display!=='none') return;
+  const q=session[qIdx];
+  document.querySelectorAll('.opt-btn').forEach((b,i)=>{
+    b.classList.add('disabled');
+    if(opts[i].c) b.classList.add('correct');
+  });
+  if(correct){score++;btn.classList.add('correct');}
+  else btn.classList.add('incorrect');
+  answers.push({correct,q});
+  saveAnswer(q, correct);
+  const fb=document.getElementById('feedback');
+  document.getElementById('fb-icon').textContent=correct?'✅':'📚';
+  document.getElementById('fb-title').textContent=correct?'¡Correcto!':'Aprendamos esto:';
+  document.getElementById('fb-text').textContent=q.fb;
+  const tagsEl=document.getElementById('fb-tags');
+  tagsEl.innerHTML='';
+  if(q.tags){q.tags.forEach(t=>{const[cls,...rest]=t.split(':');const s=document.createElement('span');s.className=`fb-tag ${cls}`;s.textContent=rest.join(':');tagsEl.appendChild(s);});}
+  if(q.human){document.getElementById('human-risk').style.display='flex';document.getElementById('human-risk-text').textContent=q.human;}
+  if(q.otros){document.getElementById('otros-risk').style.display='flex';document.getElementById('otros-risk-text').textContent=q.otros;}
+  fb.className='feedback';
+  if(q.type==='common') fb.classList.add('warning');
+  else if(q.type==='drug') fb.classList.add('purple');
+  else if(q.tags&&q.tags[0]&&q.tags[0].includes('tag-red')) fb.classList.add('danger');
+  else if(q.tags&&q.tags[0]&&q.tags[0].includes('tag-orange')) fb.classList.add('warning');
+  fb.style.display='block';
+  const nb=document.getElementById('btn-next');
+  nb.style.display='block';
+  nb.textContent=qIdx===QS-1?'Ver resultados 🎯':'Siguiente →';
+  document.getElementById('btn-exit').style.display='block';
+}
+
+function nextQuestion(){
+  qIdx++;
+  if(qIdx>=QS){showResults();return;}
+  renderQuestion();
+  window.scrollTo(0,0);
+}
+
+function showResults(){
+  saveRound(score);
+  document.getElementById('screen-question').style.display='none';
+  document.getElementById('progress-wrap').style.display='none';
+  document.getElementById('screen-results').style.display='flex';
+  document.getElementById('screen-results').style.flexDirection='column';
+  document.getElementById('screen-results').style.alignItems='center';
+  const pct=score/QS;
+  document.getElementById('score-num').textContent=score;
+  const arc=document.getElementById('score-arc');
+  const circ=364.4;
+  arc.style.strokeDashoffset=circ-(circ*pct);
+  arc.style.stroke=pct>=0.8?'#3fb950':pct>=0.5?'#d29922':'#f85149';
+  let title,msg;
+  if(pct===1){title='🏆 ¡Experto en toxicología!';msg='Conocimiento excepcional. ¡Tu mascota tiene el mejor guardián posible!';}
+  else if(pct>=0.8){title='🌟 ¡Muy bien!';msg='Excelente conocimiento. Revisa lo que fallaste para completar tu aprendizaje.';}
+  else if(pct>=0.5){title='📖 Nivel intermedio';msg='Buen inicio. Cada ronda enseña algo nuevo — ¡sigue practicando!';}
+  else{title='⚠️ Hay riesgos que conocer';msg='Hay tóxicos comunes en tu hogar. Te recomendamos revisar cada categoría.';}
+  document.getElementById('result-title').textContent=title;
+  document.getElementById('result-msg').textContent=msg;
+  const sl=document.getElementById('summary-list');
+  sl.innerHTML='';
+  answers.forEach(a=>{
+    const div=document.createElement('div');
+    div.className='sum-item';
+    div.innerHTML=`<div class="sum-emoji">${a.q.emoji}</div><div class="sum-info"><div class="sum-name">${a.q.name}</div><div class="sum-sub">${a.q.cat}</div></div><div class="sum-result">${a.correct?'✅':'❌'}</div>`;
+    sl.appendChild(div);
+  });
+}
+
+function showIntro(){
+  document.getElementById('screen-results').style.display='none';
+  document.getElementById('screen-question').style.display='none';
+  document.getElementById('progress-wrap').style.display='none';
+  document.getElementById('screen-intro').style.display='flex';
+  document.getElementById('screen-intro').style.flexDirection='column';
+}
+</script>
+  <!-- ── PANEL ESTADÍSTICAS (oculto) ── -->
+  <div id="stats-panel" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:300;align-items:flex-end;justify-content:center;backdrop-filter:blur(6px);">
+    <div style="background:#161b22;border-radius:20px 20px 0 0;width:100%;max-width:500px;max-height:88vh;overflow-y:auto;border-top:1px solid rgba(255,255,255,0.1);">
+      <div style="position:sticky;top:0;background:#161b22;padding:16px 16px 12px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:space-between;z-index:1">
+        <div>
+          <div style="font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:#f0ebe0">📊 Panel de estadísticas</div>
+          <div style="font-size:11px;color:rgba(240,235,224,0.35);margin-top:2px">Solo visible para ti · 5 clics en el logo</div>
+        </div>
+        <button onclick="closeStatsPanel()" style="background:#21262d;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:6px 12px;color:rgba(240,235,224,0.6);font-family:'Syne',sans-serif;font-size:12px;cursor:pointer;">← Cerrar</button>
+      </div>
+      <div id="stats-content" style="padding:16px"></div>
+    </div>
+  </div>
+
+</body>
+</html>
