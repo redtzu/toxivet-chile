@@ -5,9 +5,44 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>🐾 ToxiVet Chile — Encuesta de Toxicología</title>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,700;0,900;1,700&family=Syne:wght@400;500;600&display=swap" rel="stylesheet">
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  // ══════════════════════════════════════════════════════
+  // 🔧 REEMPLAZA ESTOS VALORES con los de tu proyecto Firebase
+  // Firebase Console → tu proyecto → Configuración → Aplicaciones web
+  // ══════════════════════════════════════════════════════
+  const firebaseConfig = {
+    apiKey: "AIzaSyCmsvVHRsqA0ZN_W5vKsKqDWrYjH5BDz1U",
+    authDomain: "toxivet-ae217.firebaseapp.com",
+    projectId: "toxivet-ae217",
+    storageBucket: "toxivet-ae217.firebasestorage.app",
+    messagingSenderId: "743378702073",
+    appId: "1:743378702073:web:811588b376aba039df9c28"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // Función global para enviar resultado de ronda a Firestore
+  window.enviarResultadoFirebase = async function(categoria, correctas, total) {
+    try {
+      await addDoc(collection(db, "resultados"), {
+        categoria: categoria,
+        correctas: correctas,
+        total: total,
+        porcentaje: Math.round((correctas / total) * 100),
+        fecha: serverTimestamp()
+      });
+      console.log("✅ Resultado enviado a Firebase");
+    } catch (e) {
+      console.warn("⚠️ No se pudo enviar a Firebase:", e.message);
+      // Fallo silencioso — la encuesta sigue funcionando aunque Firebase falle
+    }
+  };
+</script>
 <style>
 :root {
   --bg: #0d1117;
@@ -1217,68 +1252,27 @@ function renderQuestion(){
 }
 
 // ══════════════════════════════════════════════════════
-// FIREBASE — Configuración
-// ══════════════════════════════════════════════════════
-const FB_CONFIG = {
-  apiKey: "AIzaSyC5vQmcMneC6GnPHVQnesmY06HY7RQtieI",
-  authDomain: "toxivet-chile.firebaseapp.com",
-  projectId: "toxivet-chile",
-  storageBucket: "toxivet-chile.firebasestorage.app",
-  messagingSenderId: "722441030489",
-  appId: "1:722441030489:web:e53f88894111ea2cfb5a48"
-};
-
-// Inicializa Firebase usando los CDN (sin módulos ES)
-let fbApp = null, fbDb = null;
-function initFirebase(){
-  if(fbDb) return fbDb;
-  try {
-    if(!firebase.apps.length) fbApp = firebase.initializeApp(FB_CONFIG);
-    else fbApp = firebase.apps[0];
-    fbDb = firebase.firestore();
-    return fbDb;
-  } catch(e){ console.warn('Firebase init error:', e); return null; }
-}
-
-// ══════════════════════════════════════════════════════
-// ESTADÍSTICAS — Firestore (datos de TODOS los usuarios)
+// ESTADÍSTICAS — Storage persistente
 // ══════════════════════════════════════════════════════
 async function saveAnswer(q, correct){
   try {
-    const db = initFirebase(); if(!db) return;
-    // ID del documento: nombre de la pregunta normalizado
-    const docId = q.name.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ]/g,'_').slice(0,80);
-    const ref = db.collection('preguntas').doc(docId);
-    await db.runTransaction(async tx => {
-      const snap = await tx.get(ref);
-      if(!snap.exists){
-        tx.set(ref, { name: q.name, emoji: q.emoji, type: q.type, correct: correct?1:0, wrong: correct?0:1 });
-      } else {
-        tx.update(ref, {
-          correct: firebase.firestore.FieldValue.increment(correct ? 1 : 0),
-          wrong:   firebase.firestore.FieldValue.increment(correct ? 0 : 1)
-        });
-      }
-    });
-  } catch(e){ console.warn('saveAnswer error:', e); }
+    const key = 'stats:' + q.name.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ·\- ]/g,'').trim().slice(0,80);
+    let entry;
+    try { const r = await window.storage.get(key); entry = r ? JSON.parse(r.value) : null; } catch(e){ entry = null; }
+    if(!entry) entry = { name: q.name, emoji: q.emoji, type: q.type, correct: 0, wrong: 0 };
+    if(correct) entry.correct++; else entry.wrong++;
+    await window.storage.set(key, JSON.stringify(entry));
+  } catch(e){ console.warn('Stats storage error:', e); }
 }
 
 async function saveRound(scoreVal){
   try {
-    const db = initFirebase(); if(!db) return;
-    const ref = db.collection('meta').doc('rondas');
-    await db.runTransaction(async tx => {
-      const snap = await tx.get(ref);
-      if(!snap.exists){
-        tx.set(ref, { total: 1, sumaScores: scoreVal });
-      } else {
-        tx.update(ref, {
-          total:      firebase.firestore.FieldValue.increment(1),
-          sumaScores: firebase.firestore.FieldValue.increment(scoreVal)
-        });
-      }
-    });
-  } catch(e){ console.warn('saveRound error:', e); }
+    let rounds;
+    try { const r = await window.storage.get('stats:_rounds'); rounds = r ? JSON.parse(r.value) : {total:0, scores:[]}; } catch(e){ rounds = {total:0, scores:[]}; }
+    rounds.total++;
+    rounds.scores.push(scoreVal);
+    await window.storage.set('stats:_rounds', JSON.stringify(rounds));
+  } catch(e){ console.warn('Stats rounds error:', e); }
 }
 
 // ── Logo click counter para panel oculto ──
@@ -1302,60 +1296,55 @@ function closeStatsPanel(){
 
 async function renderStats(){
   const container = document.getElementById('stats-content');
-  container.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(240,235,224,0.4)">Conectando con Firebase…</div>';
+  container.innerHTML = '<div style="text-align:center;padding:30px;color:rgba(240,235,224,0.4)">Cargando estadísticas…</div>';
   try {
-    const db = initFirebase();
-    if(!db) throw new Error('No se pudo conectar con Firebase');
-
     // Cargar rondas
-    let totalRondas = 0, avgScore = 0;
-    try {
-      const metaSnap = await db.collection('meta').doc('rondas').get();
-      if(metaSnap.exists){
-        const d = metaSnap.data();
-        totalRondas = d.total || 0;
-        avgScore = d.total ? (d.sumaScores / d.total).toFixed(1) : 0;
-      }
-    } catch(e){}
+    let rounds = {total:0, scores:[]};
+    try { const r = await window.storage.get('stats:_rounds'); if(r) rounds = JSON.parse(r.value); } catch(e){}
 
     // Cargar preguntas
-    const pregSnap = await db.collection('preguntas').get();
-    const questions = [];
-    pregSnap.forEach(doc => questions.push(doc.data()));
+    let keys;
+    try { const r = await window.storage.list('stats:'); keys = r ? r.keys.filter(k=>k!=='stats:_rounds') : []; } catch(e){ keys=[]; }
 
-    if(totalRondas === 0 && questions.length === 0){
-      container.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(240,235,224,0.4);font-size:14px">📭 Aún no hay datos.<br><br>Cuando los usuarios jueguen,<br>las estadísticas aparecerán aquí.</div>';
+    const questions = [];
+    for(const key of keys){
+      try { const r = await window.storage.get(key); if(r) questions.push(JSON.parse(r.value)); } catch(e){}
+    }
+
+    if(rounds.total === 0 && questions.length === 0){
+      container.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(240,235,224,0.4);font-size:14px">Aún no hay datos.<br>Juega una ronda para empezar a registrar estadísticas.</div>';
       return;
     }
 
-    const totalAns = questions.reduce((a,q)=>a+(q.correct||0)+(q.wrong||0), 0);
-    const totalOk  = questions.reduce((a,q)=>a+(q.correct||0), 0);
+    // Calcular resumen
+    const avgScore = rounds.scores.length ? (rounds.scores.reduce((a,b)=>a+b,0)/rounds.scores.length).toFixed(1) : 0;
+    const totalAns = questions.reduce((a,q)=>a+q.correct+q.wrong, 0);
+    const totalOk  = questions.reduce((a,q)=>a+q.correct, 0);
     const globalPct = totalAns ? Math.round(totalOk/totalAns*100) : 0;
 
+    // Ordenar: más falladas primero
     const sorted = [...questions].sort((a,b)=>{
-      const pa = (a.correct||0)/((a.correct||0)+(a.wrong||0)||1);
-      const pb = (b.correct||0)/((b.correct||0)+(b.wrong||0)||1);
+      const pa = a.correct/(a.correct+a.wrong)||0;
+      const pb = b.correct/(b.correct+b.wrong)||0;
       return pa - pb;
     });
 
+    // Agrupar por tipo
     const byType = {};
     for(const q of questions){
       if(!byType[q.type]) byType[q.type] = {correct:0, wrong:0};
-      byType[q.type].correct += (q.correct||0);
-      byType[q.type].wrong   += (q.wrong||0);
+      byType[q.type].correct += q.correct;
+      byType[q.type].wrong   += q.wrong;
     }
 
     const typeLabels = {plant:'🌿 Plantas', food:'🍽️ Alimentos', drug:'⚗️ Drogas & Medicamentos', poison:'☠️ Venenos & Químicos', common:'⚠️ Alertas del Hogar'};
     const typeColors = {plant:'#56d364', food:'#f0883e', drug:'#bc8cff', poison:'#ff6b35', common:'#ffc107'};
 
     let html = `
-      <div style="background:rgba(63,185,80,0.08);border:1px solid rgba(63,185,80,0.2);border-radius:10px;padding:10px 12px;margin-bottom:16px;font-size:12px;color:rgba(120,220,140,0.9);display:flex;align-items:center;gap:8px">
-        <span>🟢</span><span>Conectado a Firebase · datos de todos los usuarios en tiempo real</span>
-      </div>
-
+      <!-- Resumen global -->
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px">
         <div style="background:#21262d;border-radius:12px;padding:14px;text-align:center;border:1px solid rgba(255,255,255,0.07)">
-          <div style="font-family:'Fraunces',serif;font-size:28px;font-weight:900;color:#f0ebe0">${totalRondas}</div>
+          <div style="font-family:'Fraunces',serif;font-size:28px;font-weight:900;color:#f0ebe0">${rounds.total}</div>
           <div style="font-size:11px;color:rgba(240,235,224,0.5);margin-top:3px">Rondas jugadas</div>
         </div>
         <div style="background:#21262d;border-radius:12px;padding:14px;text-align:center;border:1px solid rgba(255,255,255,0.07)">
@@ -1368,6 +1357,7 @@ async function renderStats(){
         </div>
       </div>
 
+      <!-- Por categoría -->
       <div style="color:rgba(240,235,224,0.4);font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px">Aciertos por categoría</div>
       ${Object.entries(byType).map(([type, data])=>{
         const total = data.correct+data.wrong;
@@ -1384,13 +1374,14 @@ async function renderStats(){
         </div>`;
       }).join('')}
 
-      <div style="color:rgba(240,235,224,0.4);font-size:10px;letter-spacing:2px;text-transform:uppercase;margin:18px 0 10px">% acierto por pregunta · más falladas primero</div>
+      <!-- Preguntas individuales -->
+      <div style="color:rgba(240,235,224,0.4);font-size:10px;letter-spacing:2px;text-transform:uppercase;margin:18px 0 10px">% acierto por pregunta</div>
       ${sorted.map(q=>{
-        const total = (q.correct||0)+(q.wrong||0);
-        const pct = total ? Math.round((q.correct||0)/total*100) : 0;
+        const total = q.correct+q.wrong;
+        const pct = total ? Math.round(q.correct/total*100) : 0;
         const color = pct>=80?'#3fb950':pct>=50?'#d29922':'#f85149';
         return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
-          <span style="font-size:22px;min-width:28px">${q.emoji||'❓'}</span>
+          <span style="font-size:22px;min-width:28px">${q.emoji}</span>
           <div style="flex:1;min-width:0">
             <div style="font-size:12px;color:#f0ebe0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${q.name}</div>
             <div style="height:4px;background:#21262d;border-radius:2px;margin-top:5px;overflow:hidden">
@@ -1399,30 +1390,27 @@ async function renderStats(){
           </div>
           <div style="text-align:right;min-width:48px">
             <div style="font-size:14px;font-weight:700;color:${color}">${pct}%</div>
-            <div style="font-size:10px;color:rgba(240,235,224,0.35)">${q.correct||0}/${total}</div>
+            <div style="font-size:10px;color:rgba(240,235,224,0.35)">${q.correct}/${total}</div>
           </div>
         </div>`;
       }).join('')}
 
+      <!-- Botón limpiar -->
       <button onclick="clearStats()" style="margin-top:20px;width:100%;background:rgba(248,81,73,0.08);border:1px solid rgba(248,81,73,0.25);color:rgba(248,81,73,0.7);border-radius:10px;padding:11px;font-family:'Syne',sans-serif;font-size:13px;cursor:pointer;">
-        🗑️ Borrar todas las estadísticas de Firebase
+        🗑️ Borrar todas las estadísticas
       </button>
     `;
     container.innerHTML = html;
   } catch(e){
-    container.innerHTML = `<div style="text-align:center;padding:30px;color:#f85149;font-size:13px">⚠️ Error al cargar estadísticas.<br><small style="color:rgba(240,235,224,0.35)">${e.message}</small></div>`;
+    container.innerHTML = `<div style="text-align:center;padding:30px;color:#f85149;font-size:13px">Error al cargar estadísticas.<br><small>${e.message}</small></div>`;
   }
 }
 
 async function clearStats(){
-  if(!confirm('¿Borrar TODAS las estadísticas de Firebase? Esta acción no se puede deshacer.')) return;
+  if(!confirm('¿Borrar todas las estadísticas? Esta acción no se puede deshacer.')) return;
   try {
-    const db = initFirebase(); if(!db) return;
-    const batch = db.batch();
-    const preg = await db.collection('preguntas').get();
-    preg.forEach(doc => batch.delete(doc.ref));
-    batch.delete(db.collection('meta').doc('rondas'));
-    await batch.commit();
+    const r = await window.storage.list('stats:');
+    if(r) for(const key of r.keys){ try{ await window.storage.delete(key); }catch(e){} }
     await renderStats();
   } catch(e){ alert('Error al borrar: '+e.message); }
 }
@@ -1468,6 +1456,15 @@ function nextQuestion(){
 
 function showResults(){
   saveRound(score);
+  // Enviar resultado a Firebase (anónimo, solo estadísticas)
+  const catName = selectedCat === 'plants' ? 'Plantas'
+    : selectedCat === 'foods' ? 'Alimentos'
+    : selectedCat === 'drugs' ? 'Drogas & Medicamentos'
+    : selectedCat === 'poisons' ? 'Venenos & Químicos'
+    : 'Mix completo';
+  if(typeof window.enviarResultadoFirebase === 'function'){
+    window.enviarResultadoFirebase(catName, score, QS);
+  }
   document.getElementById('screen-question').style.display='none';
   document.getElementById('progress-wrap').style.display='none';
   document.getElementById('screen-results').style.display='flex';
