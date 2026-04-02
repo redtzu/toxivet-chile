@@ -778,7 +778,7 @@ body::before{
   </div>
 
 </div>
-<script>
+<script type="module">
 // ══════════════════════════════════════════════════════
 // BANCO PLANTAS (30 tóxicas)
 // ══════════════════════════════════════════════════════
@@ -1219,9 +1219,62 @@ function renderQuestion(){
 }
 
 // ══════════════════════════════════════════════════════
-// ESTADÍSTICAS — Storage persistente
+// FIREBASE — Estadísticas globales
 // ══════════════════════════════════════════════════════
-// ── Storage helper: usa window.storage (claude.ai) o localStorage (GitHub Pages) ──
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc, collection, getDocs, increment, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDOQsu0i71Rn-KbfX4arBWKH91LaXBs8Go",
+  authDomain: "base-toxica.firebaseapp.com",
+  projectId: "base-toxica",
+  storageBucket: "base-toxica.firebasestorage.app",
+  messagingSenderId: "566300481915",
+  appId: "1:566300481915:web:008dd917f94a190eb7c5de"
+};
+
+const fbApp = initializeApp(firebaseConfig);
+const db    = getFirestore(fbApp);
+
+// ── Guardar respuesta en Firestore (merge atómico con increment) ──
+async function saveAnswerGlobal(q, correct){
+  try {
+    const docId = q.name.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ]/g,'_').slice(0,80);
+    const ref   = doc(db, 'stats', docId);
+    const snap  = await getDoc(ref);
+    if(!snap.exists()){
+      await setDoc(ref, {
+        name: q.name, emoji: q.emoji, type: q.type,
+        correct: correct ? 1 : 0,
+        wrong:   correct ? 0 : 1
+      });
+    } else {
+      await updateDoc(ref, {
+        correct: increment(correct ? 1 : 0),
+        wrong:   increment(correct ? 0 : 1)
+      });
+    }
+  } catch(e){ console.warn('Firebase write error:', e); }
+}
+
+async function saveRoundGlobal(scoreVal){
+  try {
+    const ref  = doc(db, 'rounds', '_global');
+    const snap = await getDoc(ref);
+    if(!snap.exists()){
+      await setDoc(ref, { total: 1, scoreSum: scoreVal });
+    } else {
+      await updateDoc(ref, {
+        total:    increment(1),
+        scoreSum: increment(scoreVal)
+      });
+    }
+  } catch(e){ console.warn('Firebase rounds error:', e); }
+}
+
+// ══════════════════════════════════════════════════════
+// ESTADÍSTICAS — Storage local persistente
+// ══════════════════════════════════════════════════════
 const store = {
   async get(key){ try{ if(window.storage){ const r=await window.storage.get(key); return r?r.value:null; } return localStorage.getItem(key); }catch(e){ try{return localStorage.getItem(key);}catch(e2){return null;} } },
   async set(key,val){ try{ if(window.storage){ await window.storage.set(key,val); return; } localStorage.setItem(key,val); }catch(e){ try{localStorage.setItem(key,val);}catch(e2){} } },
@@ -1230,6 +1283,7 @@ const store = {
 };
 
 async function saveAnswer(q, correct){
+  // Local
   try {
     const key = 'stats:' + q.name.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ·\- ]/g,'').trim().slice(0,80);
     let entry;
@@ -1237,10 +1291,13 @@ async function saveAnswer(q, correct){
     if(!entry) entry = { name: q.name, emoji: q.emoji, type: q.type, correct: 0, wrong: 0 };
     if(correct) entry.correct++; else entry.wrong++;
     await store.set(key, JSON.stringify(entry));
-  } catch(e){ console.warn('Stats storage error:', e); }
+  } catch(e){ console.warn('Stats local error:', e); }
+  // Global
+  saveAnswerGlobal(q, correct);
 }
 
 async function saveRound(scoreVal){
+  // Local
   try {
     let rounds;
     try { const r = await store.get('stats:_rounds'); rounds = r ? JSON.parse(r) : {total:0, scores:[]}; } catch(e){ rounds = {total:0, scores:[]}; }
@@ -1248,6 +1305,8 @@ async function saveRound(scoreVal){
     rounds.scores.push(scoreVal);
     await store.set('stats:_rounds', JSON.stringify(rounds));
   } catch(e){ console.warn('Stats rounds error:', e); }
+  // Global
+  saveRoundGlobal(scoreVal);
 }
 
 // ── Logo click counter para panel oculto ──
@@ -1259,9 +1318,13 @@ function handleLogoClick(){
   if(logoClicks >= 5){ logoClicks=0; openStatsPanel(); }
 }
 
+// ── Pestaña activa ──
+let activeTab = 'local';
+
 async function openStatsPanel(){
   document.getElementById('stats-panel').style.display='flex';
   document.body.style.overflow='hidden';
+  activeTab = 'local';
   await renderStats();
 }
 function closeStatsPanel(){
@@ -1269,137 +1332,185 @@ function closeStatsPanel(){
   document.body.style.overflow='';
 }
 
+function switchTab(tab){
+  activeTab = tab;
+  const btnLocal  = document.getElementById('tab-local');
+  const btnGlobal = document.getElementById('tab-global');
+  const on  = 'background:#21262d;color:#f0ebe0;border:1px solid rgba(255,255,255,0.15);';
+  const off = 'background:transparent;color:rgba(240,235,224,0.4);border:1px solid transparent;';
+  btnLocal.style.cssText  += tab==='local'  ? on : off;
+  btnGlobal.style.cssText += tab==='global' ? on : off;
+  renderStats();
+}
+
+// ══════════════════════════════════════════════════════
+// RENDER STATS — bloque de HTML compartido
+// ══════════════════════════════════════════════════════
+function buildStatsHTML(rounds, questions){
+  const typeLabels = {plant:'🌿 Plantas', food:'🍽️ Alimentos', drug:'⚗️ Drogas & Medicamentos', poison:'☠️ Venenos & Químicos', common:'⚠️ Alertas del Hogar'};
+  const typeColors = {plant:'#56d364', food:'#f0883e', drug:'#bc8cff', poison:'#ff6b35', common:'#ffc107'};
+
+  const avgScore  = rounds.scores && rounds.scores.length
+    ? (rounds.scores.reduce((a,b)=>a+b,0)/rounds.scores.length).toFixed(1)
+    : rounds.scoreSum && rounds.total
+      ? (rounds.scoreSum/rounds.total).toFixed(1) : 0;
+  const totalAns  = questions.reduce((a,q)=>a+q.correct+q.wrong, 0);
+  const totalOk   = questions.reduce((a,q)=>a+q.correct, 0);
+  const globalPct = totalAns ? Math.round(totalOk/totalAns*100) : 0;
+
+  const sorted = [...questions].sort((a,b)=>{
+    const pa = a.correct/(a.correct+a.wrong)||0;
+    const pb = b.correct/(b.correct+b.wrong)||0;
+    return pa - pb;
+  });
+
+  const byType = {};
+  for(const q of questions){
+    if(!byType[q.type]) byType[q.type]={correct:0,wrong:0};
+    byType[q.type].correct += q.correct;
+    byType[q.type].wrong   += q.wrong;
+  }
+
+  return `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px">
+      <div style="background:#21262d;border-radius:12px;padding:14px;text-align:center;border:1px solid rgba(255,255,255,0.07)">
+        <div style="font-family:'Fraunces',serif;font-size:28px;font-weight:900;color:#f0ebe0">${rounds.total||0}</div>
+        <div style="font-size:11px;color:rgba(240,235,224,0.5);margin-top:3px">Rondas jugadas</div>
+      </div>
+      <div style="background:#21262d;border-radius:12px;padding:14px;text-align:center;border:1px solid rgba(255,255,255,0.07)">
+        <div style="font-family:'Fraunces',serif;font-size:28px;font-weight:900;color:${globalPct>=70?'#3fb950':globalPct>=50?'#d29922':'#f85149'}">${globalPct}%</div>
+        <div style="font-size:11px;color:rgba(240,235,224,0.5);margin-top:3px">Acierto global</div>
+      </div>
+      <div style="background:#21262d;border-radius:12px;padding:14px;text-align:center;border:1px solid rgba(255,255,255,0.07)">
+        <div style="font-family:'Fraunces',serif;font-size:28px;font-weight:900;color:#58a6ff">${avgScore}</div>
+        <div style="font-size:11px;color:rgba(240,235,224,0.5);margin-top:3px">Puntaje promedio</div>
+      </div>
+    </div>
+
+    <div style="color:rgba(240,235,224,0.4);font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px">Aciertos por categoría</div>
+    ${Object.entries(byType).map(([type,data])=>{
+      const total = data.correct+data.wrong;
+      const pct   = total ? Math.round(data.correct/total*100) : 0;
+      const color = typeColors[type]||'#58a6ff';
+      return `<div style="margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+          <span style="font-size:13px;color:#f0ebe0">${typeLabels[type]||type}</span>
+          <span style="font-size:12px;color:${color};font-weight:600">${pct}% <span style="color:rgba(240,235,224,0.35);font-weight:400">(${data.correct}/${total})</span></span>
+        </div>
+        <div style="height:6px;background:#21262d;border-radius:3px;overflow:hidden">
+          <div style="height:100%;width:${pct}%;background:${color};border-radius:3px;transition:width 0.6s ease"></div>
+        </div>
+      </div>`;
+    }).join('')}
+
+    <div style="color:rgba(240,235,224,0.4);font-size:10px;letter-spacing:2px;text-transform:uppercase;margin:18px 0 10px">Aciertos y errores por pregunta</div>
+    ${sorted.map(q=>{
+      const total    = q.correct+q.wrong;
+      const pct      = total ? Math.round(q.correct/total*100) : 0;
+      const pctWrong = total ? Math.round(q.wrong/total*100)   : 0;
+      return `<div style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:7px">
+          <span style="font-size:22px;min-width:28px">${q.emoji}</span>
+          <div style="font-size:12px;color:#f0ebe0;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${q.name}</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+              <span style="font-size:10px;color:#3fb950;font-weight:600">✓ Aciertos</span>
+              <span style="font-size:11px;color:#3fb950;font-weight:700">${q.correct} <span style="color:rgba(240,235,224,0.3);font-weight:400;font-size:10px">(${pct}%)</span></span>
+            </div>
+            <div style="height:5px;background:#21262d;border-radius:3px;overflow:hidden">
+              <div style="height:100%;width:${pct}%;background:#3fb950;border-radius:3px;transition:width 0.6s ease"></div>
+            </div>
+          </div>
+          <div style="width:1px;height:28px;background:rgba(255,255,255,0.07);flex-shrink:0"></div>
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+              <span style="font-size:10px;color:#f85149;font-weight:600">✗ Errores</span>
+              <span style="font-size:11px;color:#f85149;font-weight:700">${q.wrong} <span style="color:rgba(240,235,224,0.3);font-weight:400;font-size:10px">(${pctWrong}%)</span></span>
+            </div>
+            <div style="height:5px;background:#21262d;border-radius:3px;overflow:hidden">
+              <div style="height:100%;width:${pctWrong}%;background:#f85149;border-radius:3px;transition:width 0.6s ease"></div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    }).join('')}
+  `;
+}
+
 async function renderStats(){
   const container = document.getElementById('stats-content');
-  container.innerHTML = '<div style="text-align:center;padding:30px;color:rgba(240,235,224,0.4)">Cargando estadísticas…</div>';
-  try {
-    // Cargar rondas
-    let rounds = {total:0, scores:[]};
-    try { const r = await store.get('stats:_rounds'); if(r) rounds = JSON.parse(r); } catch(e){}
 
-    // Cargar preguntas
-    let keys = [];
-    try { const all = await store.list('stats:'); keys = all.filter(k=>k!=='stats:_rounds'); } catch(e){}
-
-    const questions = [];
-    for(const key of keys){
-      try { const r = await store.get(key); if(r) questions.push(JSON.parse(r)); } catch(e){}
-    }
-
-    if(rounds.total === 0 && questions.length === 0){
-      container.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(240,235,224,0.4);font-size:14px">Aún no hay datos.<br>Juega una ronda para empezar a registrar estadísticas.</div>';
-      return;
-    }
-
-    // Calcular resumen
-    const avgScore = rounds.scores.length ? (rounds.scores.reduce((a,b)=>a+b,0)/rounds.scores.length).toFixed(1) : 0;
-    const totalAns = questions.reduce((a,q)=>a+q.correct+q.wrong, 0);
-    const totalOk  = questions.reduce((a,q)=>a+q.correct, 0);
-    const globalPct = totalAns ? Math.round(totalOk/totalAns*100) : 0;
-
-    // Ordenar: más falladas primero
-    const sorted = [...questions].sort((a,b)=>{
-      const pa = a.correct/(a.correct+a.wrong)||0;
-      const pb = b.correct/(b.correct+b.wrong)||0;
-      return pa - pb;
-    });
-
-    // Agrupar por tipo
-    const byType = {};
-    for(const q of questions){
-      if(!byType[q.type]) byType[q.type] = {correct:0, wrong:0};
-      byType[q.type].correct += q.correct;
-      byType[q.type].wrong   += q.wrong;
-    }
-
-    const typeLabels = {plant:'🌿 Plantas', food:'🍽️ Alimentos', drug:'⚗️ Drogas & Medicamentos', poison:'☠️ Venenos & Químicos', common:'⚠️ Alertas del Hogar'};
-    const typeColors = {plant:'#56d364', food:'#f0883e', drug:'#bc8cff', poison:'#ff6b35', common:'#ffc107'};
-
-    let html = `
-      <!-- Resumen global -->
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px">
-        <div style="background:#21262d;border-radius:12px;padding:14px;text-align:center;border:1px solid rgba(255,255,255,0.07)">
-          <div style="font-family:'Fraunces',serif;font-size:28px;font-weight:900;color:#f0ebe0">${rounds.total}</div>
-          <div style="font-size:11px;color:rgba(240,235,224,0.5);margin-top:3px">Rondas jugadas</div>
-        </div>
-        <div style="background:#21262d;border-radius:12px;padding:14px;text-align:center;border:1px solid rgba(255,255,255,0.07)">
-          <div style="font-family:'Fraunces',serif;font-size:28px;font-weight:900;color:${globalPct>=70?'#3fb950':globalPct>=50?'#d29922':'#f85149'}">${globalPct}%</div>
-          <div style="font-size:11px;color:rgba(240,235,224,0.5);margin-top:3px">Acierto global</div>
-        </div>
-        <div style="background:#21262d;border-radius:12px;padding:14px;text-align:center;border:1px solid rgba(255,255,255,0.07)">
-          <div style="font-family:'Fraunces',serif;font-size:28px;font-weight:900;color:#58a6ff">${avgScore}</div>
-          <div style="font-size:11px;color:rgba(240,235,224,0.5);margin-top:3px">Puntaje promedio</div>
-        </div>
-      </div>
-
-      <!-- Por categoría -->
-      <div style="color:rgba(240,235,224,0.4);font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px">Aciertos por categoría</div>
-      ${Object.entries(byType).map(([type, data])=>{
-        const total = data.correct+data.wrong;
-        const pct = total ? Math.round(data.correct/total*100) : 0;
-        const color = typeColors[type]||'#58a6ff';
-        return `<div style="margin-bottom:10px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
-            <span style="font-size:13px;color:#f0ebe0">${typeLabels[type]||type}</span>
-            <span style="font-size:12px;color:${color};font-weight:600">${pct}% <span style="color:rgba(240,235,224,0.35);font-weight:400">(${data.correct}/${total})</span></span>
-          </div>
-          <div style="height:6px;background:#21262d;border-radius:3px;overflow:hidden">
-            <div style="height:100%;width:${pct}%;background:${color};border-radius:3px;transition:width 0.6s ease"></div>
-          </div>
-        </div>`;
-      }).join('')}
-
-      <!-- Preguntas individuales -->
-      <div style="color:rgba(240,235,224,0.4);font-size:10px;letter-spacing:2px;text-transform:uppercase;margin:18px 0 10px">Aciertos y errores por pregunta</div>
-      ${sorted.map(q=>{
-        const total = q.correct+q.wrong;
-        const pct = total ? Math.round(q.correct/total*100) : 0;
-        const pctWrong = total ? Math.round(q.wrong/total*100) : 0;
-        const color = pct>=80?'#3fb950':pct>=50?'#d29922':'#f85149';
-        return `<div style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:7px">
-            <span style="font-size:22px;min-width:28px">${q.emoji}</span>
-            <div style="font-size:12px;color:#f0ebe0;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${q.name}</div>
-          </div>
-          <div style="display:flex;gap:8px;align-items:center">
-            <!-- Aciertos -->
-            <div style="flex:1;min-width:0">
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
-                <span style="font-size:10px;color:#3fb950;font-weight:600">✓ Aciertos</span>
-                <span style="font-size:11px;color:#3fb950;font-weight:700">${q.correct} <span style="color:rgba(240,235,224,0.3);font-weight:400;font-size:10px">(${pct}%)</span></span>
-              </div>
-              <div style="height:5px;background:#21262d;border-radius:3px;overflow:hidden">
-                <div style="height:100%;width:${pct}%;background:#3fb950;border-radius:3px;transition:width 0.6s ease"></div>
-              </div>
-            </div>
-            <div style="width:1px;height:28px;background:rgba(255,255,255,0.07);flex-shrink:0"></div>
-            <!-- Errores -->
-            <div style="flex:1;min-width:0">
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
-                <span style="font-size:10px;color:#f85149;font-weight:600">✗ Errores</span>
-                <span style="font-size:11px;color:#f85149;font-weight:700">${q.wrong} <span style="color:rgba(240,235,224,0.3);font-weight:400;font-size:10px">(${pctWrong}%)</span></span>
-              </div>
-              <div style="height:5px;background:#21262d;border-radius:3px;overflow:hidden">
-                <div style="height:100%;width:${pctWrong}%;background:#f85149;border-radius:3px;transition:width 0.6s ease"></div>
-              </div>
-            </div>
-          </div>
-        </div>`;
-      }).join('')}
-
-      <!-- Botón limpiar -->
-      <button onclick="clearStats()" style="margin-top:20px;width:100%;background:rgba(248,81,73,0.08);border:1px solid rgba(248,81,73,0.25);color:rgba(248,81,73,0.7);border-radius:10px;padding:11px;font-family:'Syne',sans-serif;font-size:13px;cursor:pointer;">
-        🗑️ Borrar todas las estadísticas
+  // ── Tabs UI (siempre visible arriba) ──
+  const tabBar = `
+    <div style="display:flex;gap:6px;margin-bottom:18px">
+      <button id="tab-local" onclick="switchTab('local')"
+        style="flex:1;padding:9px;border-radius:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;
+               ${activeTab==='local'?'background:#21262d;color:#f0ebe0;border:1px solid rgba(255,255,255,0.15);':'background:transparent;color:rgba(240,235,224,0.4);border:1px solid transparent;'}">
+        📱 Mis stats
       </button>
-    `;
-    container.innerHTML = html;
+      <button id="tab-global" onclick="switchTab('global')"
+        style="flex:1;padding:9px;border-radius:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;
+               ${activeTab==='global'?'background:#21262d;color:#f0ebe0;border:1px solid rgba(255,255,255,0.15);':'background:transparent;color:rgba(240,235,224,0.4);border:1px solid transparent;'}">
+        🌍 Global
+      </button>
+    </div>`;
+
+  container.innerHTML = tabBar + '<div style="text-align:center;padding:30px;color:rgba(240,235,224,0.4)">Cargando…</div>';
+
+  try {
+    let rounds, questions;
+
+    if(activeTab === 'local'){
+      // ── Datos locales ──
+      rounds = {total:0, scores:[]};
+      try { const r = await store.get('stats:_rounds'); if(r) rounds = JSON.parse(r); } catch(e){}
+      let keys = [];
+      try { const all = await store.list('stats:'); keys = all.filter(k=>k!=='stats:_rounds'); } catch(e){}
+      questions = [];
+      for(const key of keys){
+        try { const r = await store.get(key); if(r) questions.push(JSON.parse(r)); } catch(e){}
+      }
+
+      if(rounds.total===0 && questions.length===0){
+        container.innerHTML = tabBar + '<div style="text-align:center;padding:40px;color:rgba(240,235,224,0.4);font-size:14px">Aún no hay datos locales.<br>Juega una ronda para empezar.</div>';
+        return;
+      }
+
+      container.innerHTML = tabBar + buildStatsHTML(rounds, questions) + `
+        <button onclick="clearStats()" style="margin-top:20px;width:100%;background:rgba(248,81,73,0.08);border:1px solid rgba(248,81,73,0.25);color:rgba(248,81,73,0.7);border-radius:10px;padding:11px;font-family:'Syne',sans-serif;font-size:13px;cursor:pointer;">
+          🗑️ Borrar mis estadísticas locales
+        </button>`;
+
+    } else {
+      // ── Datos globales desde Firestore ──
+      const roundsSnap = await getDoc(doc(db,'rounds','_global'));
+      rounds = roundsSnap.exists() ? roundsSnap.data() : {total:0, scoreSum:0};
+
+      const statsSnap = await getDocs(collection(db,'stats'));
+      questions = [];
+      statsSnap.forEach(d => questions.push(d.data()));
+
+      if(rounds.total===0 && questions.length===0){
+        container.innerHTML = tabBar + '<div style="text-align:center;padding:40px;color:rgba(240,235,224,0.4);font-size:14px">Aún no hay datos globales.<br>¡Sé el primero en jugar!</div>';
+        return;
+      }
+
+      container.innerHTML = tabBar
+        + `<div style="background:rgba(88,166,255,0.07);border:1px solid rgba(88,166,255,0.2);border-radius:10px;padding:9px 12px;margin-bottom:16px;font-size:11.5px;color:rgba(120,192,255,0.85)">
+             🌍 Estadísticas de todos los usuarios · Se actualiza en tiempo real
+           </div>`
+        + buildStatsHTML(rounds, questions);
+    }
+
   } catch(e){
-    container.innerHTML = `<div style="text-align:center;padding:30px;color:#f85149;font-size:13px">Error al cargar estadísticas.<br><small>${e.message}</small></div>`;
+    container.innerHTML = tabBar + `<div style="text-align:center;padding:30px;color:#f85149;font-size:13px">Error al cargar estadísticas.<br><small>${e.message}</small></div>`;
   }
 }
 
 async function clearStats(){
-  if(!confirm('¿Borrar todas las estadísticas? Esta acción no se puede deshacer.')) return;
+  if(!confirm('¿Borrar tus estadísticas locales? Esta acción no se puede deshacer.')) return;
   try {
     const keys = await store.list('stats:');
     for(const key of keys){ try{ await store.delete(key); }catch(e){} }
@@ -1483,6 +1594,22 @@ function showIntro(){
   document.getElementById('screen-intro').style.display='flex';
   document.getElementById('screen-intro').style.flexDirection='column';
 }
+
+// ── Exponer funciones al scope global (requerido con type="module") ──
+window.selectCat      = selectCat;
+window.startQuiz      = startQuiz;
+window.nextQuestion   = nextQuestion;
+window.exitToMenu     = exitToMenu;
+window.exitConfirm    = exitConfirm;
+window.exitCancel     = exitCancel;
+window.showIntro      = showIntro;
+window.openPanel      = openPanel;
+window.closePanel     = closePanel;
+window.copyList       = copyList;
+window.handleLogoClick= handleLogoClick;
+window.closeStatsPanel= closeStatsPanel;
+window.switchTab      = switchTab;
+window.clearStats     = clearStats;
 </script>
   <!-- ── PANEL ESTADÍSTICAS (oculto) ── -->
   <div id="stats-panel" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:300;align-items:flex-end;justify-content:center;backdrop-filter:blur(6px);">
