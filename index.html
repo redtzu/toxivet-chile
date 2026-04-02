@@ -5,44 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>🐾 ToxiVet Chile — Encuesta de Toxicología</title>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,700;0,900;1,700&family=Syne:wght@400;500;600&display=swap" rel="stylesheet">
-<!-- Firebase SDK -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-  // ══════════════════════════════════════════════════════
-  // 🔧 REEMPLAZA ESTOS VALORES con los de tu proyecto Firebase
-  // Firebase Console → tu proyecto → Configuración → Aplicaciones web
-  // ══════════════════════════════════════════════════════
-  const firebaseConfig = {
-    apiKey: "AIzaSyCmsvVHRsqA0ZN_W5vKsKqDWrYjH5BDz1U",
-    authDomain: "toxivet-ae217.firebaseapp.com",
-    projectId: "toxivet-ae217",
-    storageBucket: "toxivet-ae217.firebasestorage.app",
-    messagingSenderId: "743378702073",
-    appId: "1:743378702073:web:811588b376aba039df9c28"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-
-  // Función global para enviar resultado de ronda a Firestore
-  window.enviarResultadoFirebase = async function(categoria, correctas, total) {
-    try {
-      await addDoc(collection(db, "resultados"), {
-        categoria: categoria,
-        correctas: correctas,
-        total: total,
-        porcentaje: Math.round((correctas / total) * 100),
-        fecha: serverTimestamp()
-      });
-      console.log("✅ Resultado enviado a Firebase");
-    } catch (e) {
-      console.warn("⚠️ No se pudo enviar a Firebase:", e.message);
-      // Fallo silencioso — la encuesta sigue funcionando aunque Firebase falle
-    }
-  };
-</script>
 <style>
 :root {
   --bg: #0d1117;
@@ -509,7 +471,7 @@ body::before{
           <div class="item-row"><span class="item-num">10</span><span class="item-name">Tulipán<span class="item-sci">Tulipa spp.</span></span></div>
           <div class="item-row"><span class="item-num">11</span><span class="item-name">Hiedra<span class="item-sci">Hedera helix</span></span></div>
           <div class="item-row"><span class="item-num">12</span><span class="item-name">Geranio<span class="item-sci">Pelargonium spp.</span></span></div>
-          <div class="item-row"><span class="item-num">13</span><span class="item-name">Adelfa / Oleander<span class="item-sci">Nerium oleander</span></span></div>
+          <div class="item-row"><span class="item-num">13</span><span class="item-name">Laurel en Flor / Adelfa<span class="item-sci">Nerium oleander · glucósidos cardíacos</span></span></div>
           <div class="item-row"><span class="item-num">14</span><span class="item-name">Palma de Sagú<span class="item-sci">Cycas revoluta</span></span></div>
           <div class="item-row"><span class="item-num">15</span><span class="item-name">Dieffenbachia<span class="item-sci">Dieffenbachia spp.</span></span></div>
           <div class="item-row"><span class="item-num">16</span><span class="item-name">Espatifilo / Lirio de Paz<span class="item-sci">Spathiphyllum spp.</span></span></div>
@@ -522,11 +484,7 @@ body::before{
           <div class="item-row"><span class="item-num">23</span><span class="item-name">Planta Ti<span class="item-sci">Cordyline fruticosa</span></span></div>
           <div class="item-row"><span class="item-num">24</span><span class="item-name">Taro<span class="item-sci">Colocasia esculenta</span></span></div>
           <div class="item-row"><span class="item-num">25</span><span class="item-name">Scindapsus<span class="item-sci">Scindapsus pictus</span></span></div>
-          <div class="item-row"><span class="item-num">26</span><span class="item-name">Palán Palán<span class="item-sci">Nicotiana glauca</span></span></div>
-          <div class="item-row"><span class="item-num">27</span><span class="item-name">Flor de Pascua<span class="item-sci">Euphorbia pulcherrima</span></span></div>
-          <div class="item-row"><span class="item-num">28</span><span class="item-name">Prímula<span class="item-sci">Primula spp.</span></span></div>
-          <div class="item-row"><span class="item-num">29</span><span class="item-name">Tradescantia<span class="item-sci">Tradescantia spp.</span></span></div>
-          <div class="item-row"><span class="item-num">30</span><span class="item-name">Palán Palán<span class="item-sci">Nicotiana glauca</span></span></div>
+          <div class="item-row"><span class="item-num">26</span><span class="item-name">Palán Palán<span class="item-sci">Nicotiana glauca · Solanaceae · anabasina</span></span></div>
         </div>
         <div class="panel-section">
           <div class="panel-section-title" style="color:#56d364">✅ Plantas SEGURAS (9)</div>
@@ -593,53 +551,53 @@ body::before{
         </div>
         <div class="panel-section">
           <div class="panel-section-title">⚗️ Drogas & Medicamentos peligrosos (34)</div>
-          <div class="item-row"><span class="item-num">1</span><span class="item-name">Paracetamol (Tapsin · Panadol)<span class="item-sci">UNA tableta = mortal para gatos</span></span></div>
-          <div class="item-row"><span class="item-num">2</span><span class="item-name">Ibuprofeno (Brufen · Advil)<span class="item-sci">Úlceras GI + falla renal aguda</span></span></div>
-          <div class="item-row"><span class="item-num">3</span><span class="item-name">Aspirina / Ácido acetilsalicílico<span class="item-sci">Gatos: vida media 38h — acumulación fatal</span></span></div>
-          <div class="item-row"><span class="item-num">4</span><span class="item-name">Diclofenaco crema (Voltaren gel)<span class="item-sci">Lamido = falla renal en gatos</span></span></div>
-          <div class="item-row"><span class="item-num">5</span><span class="item-name">Naproxeno (Naprosyn · Aleve)<span class="item-sci">AINE · muy bajo margen de seguridad en perros</span></span></div>
-          <div class="item-row"><span class="item-num">6</span><span class="item-name">Metilfenidato (Ritalín · Concerta · Rubifen)<span class="item-sci">Estimulante TDAH · convulsiones y taquicardia</span></span></div>
-          <div class="item-row"><span class="item-num">7</span><span class="item-name">Antidepresivos ISRS (Fluoxetina · Prozac)<span class="item-sci">Síndrome serotoninérgico</span></span></div>
-          <div class="item-row"><span class="item-num">8</span><span class="item-name">Benzodiacepinas (Clonazepam · Rivotril)<span class="item-sci">Gatos: hepatotoxicidad idiosincrática fatal</span></span></div>
-          <div class="item-row"><span class="item-num">9</span><span class="item-name">Amitriptilina (antidepresivo tricíclico)<span class="item-sci">Arritmias cardíacas + convulsiones</span></span></div>
-          <div class="item-row"><span class="item-num">10</span><span class="item-name">Loperamida (Imodium)<span class="item-sci">Razas MDR1+ (Collie): toxicidad SNC grave</span></span></div>
-          <div class="item-row"><span class="item-num">11</span><span class="item-name">Loratadina CON pseudoefedrina (Clarityne-D)<span class="item-sci">Pseudoefedrina: hipertensión y taquicardia</span></span></div>
-          <div class="item-row"><span class="item-num">12</span><span class="item-name">Nicotina (cigarrillos · colillas · parches · vapeadores)<span class="item-sci">Muy tóxica · parches y colillas: alta concentración</span></span></div>
-          <div class="item-row"><span class="item-num">13</span><span class="item-name">Baclofen (relajante muscular)<span class="item-sci">Depresión SNC grave · coma</span></span></div>
-          <div class="item-row"><span class="item-num">14</span><span class="item-name">Colchicina (antigota)<span class="item-sci">Margen muy estrecho · falla multiorgánica</span></span></div>
-          <div class="item-row"><span class="item-num">15</span><span class="item-name">Tramadol<span class="item-sci">Gatos: acumulación y neurotoxicidad</span></span></div>
-          <div class="item-row"><span class="item-num">16</span><span class="item-name">Morfina<span class="item-sci">Gatos: deficiencia enzimática — acumulación</span></span></div>
-          <div class="item-row"><span class="item-num">17</span><span class="item-name">Fentanilo<span class="item-sci">Microgramos = mortal · parches usados: peligro</span></span></div>
-          <div class="item-row"><span class="item-num">18</span><span class="item-name">Heroína<span class="item-sci">Antídoto: Naloxona · urgencia máxima</span></span></div>
-          <div class="item-row"><span class="item-num">19</span><span class="item-name">Metadona (Biodone)<span class="item-sci">Vida media 24-36h · efectos prolongados</span></span></div>
-          <div class="item-row"><span class="item-num">20</span><span class="item-name">Cannabis / Marihuana (THC)<span class="item-sci">Perros: 10× más sensibles · colillas en suelo, brownies, galletas y otras preparaciones</span></span></div>
-          <div class="item-row"><span class="item-num">21</span><span class="item-name">Hachís / Cannabis concentrado<span class="item-sci">5-10× más THC que la marihuana herbal</span></span></div>
-          <div class="item-row"><span class="item-num">22</span><span class="item-name">Cocaína (clorhidrato)<span class="item-sci">Agitación extrema · hipertermia · convulsiones</span></span></div>
-          <div class="item-row"><span class="item-num">23</span><span class="item-name">Metanfetamina<span class="item-sci">Vida media 10-12h · efectos tóxicos prolongados</span></span></div>
-          <div class="item-row"><span class="item-num">24</span><span class="item-name">MDMA / Éxtasis<span class="item-sci">Síndrome serotoninérgico · hipertermia fatal</span></span></div>
-          <div class="item-row"><span class="item-num">25</span><span class="item-name">Etanol (bebidas alcohólicas)<span class="item-sci">Gatos: 15ml de vino = emergencia</span></span></div>
-          <div class="item-row"><span class="item-num">26</span><span class="item-name">Isopropanol (alcohol de frotar)<span class="item-sci">Si se lame: 2-3× más tóxico que el etanol</span></span></div>
-          <div class="item-row"><span class="item-num">27</span><span class="item-name">Vitamina D3 en suplementos (sobredosis)<span class="item-sci">Hipercalcemia · falla renal aguda</span></span></div>
-          <div class="item-row"><span class="item-num">28</span><span class="item-name">Warfarina (anticoagulante)<span class="item-sci">Hemorragia interna · igual que raticidas</span></span></div>
-          <div class="item-row"><span class="item-num">29</span><span class="item-name">Digoxina (cardíaco)<span class="item-sci">Margen terapéutico muy estrecho · arritmias</span></span></div>
-          <div class="item-row"><span class="item-num">30</span><span class="item-name">Pseudoefedrina (descongestionante)<span class="item-sci">Taquicardia severa · hipertensión</span></span></div>
-          <div class="item-row"><span class="item-num">31</span><span class="item-name">Duloxetina (Cymbalta)<span class="item-sci">ISRS/IRSN · síndrome serotoninérgico</span></span></div>
-          <div class="item-row"><span class="item-num">32</span><span class="item-name">Gabapentina (sobredosis)<span class="item-sci">Sedación profunda · depresión respiratoria</span></span></div>
-          <div class="item-row"><span class="item-num">33</span><span class="item-name">Antihistamínicos con difenhidramina<span class="item-sci">Benadryl · sedación o excitación paradójica</span></span></div>
-          <div class="item-row"><span class="item-num">34</span><span class="item-name">Monóxido de carbono (calefactores)<span class="item-sci">Gas sin olor · silencioso y mortal</span></span></div>
+          <div class="item-row"><span class="item-num">1</span><span class="item-name">Tapsin · Panadol <span class="item-sci">(paracetamol) · UNA tableta = mortal para gatos</span></span></div>
+          <div class="item-row"><span class="item-num">2</span><span class="item-name">Brufen · Advil <span class="item-sci">(ibuprofeno) · Úlceras GI + falla renal aguda</span></span></div>
+          <div class="item-row"><span class="item-num">3</span><span class="item-name">Aspirina <span class="item-sci">(ácido acetilsalicílico) · Gatos: vida media 38h — acumulación fatal</span></span></div>
+          <div class="item-row"><span class="item-num">4</span><span class="item-name">Voltaren gel <span class="item-sci">(diclofenaco crema) · Lamido = falla renal en gatos</span></span></div>
+          <div class="item-row"><span class="item-num">5</span><span class="item-name">Naprosyn · Aleve <span class="item-sci">(naproxeno) · AINE · muy bajo margen de seguridad en perros</span></span></div>
+          <div class="item-row"><span class="item-num">6</span><span class="item-name">Ritalín · Concerta · Rubifen <span class="item-sci">(metilfenidato) · Estimulante TDAH · convulsiones</span></span></div>
+          <div class="item-row"><span class="item-num">7</span><span class="item-name">Prozac · Fluoxil <span class="item-sci">(fluoxetina / ISRS) · Síndrome serotoninérgico</span></span></div>
+          <div class="item-row"><span class="item-num">8</span><span class="item-name">Rivotril · Clonex <span class="item-sci">(clonazepam / benzodiacepina) · Hepatotoxicidad fatal en gatos</span></span></div>
+          <div class="item-row"><span class="item-num">9</span><span class="item-name">Tryptanol <span class="item-sci">(amitriptilina) · Arritmias cardíacas + convulsiones</span></span></div>
+          <div class="item-row"><span class="item-num">10</span><span class="item-name">Imodium <span class="item-sci">(loperamida) · Razas MDR1+ (Collie): toxicidad SNC grave</span></span></div>
+          <div class="item-row"><span class="item-num">11</span><span class="item-name">Clarityne-D <span class="item-sci">(loratadina + pseudoefedrina) · Hipertensión y taquicardia</span></span></div>
+          <div class="item-row"><span class="item-num">12</span><span class="item-name">Nicotina — cigarrillos · parches · vapeadores <span class="item-sci">(nicotina) · Muy tóxica</span></span></div>
+          <div class="item-row"><span class="item-num">13</span><span class="item-name">Lioresal <span class="item-sci">(baclofeno / relajante muscular) · Depresión SNC grave · coma</span></span></div>
+          <div class="item-row"><span class="item-num">14</span><span class="item-name">Colbenemid <span class="item-sci">(colchicina / antigota) · Margen muy estrecho · falla multiorgánica</span></span></div>
+          <div class="item-row"><span class="item-num">15</span><span class="item-name">Tramadol · Tramal <span class="item-sci">(tramadol) · Gatos: acumulación y neurotoxicidad</span></span></div>
+          <div class="item-row"><span class="item-num">16</span><span class="item-name">Morfina · MST <span class="item-sci">(morfina) · Gatos: deficiencia enzimática — acumulación</span></span></div>
+          <div class="item-row"><span class="item-num">17</span><span class="item-name">Durogesic · Fentanilo parches <span class="item-sci">(fentanilo) · Microgramos = mortal</span></span></div>
+          <div class="item-row"><span class="item-num">18</span><span class="item-name">Heroína <span class="item-sci">(diacetilmorfina) · Antídoto: Naloxona · urgencia máxima</span></span></div>
+          <div class="item-row"><span class="item-num">19</span><span class="item-name">Biodone <span class="item-sci">(metadona) · Vida media 24-36h · efectos prolongados</span></span></div>
+          <div class="item-row"><span class="item-num">20</span><span class="item-name">Marihuana · Cannabis <span class="item-sci">(THC) · Perros: 10× más sensibles · colillas, brownies</span></span></div>
+          <div class="item-row"><span class="item-num">21</span><span class="item-name">Hachís · Cannabis concentrado <span class="item-sci">(THC concentrado) · 5-10× más potente</span></span></div>
+          <div class="item-row"><span class="item-num">22</span><span class="item-name">Cocaína <span class="item-sci">(clorhidrato de cocaína) · Agitación extrema · hipertermia</span></span></div>
+          <div class="item-row"><span class="item-num">23</span><span class="item-name">Metanfetamina · Cristal <span class="item-sci">(metanfetamina) · Vida media 10-12h</span></span></div>
+          <div class="item-row"><span class="item-num">24</span><span class="item-name">Éxtasis <span class="item-sci">(MDMA) · Síndrome serotoninérgico · hipertermia fatal</span></span></div>
+          <div class="item-row"><span class="item-num">25</span><span class="item-name">Alcohol — pisco · vino · cerveza <span class="item-sci">(etanol) · Gatos: 15ml de vino = emergencia</span></span></div>
+          <div class="item-row"><span class="item-num">26</span><span class="item-name">Alcohol de frotar <span class="item-sci">(isopropanol) · Si se lame: 2-3× más tóxico que etanol</span></span></div>
+          <div class="item-row"><span class="item-num">27</span><span class="item-name">Suplementos de vitamina D3 <span class="item-sci">(colecalciferol) · Hipercalcemia · falla renal aguda</span></span></div>
+          <div class="item-row"><span class="item-num">28</span><span class="item-name">Anticoagulante oral <span class="item-sci">(warfarina) · Hemorragia interna · igual que raticidas</span></span></div>
+          <div class="item-row"><span class="item-num">29</span><span class="item-name">Digitálico cardíaco <span class="item-sci">(digoxina) · Margen terapéutico muy estrecho · arritmias</span></span></div>
+          <div class="item-row"><span class="item-num">30</span><span class="item-name">Descongestionante nasal <span class="item-sci">(pseudoefedrina) · Taquicardia severa · hipertensión</span></span></div>
+          <div class="item-row"><span class="item-num">31</span><span class="item-name">Cymbalta <span class="item-sci">(duloxetina) · ISRS/IRSN · síndrome serotoninérgico</span></span></div>
+          <div class="item-row"><span class="item-num">32</span><span class="item-name">Neurontin · Gabapentina <span class="item-sci">(gabapentina) · Sedación profunda en sobredosis</span></span></div>
+          <div class="item-row"><span class="item-num">33</span><span class="item-name">Benadryl · antihistamínico <span class="item-sci">(difenhidramina) · Sedación o excitación paradójica</span></span></div>
+          <div class="item-row"><span class="item-num">34</span><span class="item-name">Monóxido de carbono — calefactores <span class="item-sci">(CO) · Gas sin olor · silencioso y mortal</span></span></div>
         </div>
         <div class="panel-section">
           <div class="panel-section-title">☠️ Venenos, Limpiadores & Químicos (10 tóxicos + 9 seguros)</div>
-          <div class="item-row"><span class="item-num">1</span><span class="item-name">Brodifacoum<span class="item-sci">Raticida anticoagulante · Ratonik, Klerat</span></span></div>
-          <div class="item-row"><span class="item-num">2</span><span class="item-name">Anticongelante — Etilenglicol<span class="item-sci">⚠️ Sabor dulce · atrae a animales y niños pequeños</span></span></div>
-          <div class="item-row"><span class="item-num">3</span><span class="item-name">Metaldehído<span class="item-sci">Cebo babosas · Metarex</span></span></div>
-          <div class="item-row"><span class="item-num">4</span><span class="item-name">Permetrina / Piretroides<span class="item-sci">Insecticidas pulgas · Advantix</span></span></div>
-          <div class="item-row"><span class="item-num">5</span><span class="item-name">Organofosforados<span class="item-sci">Insecticidas · clorpirifos, malatión</span></span></div>
-          <div class="item-row"><span class="item-num">6</span><span class="item-name">Fosfuro de Zinc<span class="item-sci">Rodenticida · libera gas fosfina</span></span></div>
-          <div class="item-row"><span class="item-num">7</span><span class="item-name">Cloro / Lejía — Hipoclorito de Sodio<span class="item-sci">Limpiadores domésticos</span></span></div>
-          <div class="item-row"><span class="item-num">8</span><span class="item-name">Paraquat<span class="item-sci">Herbicida agrícola · Gramoxone</span></span></div>
-          <div class="item-row"><span class="item-num">9</span><span class="item-name">Naftalina<span class="item-sci">Bolas antimoth</span></span></div>
-          <div class="item-row"><span class="item-num">10</span><span class="item-name">Ácido Bórico / Bórax<span class="item-sci">Veneno cucarachas</span></span></div>
+          <div class="item-row"><span class="item-num">1</span><span class="item-name">Raticida anticoagulante <span class="item-sci">(brodifacoum) · Ratonik, Klerat</span></span></div>
+          <div class="item-row"><span class="item-num">2</span><span class="item-name">Anticongelante <span class="item-sci">(etilenglicol) · Sabor dulce · gatos: solo 3-4h de ventana</span></span></div>
+          <div class="item-row"><span class="item-num">3</span><span class="item-name">Cebo para babosas <span class="item-sci">(metaldehído) · Metarex · convulsiones en 30-180 min</span></span></div>
+          <div class="item-row"><span class="item-num">4</span><span class="item-name">Antipulgas para perros — Advantix <span class="item-sci">(permetrina / piretroides) · LETAL para gatos</span></span></div>
+          <div class="item-row"><span class="item-num">5</span><span class="item-name">Insecticida agrícola <span class="item-sci">(organofosforados) · clorpirifos, malatión</span></span></div>
+          <div class="item-row"><span class="item-num">6</span><span class="item-name">Rodenticida gris/negro <span class="item-sci">(fosfuro de zinc) · libera gas fosfina</span></span></div>
+          <div class="item-row"><span class="item-num">7</span><span class="item-name">Cloro / Lejía <span class="item-sci">(hipoclorito de sodio) · Limpiadores domésticos</span></span></div>
+          <div class="item-row"><span class="item-num">8</span><span class="item-name">Herbicida — Gramoxone <span class="item-sci">(paraquat) · Sin antídoto efectivo</span></span></div>
+          <div class="item-row"><span class="item-num">9</span><span class="item-name">Bolas antimoth / naftalinas <span class="item-sci">(naftalina / paradiclorobenceno)</span></span></div>
+          <div class="item-row"><span class="item-num">10</span><span class="item-name">Veneno para cucarachas <span class="item-sci">(ácido bórico / bórax)</span></span></div>
         </div>
         <div class="panel-section">
           <div class="panel-section-title" style="color:#7ee787">✅ Químicos & Limpiadores SEGUROS (9)</div>
@@ -693,7 +651,7 @@ body::before{
         <div class="ref-block">
           <div class="ref-title">Facultad de Ciencias Veterinarias — Chile</div>
           <div class="ref-text">Universidad de Chile y Universidad Austral de Chile publican reportes periódicos sobre intoxicaciones frecuentes en contexto nacional, incluyendo plantas endémicas como Palán Palán y Cinamomo.</div>
-          <a class="ref-link" href="https://www.uchile.cl/facultades/ciencias-veterinarias-y-pecuarias" target="_blank">→ uchile.cl · Facultad de Cs. Veterinarias</a>
+          <a class="ref-link" href="https://bibliotecadigital.uchile.cl/discovery/fulldisplay?docid=alma991000450709703936&context=L&vid=56UDC_INST:56UDC_INST&lang=es&search_scope=My_CI_and_Local_Avail&adaptor=Local%20Search%20Engine&tab=Everything&query=any,contains,facultad%20de%20ciencias%20veterinarias&mode=Basic" target="_blank">→ Biblioteca Digital UChile · Facultad de Cs. Veterinarias</a>
         </div>
         <div class="disclaimer">⚠️ Esta encuesta es de carácter educativo. Ante cualquier sospecha de intoxicación de tu mascota, contacta a un veterinario de urgencia inmediatamente.</div>
       </div>
@@ -711,15 +669,24 @@ body::before{
         <div class="author-card">
           <span class="author-dog">🐕</span>
           <div class="author-name">Jonatan Ortiz</div>
-          <div class="author-role">Colaborador en la creación de ToxiVet Chile</div>
-          <div class="author-badge"><span>🤖</span><span>Creado con la herramienta de IA Claude</span></div>
+          <div class="author-role">Creador de ToxiVet Chile</div>
         </div>
         <div class="ref-block">
           <div class="ref-title">Sobre este proyecto</div>
-          <div class="ref-text">ToxiVet Chile nació de la necesidad de crear conciencia sobre los peligros existentes en el entorno de nuestros hogares para las mascotas. Existen muchos más peligros, pero recopilamos esta información porque se ven muchos casos donde el tiempo en actuar determina la vida o la muerte. Desarrollado en colaboración con Claude (Anthropic).</div>
+          <div class="ref-text">ToxiVet Chile nació con el objetivo de medir y a la vez informar sobre los peligros existentes en nuestros hogares para los compañeros animales. Existe una cantidad importante de sustancias, plantas y alimentos cotidianos que representan un riesgo real para las mascotas, y en muchos casos el tiempo en actuar determina la vida o la muerte. Esta encuesta busca que cada persona pueda evaluar su propio conocimiento y, al mismo tiempo, llevarse información útil y verificada para proteger a quienes comparten su hogar.</div>
         </div>
         <div class="ref-block">
-          <div class="ref-title">Acerca de Claude (Anthropic)</div>
+          <div class="ref-title">🌐 Cómo está publicada esta página</div>
+          <div class="ref-text">ToxiVet Chile está publicada de forma completamente gratuita usando <strong style="color:#f0ebe0">GitHub Pages</strong>, una plataforma que permite alojar sitios web estáticos sin costo directamente desde un repositorio. Si quieres publicar tu propio proyecto web de forma gratuita, puedes hacerlo en minutos.</div>
+          <a class="ref-link" href="https://pages.github.com" target="_blank">→ pages.github.com · Publicar gratis con GitHub Pages</a>
+        </div>
+        <div class="ref-block">
+          <div class="ref-title">🗄️ Almacenamiento de estadísticas</div>
+          <div class="ref-text">El panel de estadísticas personales utiliza <strong style="color:#f0ebe0">Firebase</strong> (Google) como sistema de almacenamiento en la nube, lo que permite guardar tu progreso entre sesiones de forma segura y sin necesidad de cuenta. Firebase ofrece una capa gratuita generosa para proyectos pequeños y medianos.</div>
+          <a class="ref-link" href="https://firebase.google.com" target="_blank">→ firebase.google.com · Firebase by Google</a>
+        </div>
+        <div class="ref-block">
+          <div class="ref-title">🤖 Acerca de Claude (Anthropic)</div>
           <div class="ref-text">Claude es un asistente de inteligencia artificial desarrollado por Anthropic, utilizado para estructurar, redactar y programar esta encuesta interactiva.</div>
           <a class="ref-link" href="https://www.anthropic.com" target="_blank">→ anthropic.com</a>
         </div>
@@ -823,7 +790,7 @@ const PLANTS = [
   {type:'plant',name:"Costilla de Adán (Monstera)",emoji:"🌿",bg:"linear-gradient(135deg,#0d2a18,#1e5a38)",cat:"Planta tropical de moda",q:"La Monstera o Costilla de Adán está muy de moda. ¿Su fruto maduro es seguro para mascotas?",opts:[{t:"Toda la planta incluyendo el fruto maduro es tóxica",c:false},{t:"Solo el fruto maduro es comestible — hojas y tallo tienen oxalatos tóxicos",c:true},{t:"Es completamente segura en todas sus partes",c:false},{t:"Solo las raíces aéreas son peligrosas",c:false}],fb:"En la Monstera, el fruto completamente maduro puede ser comestible. Sin embargo, las hojas, tallos y frutos inmaduros contienen oxalato de calcio que causa irritación oral intensa, hipersalivación y vómitos.",tags:["tag-orange:🟠 Hojas y tallo tóxicos","tag-green:✅ Fruto maduro menos riesgoso"],human:"El fruto maduro de Monstera es comestible para humanos."},
   {type:'plant',name:"Cala / Cartucho",emoji:"🤍",bg:"linear-gradient(135deg,#1a2a0a,#3a5a18)",cat:"Flor ornamental · Muy común en Chile",q:"La Cala blanca es icónica en jardines y eventos chilenos. ¿Qué parte concentra más toxicidad?",opts:[{t:"Las flores blancas (espatas) son las más tóxicas",c:true},{t:"Solo las raíces son peligrosas",c:false},{t:"Es completamente segura para perros y gatos",c:false},{t:"Solo tóxica durante su floración",c:false}],fb:"Todas las partes de la Cala contienen oxalato cálcico, pero las espatas (flores blancas) concentran mayor toxicidad. Provoca ardor e irritación severa en boca, salivación intensa, hinchazón facial y vómitos.",tags:["tag-red:🔴 Alta toxicidad","tag-orange:🟠 Hinchazón facial posible"],human:"Irritación oral e intestinal en niños pequeños que muerdan flores."},
   {type:'plant',name:"Azalea / Rododendro",emoji:"🌺",bg:"linear-gradient(135deg,#2a0a15,#6a1835)",cat:"Arbusto ornamental · Jardines chilenos",q:"Las Azaleas adornan muchos jardines en Chile. ¿Qué sistema orgánico afectan principalmente?",opts:[{t:"El sistema digestivo solamente",c:false},{t:"El sistema nervioso y cardiovascular — pueden causar la muerte",c:true},{t:"Solo causan dermatitis al contacto",c:false},{t:"Solo afectan a gatos gestantes",c:false}],fb:"Las Azaleas contienen grayanotoxinas que afectan canales de sodio en células nerviosas y cardíacas. Provoca salivación excesiva, vómitos, diarrea, hipotensión, bradicardia, temblores, coma y puede ser fatal.",tags:["tag-red:🔴 Potencialmente mortal","tag-red:🔴 Afecta corazón y nervios"],human:"La 'miel loca' de abejas que visitan rododendros puede intoxicar humanos."},
-  {type:'plant',name:"Adelfa / Oleander",emoji:"🌺",bg:"linear-gradient(135deg,#2a0a0a,#6a1520)",cat:"Arbusto ornamental · MUY COMÚN EN CHILE",q:"La Adelfa es uno de los arbustos ornamentales más plantados en carreteras de Chile. ¿Cuál es su verdadero peligro?",opts:[{t:"Solo causa irritación digestiva leve",c:false},{t:"Extremadamente tóxica — una hoja puede matar a un perro mediano",c:true},{t:"Solo tóxica para caballos y ganado",c:false},{t:"Solo el humo de su madera quemada es peligroso",c:false}],fb:"La Adelfa es una de las plantas más tóxicas del mundo. Contiene oleandrina y neriósido (glucósidos cardíacos). Una sola hoja puede ser mortal para un perro o gato mediano. Afecta directamente al corazón causando arritmias fatales.",tags:["tag-red:🔴 UNA HOJA PUEDE SER MORTAL","tag-red:🔴 Glucósidos cardíacos"],human:"Altamente tóxica para humanos también. NO quemar su madera — el humo es tóxico."},
+  {type:'plant',name:"Laurel en Flor / Adelfa (Nerium oleander)",emoji:"🌺",bg:"linear-gradient(135deg,#2a0a0a,#6a1520)",cat:"Arbusto ornamental · MUY COMÚN EN CHILE",q:"El Laurel en Flor (Adelfa) es uno de los arbustos ornamentales más plantados en carreteras de Chile. ¿Cuál es su verdadero peligro?",opts:[{t:"Solo causa irritación digestiva leve",c:false},{t:"Extremadamente tóxica — una hoja puede matar a un perro mediano",c:true},{t:"Solo tóxica para caballos y ganado",c:false},{t:"Solo el humo de su madera quemada es peligroso",c:false}],fb:"El Laurel en Flor (también llamado Adelfa u Oleander) es una de las plantas más tóxicas del mundo. Contiene oleandrina y neriósido (glucósidos cardíacos). Una sola hoja puede ser mortal para un perro o gato mediano. Afecta directamente al corazón causando arritmias fatales.",tags:["tag-red:🔴 UNA HOJA PUEDE SER MORTAL","tag-red:🔴 Glucósidos cardíacos"],human:"Altamente tóxica para humanos también. NO quemar su madera — el humo es tóxico."},
   {type:'plant',name:"Palma de Sagú (Cycas revoluta)",emoji:"🌴",bg:"linear-gradient(135deg,#0a2a10,#1a4a20)",cat:"Palmera ornamental · Riesgo extremo",q:"La Palma de Sagú se vende como palmera ornamental. ¿Cuál es su tasa de mortalidad en perros con tratamiento?",opts:[{t:"Menos del 5% — tiene buen pronóstico",c:false},{t:"Entre el 50-75% incluso con tratamiento veterinario intensivo",c:true},{t:"0% — es solo irritante, no letal",c:false},{t:"Solo mortal si no se trata dentro de las primeras 24 horas",c:false}],fb:"La Palma de Sagú contiene cicasina, una potente hepatotoxina. La tasa de mortalidad en perros es del 50-75% INCLUSO con tratamiento veterinario intensivo. Las semillas son las más tóxicas pero toda la planta es venenosa.",tags:["tag-red:🔴 MORTALIDAD 50-75% en perros","tag-red:🔴 Falla hepática irreversible"],human:"Tóxica también para humanos."},
   {type:'plant',name:"Dieffenbachia",emoji:"🌱",bg:"linear-gradient(135deg,#0a2a0a,#1a5018)",cat:"Planta tropical de oficinas y hogares",q:"La Dieffenbachia es muy popular en oficinas chilenas. ¿Por qué se le llamó históricamente 'planta del castigo'?",opts:[{t:"Porque sus espinas causan heridas graves",c:false},{t:"Porque sus oxalatos inflaman la boca y garganta impidiendo hablar temporalmente",c:true},{t:"Porque su olor causa dolores de cabeza intensos",c:false},{t:"Por su uso histórico como planta de mala suerte",c:false}],fb:"La Dieffenbachia fue llamada 'muda' porque esclavistas la usaban para castigar: al masticarla, los cristales de oxalato inflamaban la boca y garganta impidiendo hablar por horas. En mascotas, puede inflamar vías respiratorias al punto de ser mortal.",tags:["tag-red:🔴 Inflamación vías respiratorias","tag-red:🔴 Potencialmente fatal"],human:"Peligrosa para humanos también — especialmente para niños pequeños."},
   {type:'plant',name:"Espatifilo / Lirio de Paz",emoji:"🌸",bg:"linear-gradient(135deg,#0a2a1a,#1a5535)",cat:"Planta de interior · Muy vendida en Chile",q:"El Lirio de Paz es famoso por purificar el aire. ¿Qué riesgo específico representa para los gatos?",opts:[{t:"Solo causa dermatitis si el gato roza las hojas",c:false},{t:"Sus oxalatos provocan insuficiencia renal aguda en gatos",c:true},{t:"Es 100% seguro — aprobado por la NASA como planta purificadora",c:false},{t:"Solo tóxico para perros, los gatos son inmunes",c:false}],fb:"El Lirio de Paz contiene oxalatos de calcio y posiblemente otros compuestos nefrotóxicos. En gatos puede causar insuficiencia renal aguda. En perros: irritación oral severa e hipersalivación.",tags:["tag-red:🔴 Falla renal en gatos","tag-orange:🟠 Irritación oral en perros"],human:"Irritación oral si se ingieren hojas."},
@@ -884,28 +851,28 @@ const FOODS = [
 // BANCO DROGAS (23 sustancias + 9 medicamentos = 32)
 // ══════════════════════════════════════════════════════
 const DRUGS = [
-  {type:'drug',name:"Cannabis / Marihuana (THC)",emoji:"🌿",bg:"linear-gradient(135deg,#0a2a0a,#1a5018)",cat:"Droga de uso común · Chile",q:"Con la legalización progresiva del cannabis en Chile ¿cómo afecta el THC a los perros comparado con los humanos?",opts:[{t:"Los perros tienen menos receptores cannabinoides — son menos sensibles",c:false},{t:"Los perros tienen MÁS receptores cannabinoides en el cerebelo — son mucho más sensibles",c:true},{t:"El THC afecta igual a perros, gatos y humanos",c:false},{t:"Solo el humo secondhand afecta a las mascotas",c:false}],fb:"Los perros tienen una densidad de receptores cannabinoides CB1 en el cerebelo hasta 10 veces mayor que los humanos. Dosis que darían leve euforia a un humano pueden causar ataxia severa, incontinencia, hipotermia y coma.",tags:["tag-red:🔴 10x más sensibles que humanos","tag-orange:🟠 Coma posible en dosis altas"],human:"El cannabis afecta el SNC humano produciendo euforia, alteraciones perceptivas y en dosis altas psicosis temporal."},
-  {type:'drug',name:"Cocaína (clorhidrato)",emoji:"⚗️",bg:"linear-gradient(135deg,#1a1a2a,#3a3a6a)",cat:"Estimulante del SNC · Alta toxicidad",q:"Un perro ingiere accidentalmente cocaína. ¿Cuáles son los primeros síntomas?",opts:[{t:"Somnolencia y letargo",c:false},{t:"Agitación extrema, tremores, taquicardia severa e hipertermia",c:true},{t:"Solo midriasis sin otros síntomas",c:false},{t:"Los perros son resistentes a la cocaína",c:false}],fb:"La cocaína bloquea la recaptación de norepinefrina, dopamina y serotonina. Síntomas: agitación extrema, tremores, convulsiones, taquicardia, hipertermia (>41°C) que puede causar daño cerebral irreversible.",tags:["tag-red:🔴 URGENCIA VETERINARIA INMEDIATA","tag-red:🔴 Hipertermia = daño cerebral"],human:"La cocaína causa vasoconstricción severa y taquicardia. Principal riesgo: infarto cardíaco."},
+  {type:'drug',name:"Marihuana · Cannabis (THC)",emoji:"🌿",bg:"linear-gradient(135deg,#0a2a0a,#1a5018)",cat:"Droga de uso común · Chile",q:"Con la legalización progresiva de la marihuana en Chile ¿cómo afecta el THC a los perros comparado con los humanos?",opts:[{t:"Los perros tienen menos receptores cannabinoides — son menos sensibles",c:false},{t:"Los perros tienen MÁS receptores cannabinoides en el cerebelo — son mucho más sensibles",c:true},{t:"El THC afecta igual a perros, gatos y humanos",c:false},{t:"Solo el humo secondhand afecta a las mascotas",c:false}],fb:"Los perros tienen una densidad de receptores cannabinoides CB1 en el cerebelo hasta 10 veces mayor que los humanos. Dosis que darían leve euforia a un humano pueden causar ataxia severa, incontinencia, hipotermia y coma.",tags:["tag-red:🔴 10x más sensibles que humanos","tag-orange:🟠 Coma posible en dosis altas"],human:"El cannabis afecta el SNC humano produciendo euforia, alteraciones perceptivas y en dosis altas psicosis temporal."},
+  {type:'drug',name:"Cocaína (clorhidrato de cocaína)",emoji:"⚗️",bg:"linear-gradient(135deg,#1a1a2a,#3a3a6a)",cat:"Estimulante del SNC · Alta toxicidad",q:"Un perro ingiere accidentalmente cocaína. ¿Cuáles son los primeros síntomas?",opts:[{t:"Somnolencia y letargo",c:false},{t:"Agitación extrema, tremores, taquicardia severa e hipertermia",c:true},{t:"Solo midriasis sin otros síntomas",c:false},{t:"Los perros son resistentes a la cocaína",c:false}],fb:"La cocaína bloquea la recaptación de norepinefrina, dopamina y serotonina. Síntomas: agitación extrema, tremores, convulsiones, taquicardia, hipertermia (>41°C) que puede causar daño cerebral irreversible.",tags:["tag-red:🔴 URGENCIA VETERINARIA INMEDIATA","tag-red:🔴 Hipertermia = daño cerebral"],human:"La cocaína causa vasoconstricción severa y taquicardia. Principal riesgo: infarto cardíaco."},
   {type:'drug',name:"MDMA / Éxtasis",emoji:"💊",bg:"linear-gradient(135deg,#2a0a2a,#5a1a5a)",cat:"Droga sintética · Fiestas",q:"¿Cuál es el mayor riesgo letal del MDMA en perros y gatos?",opts:[{t:"Insuficiencia renal por sus metabolitos tóxicos",c:false},{t:"Hipertermia severa y síndrome serotoninérgico — pueden ser fatales rápidamente",c:true},{t:"Solo causa somnolencia profunda",c:false},{t:"Principalmente efectos gastrointestinales",c:false}],fb:"El MDMA causa síndrome serotoninérgico en perros y gatos: hipertermia severa (>41°C), agitación, temblores, rigidez muscular y convulsiones. La temperatura puede escalar causando falla multiorgánica en horas.",tags:["tag-red:🔴 Síndrome serotoninérgico","tag-red:🔴 Hipertermia fatal rápida"],human:"En humanos, el MDMA causa hipertermia especialmente en contextos de fiesta (baile, calor, deshidratación)."},
-  {type:'drug',name:"Metanfetamina",emoji:"⚗️",bg:"linear-gradient(135deg,#2a1a00,#6a4a08)",cat:"Estimulante sintético potente",q:"La metanfetamina ¿por qué es aún más peligrosa que la cocaína para las mascotas?",opts:[{t:"No es más peligrosa — tienen el mismo nivel de riesgo",c:false},{t:"Su vida media más larga significa que los efectos tóxicos duran mucho más tiempo",c:true},{t:"No afecta significativamente a las mascotas",c:false},{t:"Es menos peligrosa porque actúa más lentamente",c:false}],fb:"La metanfetamina tiene una vida media de 10-12 horas. En perros y gatos esto significa que los efectos tóxicos persisten por muchas más horas requiriendo tratamiento veterinario prolongado.",tags:["tag-red:🔴 Efectos prolongados 10-12 horas","tag-red:🔴 Tratamiento prolongado"],human:"La metanfetamina causa adicción severa, daño cerebral permanente y deterioro cardiovascular."},
-  {type:'drug',name:"Metilfenidato (Ritalín · Concerta · Rubifen)",emoji:"💊",bg:"linear-gradient(135deg,#0a1a2a,#1a3a5a)",cat:"Medicamento TDAH · Riesgo doméstico",q:"El Ritalín ¿tiene el mismo mecanismo de toxicidad que las anfetaminas en perros?",opts:[{t:"No — el Ritalín es mucho más seguro",c:false},{t:"Sí — ambos bloquean la recaptación de monoaminas causando síntomas similares",c:true},{t:"Solo afecta a gatos",c:false},{t:"Solo causa hiperactividad temporal",c:false}],fb:"El metilfenidato bloquea recaptación de dopamina y norepinefrina. En perros y gatos causa agitación, taquicardia, tremores, hipertensión e hipertermia. Una pastilla de 10mg puede ser peligrosa para un gato de 4 kg.",tags:["tag-red:🔴 Mecanismo similar a anfetaminas","tag-red:🔴 Guardar bajo llave"],human:"El metilfenidato en sobredosis causa efectos cardiovasculares y psiquiátricos en humanos."},
-  {type:'drug',name:"Fentanilo",emoji:"⚗️",bg:"linear-gradient(135deg,#1a0a0a,#4a1010)",cat:"Opioide sintético · Extrema potencia",q:"El fentanilo es 100 veces más potente que la morfina. ¿Cuánto puede ser mortal para un gato de 4 kg?",opts:[{t:"Se necesita al menos 1 gramo completo",c:false},{t:"Microgramos — cantidades invisibles al ojo humano pueden ser letales",c:true},{t:"Una dosis similar a la humana terapéutica",c:false},{t:"Los gatos son resistentes al fentanilo",c:false}],fb:"El fentanilo es extremadamente peligroso — incluso cantidades en microgramos pueden causar depresión respiratoria fatal. Los parches de fentanilo usados contienen suficiente fentanilo residual para matar a un gato.",tags:["tag-red:🔴 MICROGRAMOS = MORTAL","tag-red:🔴 Parches usados: peligro extremo"],human:"El fentanilo es la principal causa de muertes por sobredosis en EE.UU. actualmente."},
-  {type:'drug',name:"Heroína",emoji:"⚗️",bg:"linear-gradient(135deg,#1a0808,#3a1515)",cat:"Opioide ilegal · Urgencia máxima",q:"Un perro accede a heroína en el hogar. ¿Cuál es el antídoto específico disponible?",opts:[{t:"No existe antídoto",c:false},{t:"Naloxona (Narcan) — revierte los efectos opioides y debe administrarse inmediatamente",c:true},{t:"Carbón activado oral es el único tratamiento",c:false},{t:"No se puede tratar — tasa de mortalidad del 100%",c:false}],fb:"La naloxona (Narcan) es un antagonista opioide que puede revertir rápidamente la depresión respiratoria causada por heroína y otros opioides. Es el mismo antídoto usado en humanos. Síntomas: miosis, bradicardia, depresión respiratoria, sedación extrema.",tags:["tag-red:🔴 URGENCIA MÁXIMA","tag-blue:💉 Antídoto: Naloxona disponible"],human:"La heroína causa depresión respiratoria fatal en sobredosis. La naloxona también salva vidas humanas."},
-  {type:'drug',name:"Loperamida (Imodium)",emoji:"💊",bg:"linear-gradient(135deg,#0a2a1a,#1a4a30)",cat:"Antidiarreico · Medicamento doméstico común",q:"El Imodium (loperamida) ¿por qué es peligroso darlo a perros con ciertos genes?",opts:[{t:"Todos los perros metabolizan mal la loperamida",c:false},{t:"Perros con mutación MDR1/ABCB1 (razas como Collie) acumulan loperamida en el cerebro causando toxicidad grave",c:true},{t:"La loperamida es completamente segura para todos los perros",c:false},{t:"Solo causa constipación prolongada",c:false}],fb:"Perros con mutación MDR1 — frecuente en Collies, Border Collies, Pastores Australianos — no pueden bombear loperamida fuera del cerebro, causando acumulación y toxicidad del SNC: sedación profunda, ataxia y coma.",tags:["tag-red:🔴 Razas MDR1+: PELIGRO EXTREMO","tag-orange:🟠 Consultar veterinario antes"],human:"La loperamida es efectiva y segura para humanos porque no cruza la barrera hematoencefálica normalmente."},
-  {type:'drug',name:"Etanol (Alcohol etílico)",emoji:"🍺",bg:"linear-gradient(135deg,#1a0808,#3a1515)",cat:"Pisco, vino, cerveza · Chile",q:"¿Cuánto vino tinto podría causar coma en un gato doméstico de 4 kg?",opts:[{t:"Más de un vaso",c:false},{t:"Menos de 15ml (una cucharada sopera) — los gatos son extremadamente sensibles",c:true},{t:"Solo si es vino con mayor graduación",c:false},{t:"Los gatos metabolizan el alcohol de forma similar a los humanos",c:false}],fb:"Los gatos son extremadamente sensibles al etanol. Para un gato de 4 kg, 10-15ml de vino puede causar depresión del SNC, hipotermia, hipoglucemia y coma. La fuente más frecuente: derrames en fiestas.",tags:["tag-red:🔴 Gatos: EXTREMADAMENTE sensibles","tag-red:🔴 15ml de vino = emergencia"],human:"El alcohol etílico es un carcinógeno conocido y causa daño hepático crónico."},
-  {type:'drug',name:"Paracetamol (Tapsin · Panadol)",emoji:"💊",bg:"linear-gradient(135deg,#2a0a0a,#6a1515)",cat:"Analgésico OTC · LETAL para gatos",q:"El Tapsin o Panadol es el analgésico más vendido en Chile. ¿Por qué una sola tableta de 500mg puede matar a un gato adulto?",opts:[{t:"Los gatos son alérgicos al paracetamol",c:false},{t:"Los gatos carecen de la enzima para metabolizarlo — el metabolito NAPQI destruye glóbulos rojos y el hígado",c:true},{t:"Solo letal si el gato consume más de 3 tabletas",c:false},{t:"Porque causa falla renal como en humanos con sobredosis",c:false}],fb:"Una tableta de 500mg de paracetamol puede matar a un gato. Les falta la glucuronosiltransferasa (UGT1A6): el paracetamol se convierte en NAPQI que causa methemoglobinemia, hemólisis y necrosis hepática. Señales: encías marrones/azules, salivación intensa, dificultad respiratoria.",tags:["tag-red:🔴 UNA TABLETA = MORTAL para gatos","tag-red:🔴 Encías marrones/azules: signo inmediato"],human:"Seguro y efectivo para personas en dosis correctas. Hepatotóxico en sobredosis humana.",otros:"Aves, roedores y reptiles también son muy sensibles al paracetamol."},
-  {type:'drug',name:"Ibuprofeno (Brufen · Advil)",emoji:"💊",bg:"linear-gradient(135deg,#1a0a2a,#3a1560)",cat:"Antiinflamatorio AINE · OTC muy común",q:"El Ibuprofeno (Brufen 400mg) ¿qué doble daño causa específicamente en perros?",opts:[{t:"Solo daño hepático",c:false},{t:"Úlceras gastrointestinales sangrantes + insuficiencia renal aguda por bloqueo de prostaglandinas",c:true},{t:"Solo afecta al sistema nervioso causando convulsiones",c:false},{t:"En dosis bajas (5mg/kg) es completamente seguro",c:false}],fb:"Los AINEs bloquean las prostaglandinas que protegen la mucosa gástrica y regulan el flujo renal. En perros: dosis tóxica GI ~25mg/kg. Una pastilla de 400mg puede afectar a un perro de 15kg. Síntomas: vómitos con sangre, melena, letargo.",tags:["tag-red:🔴 Úlceras sangrantes + falla renal","tag-red:🔴 SIN margen seguro en gatos"],human:"Seguro en dosis correctas para humanos. Usar con protector gástrico si es necesario.",otros:"Los AINEs también son tóxicos para aves rapaces."},
+  {type:'drug',name:"Metanfetamina · Cristal (metanfetamina)",emoji:"⚗️",bg:"linear-gradient(135deg,#2a1a00,#6a4a08)",cat:"Estimulante sintético potente",q:"La metanfetamina ¿por qué es aún más peligrosa que la cocaína para las mascotas?",opts:[{t:"No es más peligrosa — tienen el mismo nivel de riesgo",c:false},{t:"Su vida media más larga significa que los efectos tóxicos duran mucho más tiempo",c:true},{t:"No afecta significativamente a las mascotas",c:false},{t:"Es menos peligrosa porque actúa más lentamente",c:false}],fb:"La metanfetamina tiene una vida media de 10-12 horas. En perros y gatos esto significa que los efectos tóxicos persisten por muchas más horas requiriendo tratamiento veterinario prolongado.",tags:["tag-red:🔴 Efectos prolongados 10-12 horas","tag-red:🔴 Tratamiento prolongado"],human:"La metanfetamina causa adicción severa, daño cerebral permanente y deterioro cardiovascular."},
+  {type:'drug',name:"Ritalín · Concerta · Rubifen (metilfenidato)",emoji:"💊",bg:"linear-gradient(135deg,#0a1a2a,#1a3a5a)",cat:"Medicamento TDAH · Riesgo doméstico",q:"El Ritalín o Concerta (metilfenidato) ¿tiene el mismo mecanismo de toxicidad que las anfetaminas en perros?",opts:[{t:"No — el Ritalín es mucho más seguro",c:false},{t:"Sí — ambos bloquean la recaptación de monoaminas causando síntomas similares",c:true},{t:"Solo afecta a gatos",c:false},{t:"Solo causa hiperactividad temporal",c:false}],fb:"El metilfenidato (Ritalín, Concerta, Rubifen) bloquea recaptación de dopamina y norepinefrina. En perros y gatos causa agitación, taquicardia, tremores, hipertensión e hipertermia. Una pastilla de 10mg puede ser peligrosa para un gato de 4 kg.",tags:["tag-red:🔴 Mecanismo similar a anfetaminas","tag-red:🔴 Guardar bajo llave"],human:"El metilfenidato en sobredosis causa efectos cardiovasculares y psiquiátricos en humanos."},
+  {type:'drug',name:"Durogesic · parche de fentanilo (fentanilo)",emoji:"⚗️",bg:"linear-gradient(135deg,#1a0a0a,#4a1010)",cat:"Opioide sintético · Extrema potencia",q:"El Durogesic (fentanilo) es 100 veces más potente que la morfina. ¿Cuánto puede ser mortal para un gato de 4 kg?",opts:[{t:"Se necesita al menos 1 gramo completo",c:false},{t:"Microgramos — cantidades invisibles al ojo humano pueden ser letales",c:true},{t:"Una dosis similar a la humana terapéutica",c:false},{t:"Los gatos son resistentes al fentanilo",c:false}],fb:"El fentanilo es extremadamente peligroso — incluso cantidades en microgramos pueden causar depresión respiratoria fatal. Los parches de fentanilo usados contienen suficiente fentanilo residual para matar a un gato.",tags:["tag-red:🔴 MICROGRAMOS = MORTAL","tag-red:🔴 Parches usados: peligro extremo"],human:"El fentanilo es la principal causa de muertes por sobredosis en EE.UU. actualmente."},
+  {type:'drug',name:"Heroína (diacetilmorfina)",emoji:"⚗️",bg:"linear-gradient(135deg,#1a0808,#3a1515)",cat:"Opioide ilegal · Urgencia máxima",q:"Un perro accede a heroína en el hogar. ¿Cuál es el antídoto específico disponible?",opts:[{t:"No existe antídoto",c:false},{t:"Naloxona (Narcan) — revierte los efectos opioides y debe administrarse inmediatamente",c:true},{t:"Carbón activado oral es el único tratamiento",c:false},{t:"No se puede tratar — tasa de mortalidad del 100%",c:false}],fb:"La naloxona (Narcan) es un antagonista opioide que puede revertir rápidamente la depresión respiratoria causada por heroína y otros opioides. Es el mismo antídoto usado en humanos. Síntomas: miosis, bradicardia, depresión respiratoria, sedación extrema.",tags:["tag-red:🔴 URGENCIA MÁXIMA","tag-blue:💉 Antídoto: Naloxona disponible"],human:"La heroína causa depresión respiratoria fatal en sobredosis. La naloxona también salva vidas humanas."},
+  {type:'drug',name:"Imodium (loperamida)",emoji:"💊",bg:"linear-gradient(135deg,#0a2a1a,#1a4a30)",cat:"Antidiarreico · Medicamento doméstico común",q:"El Imodium (loperamida) ¿por qué es peligroso darlo a perros con ciertos genes?",opts:[{t:"Todos los perros metabolizan mal la loperamida",c:false},{t:"Perros con mutación MDR1/ABCB1 (razas como Collie) acumulan loperamida en el cerebro causando toxicidad grave",c:true},{t:"La loperamida es completamente segura para todos los perros",c:false},{t:"Solo causa constipación prolongada",c:false}],fb:"Perros con mutación MDR1 — frecuente en Collies, Border Collies, Pastores Australianos — no pueden bombear loperamida fuera del cerebro, causando acumulación y toxicidad del SNC: sedación profunda, ataxia y coma.",tags:["tag-red:🔴 Razas MDR1+: PELIGRO EXTREMO","tag-orange:🟠 Consultar veterinario antes"],human:"La loperamida es efectiva y segura para humanos porque no cruza la barrera hematoencefálica normalmente."},
+  {type:'drug',name:"Alcohol — pisco · vino · cerveza (etanol)",emoji:"🍺",bg:"linear-gradient(135deg,#1a0808,#3a1515)",cat:"Pisco, vino, cerveza · Chile",q:"¿Cuánto vino tinto podría causar coma en un gato doméstico de 4 kg?",opts:[{t:"Más de un vaso",c:false},{t:"Menos de 15ml (una cucharada sopera) — los gatos son extremadamente sensibles",c:true},{t:"Solo si es vino con mayor graduación",c:false},{t:"Los gatos metabolizan el alcohol de forma similar a los humanos",c:false}],fb:"Los gatos son extremadamente sensibles al etanol. Para un gato de 4 kg, 10-15ml de vino puede causar depresión del SNC, hipotermia, hipoglucemia y coma. La fuente más frecuente: derrames en fiestas.",tags:["tag-red:🔴 Gatos: EXTREMADAMENTE sensibles","tag-red:🔴 15ml de vino = emergencia"],human:"El alcohol etílico es un carcinógeno conocido y causa daño hepático crónico."},
+  {type:'drug',name:"Tapsin · Panadol (paracetamol)",emoji:"💊",bg:"linear-gradient(135deg,#2a0a0a,#6a1515)",cat:"Analgésico OTC · LETAL para gatos",q:"El Tapsin o Panadol (paracetamol) es el analgésico más vendido en Chile. ¿Por qué una sola tableta de 500mg puede matar a un gato adulto?",opts:[{t:"Los gatos son alérgicos al paracetamol",c:false},{t:"Los gatos carecen de la enzima para metabolizarlo — el metabolito NAPQI destruye glóbulos rojos y el hígado",c:true},{t:"Solo letal si el gato consume más de 3 tabletas",c:false},{t:"Porque causa falla renal como en humanos con sobredosis",c:false}],fb:"Una tableta de Tapsin/Panadol (500mg de paracetamol) puede matar a un gato. Les falta la glucuronosiltransferasa (UGT1A6): el paracetamol se convierte en NAPQI que causa methemoglobinemia, hemólisis y necrosis hepática. Señales: encías marrones/azules, salivación intensa, dificultad respiratoria.",tags:["tag-red:🔴 UNA TABLETA = MORTAL para gatos","tag-red:🔴 Encías marrones/azules: signo inmediato"],human:"Seguro y efectivo para personas en dosis correctas. Hepatotóxico en sobredosis humana.",otros:"Aves, roedores y reptiles también son muy sensibles al paracetamol."},
+  {type:'drug',name:"Brufen · Advil (ibuprofeno)",emoji:"💊",bg:"linear-gradient(135deg,#1a0a2a,#3a1560)",cat:"Antiinflamatorio AINE · OTC muy común",q:"El Brufen o Advil (ibuprofeno 400mg) ¿qué doble daño causa específicamente en perros?",opts:[{t:"Solo daño hepático",c:false},{t:"Úlceras gastrointestinales sangrantes + insuficiencia renal aguda por bloqueo de prostaglandinas",c:true},{t:"Solo afecta al sistema nervioso causando convulsiones",c:false},{t:"En dosis bajas (5mg/kg) es completamente seguro",c:false}],fb:"Los AINEs bloquean las prostaglandinas que protegen la mucosa gástrica y regulan el flujo renal. En perros: dosis tóxica GI ~25mg/kg. Una pastilla de Brufen 400mg puede afectar a un perro de 15kg. Síntomas: vómitos con sangre, melena, letargo.",tags:["tag-red:🔴 Úlceras sangrantes + falla renal","tag-red:🔴 SIN margen seguro en gatos"],human:"Seguro en dosis correctas para humanos. Usar con protector gástrico si es necesario.",otros:"Los AINEs también son tóxicos para aves rapaces."},
   {type:'drug',name:"Aspirina / Ácido acetilsalicílico",emoji:"💊",bg:"linear-gradient(135deg,#1a0a15,#3a1535)",cat:"Analgésico clásico · Riesgo extremo en gatos",q:"¿Por qué la Aspirina es especialmente peligrosa para gatos?",opts:[{t:"Los gatos son alérgicos al salicilato",c:false},{t:"En gatos la vida media es 37-38 horas vs 3h en humanos — se acumula causando toxicidad fatal",c:true},{t:"Solo la forma effervescente es peligrosa",c:false},{t:"Es igual de peligrosa en todas las especies",c:false}],fb:"La aspirina en gatos tiene vida media de 37-38 horas (vs 6h en perros, 3h en humanos) por deficiencia enzimática felina. Cada dosis se acumula sobre la anterior. Causa úlceras GI, acidosis metabólica e insuficiencia hepática.",tags:["tag-red:🔴 Gatos: vida media 38h — acumulación letal","tag-orange:🟠 Perros: úlceras GI frecuentes"],human:"La aspirina en dosis bajas (100mg/día) es usada en humanos para prevención cardiovascular."},
-  {type:'drug',name:"Diclofenaco crema (Voltaren gel)",emoji:"💊",bg:"linear-gradient(135deg,#0a1a2a,#1a3560)",cat:"Antiinflamatorio tópico · Riesgo por lamido",q:"Un gato duerme junto a su dueño que se aplicó crema Voltaren en la rodilla. ¿Hay riesgo real?",opts:[{t:"No — la concentración transdérmica es demasiado baja",c:false},{t:"Sí — los gatos al acicalarse al dueño ingieren diclofenaco que causa falla renal",c:true},{t:"Solo si el gato lame directamente la zona 5+ veces",c:false},{t:"Solo la forma oral es peligrosa",c:false}],fb:"El gel de Voltaren tiene alta biodisponibilidad transdérmica. Los gatos que lamen zonas tratadas ingieren diclofenaco causando falla renal aguda. Cubrir la zona tratada o mantener al gato separado mientras actúa el medicamento.",tags:["tag-red:🔴 Crema lamida = falla renal en gatos","tag-red:🔴 Cubrir la zona tratada siempre"],human:"Efectivo para dolores musculares. Seguro en uso tópico normal para personas.",otros:"Extremadamente tóxico para buitres — prohibido para uso veterinario en ganado en muchos países."},
-  {type:'drug',name:"Loratadina SIN pseudoefedrina (Clarityne)",emoji:"💊",bg:"linear-gradient(135deg,#0a1a1a,#1a3535)",cat:"Antihistamínico · Relativamente seguro en perros",q:"La Loratadina (Clarityne) ¿es segura para perros con alergias? ¿Cuál es el gran peligro oculto?",opts:[{t:"No — todos los antihistamínicos son altamente tóxicos",c:false},{t:"La loratadina sola es relativamente segura, pero el Clarityne-D (con pseudoefedrina) es LETAL",c:true},{t:"Solo segura en perros mayores de 2 años",c:false},{t:"Es igual de segura en todas sus presentaciones",c:false}],fb:"La Loratadina SOLA (0.5mg/kg) es relativamente segura en perros. PERO: Clarityne-D u otras versiones 'D' o 'Plus' contienen pseudoefedrina que es ALTAMENTE TÓXICA — causa taquicardia, hipertensión e hipertermia.",tags:["tag-green:✅ Loratadina SOLA: relativamente segura en perros","tag-red:🔴 Clarityne-D / con pseudoefedrina: LETAL"],human:"Loratadina es uno de los antihistamínicos más seguros para humanos."},
-  {type:'drug',name:"Omeprazol (Losec · Ulsen)",emoji:"💊",bg:"linear-gradient(135deg,#0a2a1a,#1a4a30)",cat:"Protector gástrico · Seguro bajo supervisión",q:"El Omeprazol (Losec) ¿puede un veterinario recetarlo a perros y gatos?",opts:[{t:"No — es exclusivo para humanos y tóxico para mascotas",c:false},{t:"Sí — es uno de los medicamentos humanos más frecuentemente usados en medicina veterinaria",c:true},{t:"Solo para perros grandes",c:false},{t:"Solo en urgencias, no para tratamientos prolongados",c:false}],fb:"El omeprazol es uno de los medicamentos humanos más transferibles a veterinaria. Se usa para tratar gastritis, úlceras y como protector gástrico. Dosis usual en perros: 0.5-1mg/kg/día. En gatos también es seguro bajo indicación veterinaria.",tags:["tag-green:✅ Uno de los más seguros bajo supervisión","tag-yellow:🟡 Sin indicación veterinaria puede enmascarar enfermedades"],human:"El omeprazol es el IBP más vendido en Chile. Esencial para reflujo y úlceras."},
-  {type:'drug',name:"Antidepresivos ISRS (Fluoxetina · Prozac)",emoji:"💊",bg:"linear-gradient(135deg,#1a0a2a,#3a1a5a)",cat:"Psicofármaco · Muy recetado en Chile",q:"Los antidepresivos ISRS como la Fluoxetina ¿qué síndrome peligroso causan en mascotas?",opts:[{t:"Solo sedación profunda",c:false},{t:"Síndrome serotoninérgico — exceso de serotonina que causa hipertermia, tremores y convulsiones",c:true},{t:"Son completamente seguros en dosis bajas",c:false},{t:"Solo causan pérdida temporal del apetito",c:false}],fb:"Los ISRS en perros y gatos causan síndrome serotoninérgico: hipertermia (>41°C), tremores musculares, agitación, vómitos, diarrea y convulsiones. La fluoxetina sí se usa en veterinaria para ansiedad pero en dosis muy controladas.",tags:["tag-red:🔴 Síndrome serotoninérgico = emergencia","tag-orange:🟠 Fluoxetina veterinaria: uso controlado sí existe"],human:"Los ISRS son el tratamiento de primera línea para depresión en Chile.",otros:"El síndrome serotoninérgico también ocurre en conejos, cobayos y hámsteres."},
-  {type:'drug',name:"Benzodiacepinas (Clonazepam · Rivotril)",emoji:"💊",bg:"linear-gradient(135deg,#1a1a2a,#3a3a6a)",cat:"Ansiolítico · Muy prescrito en Chile",q:"El Clonazepam (Rivotril) ¿qué efecto paradójico puede causar en gatos?",opts:[{t:"Sedación profunda idéntica a la de los humanos",c:false},{t:"Excitación paradójica y agresividad en lugar de sedación — y hepatotoxicidad en gatos",c:true},{t:"Es completamente seguro para gatos",c:false},{t:"Solo causa leve somnolencia pasajera",c:false}],fb:"Las benzodiacepinas en gatos pueden causar excitación paradójica (agitación, agresividad) en lugar de sedación. Además, el diazepam oral en gatos se ha asociado a necrosis hepática idiosincrática aguda y fatal. Guardar los Rivotril siempre bajo llave.",tags:["tag-red:🔴 Gatos: hepatotoxicidad idiosincrática fatal","tag-orange:🟠 Excitación paradójica"],human:"Las benzodiacepinas son tratamiento estándar para ansiedad en humanos. Alto potencial de dependencia.",otros:"Los conejos también muestran respuestas paradójicas a las benzodiacepinas."},
-  {type:'drug',name:"Morfina",emoji:"💉",bg:"linear-gradient(135deg,#1a0a15,#3a1535)",cat:"Opioide · Analgésico potente",q:"Las dosis humanas de morfina son peligrosas para los gatos. ¿Por qué?",opts:[{t:"Los gatos metabolizan la morfina igual que los humanos",c:false},{t:"Los gatos tienen deficiencia de glucuronosiltransferasa — no pueden metabolizar morfina eficientemente",c:true},{t:"La morfina es más segura en gatos que en perros",c:false},{t:"Solo las formas inyectables son peligrosas para los gatos",c:false}],fb:"Los gatos tienen una deficiencia enzimática importante en el sistema de glucuronidación (UGT1A6) que usan los humanos y perros para metabolizar morfina. Esto hace que los gatos acumulen metabolitos tóxicos.",tags:["tag-red:🔴 Gatos: metabolismo deficiente","tag-orange:🟠 Acumulación de metabolitos tóxicos"],human:"La morfina en sobredosis humana causa depresión respiratoria y coma."},
-  {type:'drug',name:"Metadona (Biodone)",emoji:"💊",bg:"linear-gradient(135deg,#1a1008,#3a2818)",cat:"Opioide de tratamiento · Larga duración",q:"La metadona ¿por qué es especialmente peligrosa para mascotas vs. otros opioides?",opts:[{t:"No es más peligrosa",c:false},{t:"Su vida media muy larga (24-36h) hace que los efectos tóxicos sean prolongados",c:true},{t:"La metadona es segura para perros en tratamiento supervisado",c:false},{t:"Es menos peligrosa porque actúa más lentamente",c:false}],fb:"La metadona tiene una vida media de 24-36 horas. En perros y gatos los efectos tóxicos persisten muchas más horas y pueden reaparecer tras tratar el primer episodio. Requiere hospitalización prolongada.",tags:["tag-red:🔴 Efectos duran 24-36 horas","tag-red:🔴 Hospitalización prolongada"],human:"La metadona tiene alto potencial de sobredosis fatal por su larga vida media."},
-  {type:'drug',name:"Tramadol",emoji:"💊",bg:"linear-gradient(135deg,#0a1a1a,#1a3a3a)",cat:"Analgésico opioide · Muy recetado en Chile",q:"El tramadol ¿por qué los gatos son especialmente vulnerables?",opts:[{t:"Los gatos tienen más receptores opioides",c:false},{t:"Los gatos no pueden metabolizar el tramadol eficientemente — se acumula causando neurotoxicidad",c:true},{t:"El tramadol es seguro para gatos — se usa veterinariamente sin problemas",c:false},{t:"Los gatos eliminan el tramadol muy rápido",c:false}],fb:"Los gatos tienen deficiencia en el sistema enzimático necesario para metabolizar el tramadol. Esto causa acumulación del fármaco provocando efectos opioides prolongados y efectos convulsivos. En perros el tramadol sí se usa con supervisión veterinaria.",tags:["tag-red:🔴 Gatos: acumulación y neurotoxicidad","tag-orange:🟠 Convulsiones posibles"],human:"El tramadol en sobredosis humana causa depresión respiratoria y convulsiones."},
-  {type:'drug',name:"Isopropanol (Alcohol de frotar)",emoji:"🧴",bg:"linear-gradient(135deg,#0a1a2a,#1a3050)",cat:"Antiséptico · Uso externo ÚNICAMENTE",q:"El alcohol de frotar (isopropanol 70%) ¿puede lamerse si queda en la piel de la mascota?",opts:[{t:"Sí — en la cantidad que queda al limpiar una herida es completamente seguro",c:false},{t:"No — impedir que lama la zona tratada; el isopropanol oral es 2-3 veces más tóxico que el etanol",c:true},{t:"Es completamente seguro tanto tópico como oral",c:false},{t:"Solo peligroso para gatos",c:false}],fb:"El isopropanol se metaboliza en acetona y es aproximadamente 2-3 veces más tóxico que el etanol como depresor del SNC. Los perros pueden exponerse al lamer vendajes tratados con alcohol. NUNCA usar para 'bajar la fiebre' frotando en mascotas.",tags:["tag-yellow:🟡 Tópico sobre herida: aceptable si se impide el lamido","tag-red:🔴 Si lame: urgencia veterinaria"],human:"El alcohol 70% es el antiséptico estándar para heridas humanas."},
-  {type:'drug',name:"Hachís / Cannabis concentrado",emoji:"🟫",bg:"linear-gradient(135deg,#1a1008,#3a2a12)",cat:"Cannabis · Concentrado",q:"El hachís y los concentrados de cannabis ¿son más peligrosos que la marihuana herbal?",opts:[{t:"No — el THC es el mismo compuesto independiente de la presentación",c:false},{t:"Sí — pueden contener 5-10 veces más THC que la marihuana herbal",c:true},{t:"Son más seguros porque se administran en menor cantidad",c:false},{t:"Solo los concentrados en aceite son más peligrosos",c:false}],fb:"El hachís concentra 20-40% de THC vs. 5-15% de la marihuana herbal. Los concentrados modernos pueden tener 60-90% de THC. Para las mascotas, cantidades mucho menores pueden causar intoxicación severa.",tags:["tag-red:🔴 5-10x más THC que marihuana herbal","tag-red:🔴 Edibles: dosis impredecible"],human:"Los concentrados de cannabis han aumentado dramáticamente las hospitalizaciones en países donde se ha legalizado."},
+  {type:'drug',name:"Voltaren gel (diclofenaco crema)",emoji:"💊",bg:"linear-gradient(135deg,#0a1a2a,#1a3560)",cat:"Antiinflamatorio tópico · Riesgo por lamido",q:"Un gato duerme junto a su dueño que se aplicó Voltaren gel (diclofenaco) en la rodilla. ¿Hay riesgo real?",opts:[{t:"No — la concentración transdérmica es demasiado baja",c:false},{t:"Sí — los gatos al acicalarse al dueño ingieren diclofenaco que causa falla renal",c:true},{t:"Solo si el gato lame directamente la zona 5+ veces",c:false},{t:"Solo la forma oral es peligrosa",c:false}],fb:"El Voltaren gel tiene alta biodisponibilidad transdérmica. Los gatos que lamen zonas tratadas ingieren diclofenaco causando falla renal aguda. Cubrir la zona tratada o mantener al gato separado mientras actúa el medicamento.",tags:["tag-red:🔴 Crema lamida = falla renal en gatos","tag-red:🔴 Cubrir la zona tratada siempre"],human:"Efectivo para dolores musculares. Seguro en uso tópico normal para personas.",otros:"Extremadamente tóxico para buitres — prohibido para uso veterinario en ganado en muchos países."},
+  {type:'drug',name:"Clarityne · Clarityne-D (loratadina / pseudoefedrina)",emoji:"💊",bg:"linear-gradient(135deg,#0a1a1a,#1a3535)",cat:"Antihistamínico · Riesgo oculto",q:"El Clarityne (loratadina) ¿es seguro para perros con alergias? ¿Cuál es el gran peligro oculto?",opts:[{t:"No — todos los antihistamínicos son altamente tóxicos",c:false},{t:"La loratadina sola es relativamente segura, pero el Clarityne-D (con pseudoefedrina) es LETAL",c:true},{t:"Solo segura en perros mayores de 2 años",c:false},{t:"Es igual de segura en todas sus presentaciones",c:false}],fb:"La loratadina SOLA (Clarityne sin 'D') es relativamente segura en perros a 0.5mg/kg. PERO: el Clarityne-D u otras versiones 'D' o 'Plus' contienen pseudoefedrina que es ALTAMENTE TÓXICA — causa taquicardia, hipertensión e hipertermia.",tags:["tag-green:✅ Loratadina SOLA: relativamente segura en perros","tag-red:🔴 Clarityne-D / con pseudoefedrina: LETAL"],human:"Loratadina es uno de los antihistamínicos más seguros para humanos."},
+  {type:'drug',name:"Losec · Ulsen (omeprazol / protector gástrico)",emoji:"💊",bg:"linear-gradient(135deg,#0a2a1a,#1a4a30)",cat:"Protector gástrico · Seguro bajo supervisión",q:"El Losec o Ulsen (omeprazol) ¿puede un veterinario recetarlo a perros y gatos?",opts:[{t:"No — es exclusivo para humanos y tóxico para mascotas",c:false},{t:"Sí — es uno de los medicamentos humanos más frecuentemente usados en medicina veterinaria",c:true},{t:"Solo para perros grandes",c:false},{t:"Solo en urgencias, no para tratamientos prolongados",c:false}],fb:"El omeprazol (Losec, Ulsen) es uno de los medicamentos humanos más transferibles a veterinaria. Se usa para tratar gastritis, úlceras y como protector gástrico. Dosis usual en perros: 0.5-1mg/kg/día. En gatos también es seguro bajo indicación veterinaria.",tags:["tag-green:✅ Uno de los más seguros bajo supervisión","tag-yellow:🟡 Sin indicación veterinaria puede enmascarar enfermedades"],human:"El omeprazol es el IBP más vendido en Chile. Esencial para reflujo y úlceras."},
+  {type:'drug',name:"Prozac · Fluoxil (fluoxetina / ISRS)",emoji:"💊",bg:"linear-gradient(135deg,#1a0a2a,#3a1a5a)",cat:"Psicofármaco · Muy recetado en Chile",q:"El Prozac o Fluoxil (fluoxetina) ¿qué síndrome peligroso causan en mascotas?",opts:[{t:"Solo sedación profunda",c:false},{t:"Síndrome serotoninérgico — exceso de serotonina que causa hipertermia, tremores y convulsiones",c:true},{t:"Son completamente seguros en dosis bajas",c:false},{t:"Solo causan pérdida temporal del apetito",c:false}],fb:"Los ISRS en perros y gatos causan síndrome serotoninérgico: hipertermia (>41°C), tremores musculares, agitación, vómitos, diarrea y convulsiones. La fluoxetina sí se usa en veterinaria para ansiedad pero en dosis muy controladas.",tags:["tag-red:🔴 Síndrome serotoninérgico = emergencia","tag-orange:🟠 Fluoxetina veterinaria: uso controlado sí existe"],human:"Los ISRS son el tratamiento de primera línea para depresión en Chile.",otros:"El síndrome serotoninérgico también ocurre en conejos, cobayos y hámsteres."},
+  {type:'drug',name:"Rivotril · Clonex (clonazepam / benzodiacepina)",emoji:"💊",bg:"linear-gradient(135deg,#1a1a2a,#3a3a6a)",cat:"Ansiolítico · Muy prescrito en Chile",q:"El Rivotril o Clonex (clonazepam) ¿qué efecto paradójico puede causar en gatos?",opts:[{t:"Sedación profunda idéntica a la de los humanos",c:false},{t:"Excitación paradójica y agresividad en lugar de sedación — y hepatotoxicidad en gatos",c:true},{t:"Es completamente seguro para gatos",c:false},{t:"Solo causa leve somnolencia pasajera",c:false}],fb:"Las benzodiacepinas en gatos pueden causar excitación paradójica (agitación, agresividad) en lugar de sedación. Además, el diazepam oral en gatos se ha asociado a necrosis hepática idiosincrática aguda y fatal. Guardar el Rivotril siempre bajo llave.",tags:["tag-red:🔴 Gatos: hepatotoxicidad idiosincrática fatal","tag-orange:🟠 Excitación paradójica"],human:"Las benzodiacepinas son tratamiento estándar para ansiedad en humanos. Alto potencial de dependencia.",otros:"Los conejos también muestran respuestas paradójicas a las benzodiacepinas."},
+  {type:'drug',name:"Morfina · MST (morfina)",emoji:"💉",bg:"linear-gradient(135deg,#1a0a15,#3a1535)",cat:"Opioide · Analgésico potente",q:"Las dosis humanas de morfina (MST) son peligrosas para los gatos. ¿Por qué?",opts:[{t:"Los gatos metabolizan la morfina igual que los humanos",c:false},{t:"Los gatos tienen deficiencia de glucuronosiltransferasa — no pueden metabolizar morfina eficientemente",c:true},{t:"La morfina es más segura en gatos que en perros",c:false},{t:"Solo las formas inyectables son peligrosas para los gatos",c:false}],fb:"Los gatos tienen una deficiencia enzimática importante en el sistema de glucuronidación (UGT1A6) que usan los humanos y perros para metabolizar morfina. Esto hace que los gatos acumulen metabolitos tóxicos.",tags:["tag-red:🔴 Gatos: metabolismo deficiente","tag-orange:🟠 Acumulación de metabolitos tóxicos"],human:"La morfina en sobredosis humana causa depresión respiratoria y coma."},
+  {type:'drug',name:"Biodone (metadona)",emoji:"💊",bg:"linear-gradient(135deg,#1a1008,#3a2818)",cat:"Opioide de tratamiento · Larga duración",q:"El Biodone (metadona) ¿por qué es especialmente peligroso para mascotas vs. otros opioides?",opts:[{t:"No es más peligrosa",c:false},{t:"Su vida media muy larga (24-36h) hace que los efectos tóxicos sean prolongados",c:true},{t:"La metadona es segura para perros en tratamiento supervisado",c:false},{t:"Es menos peligrosa porque actúa más lentamente",c:false}],fb:"La metadona (Biodone) tiene una vida media de 24-36 horas. En perros y gatos los efectos tóxicos persisten muchas más horas y pueden reaparecer tras tratar el primer episodio. Requiere hospitalización prolongada.",tags:["tag-red:🔴 Efectos duran 24-36 horas","tag-red:🔴 Hospitalización prolongada"],human:"La metadona tiene alto potencial de sobredosis fatal por su larga vida media."},
+  {type:'drug',name:"Tramal · Tramadol (tramadol)",emoji:"💊",bg:"linear-gradient(135deg,#0a1a1a,#1a3a3a)",cat:"Analgésico opioide · Muy recetado en Chile",q:"El Tramal o Tramadol ¿por qué los gatos son especialmente vulnerables?",opts:[{t:"Los gatos tienen más receptores opioides",c:false},{t:"Los gatos no pueden metabolizar el tramadol eficientemente — se acumula causando neurotoxicidad",c:true},{t:"El tramadol es seguro para gatos — se usa veterinariamente sin problemas",c:false},{t:"Los gatos eliminan el tramadol muy rápido",c:false}],fb:"Los gatos tienen deficiencia en el sistema enzimático necesario para metabolizar el tramadol (Tramal). Esto causa acumulación del fármaco provocando efectos opioides prolongados y efectos convulsivos. En perros el tramadol sí se usa con supervisión veterinaria.",tags:["tag-red:🔴 Gatos: acumulación y neurotoxicidad","tag-orange:🟠 Convulsiones posibles"],human:"El tramadol en sobredosis humana causa depresión respiratoria y convulsiones."},
+  {type:'drug',name:"Alcohol de frotar (isopropanol)",emoji:"🧴",bg:"linear-gradient(135deg,#0a1a2a,#1a3050)",cat:"Antiséptico · Uso externo ÚNICAMENTE",q:"El alcohol de frotar (isopropanol 70%) ¿puede lamerse si queda en la piel de la mascota?",opts:[{t:"Sí — en la cantidad que queda al limpiar una herida es completamente seguro",c:false},{t:"No — impedir que lama la zona tratada; el isopropanol oral es 2-3 veces más tóxico que el etanol",c:true},{t:"Es completamente seguro tanto tópico como oral",c:false},{t:"Solo peligroso para gatos",c:false}],fb:"El isopropanol se metaboliza en acetona y es aproximadamente 2-3 veces más tóxico que el etanol como depresor del SNC. Los perros pueden exponerse al lamer vendajes tratados con alcohol. NUNCA usar para 'bajar la fiebre' frotando en mascotas.",tags:["tag-yellow:🟡 Tópico sobre herida: aceptable si se impide el lamido","tag-red:🔴 Si lame: urgencia veterinaria"],human:"El alcohol 70% es el antiséptico estándar para heridas humanas."},
+  {type:'drug',name:"Hachís · Cannabis concentrado (THC concentrado)",emoji:"🟫",bg:"linear-gradient(135deg,#1a1008,#3a2a12)",cat:"Cannabis · Concentrado",q:"El hachís y los concentrados de cannabis ¿son más peligrosos que la marihuana herbal para las mascotas?",opts:[{t:"No — el THC es el mismo compuesto independiente de la presentación",c:false},{t:"Sí — pueden contener 5-10 veces más THC que la marihuana herbal",c:true},{t:"Son más seguros porque se administran en menor cantidad",c:false},{t:"Solo los concentrados en aceite son más peligrosos",c:false}],fb:"El hachís concentra 20-40% de THC vs. 5-15% de la marihuana herbal. Los concentrados modernos pueden tener 60-90% de THC. Para las mascotas, cantidades mucho menores pueden causar intoxicación severa.",tags:["tag-red:🔴 5-10x más THC que marihuana herbal","tag-red:🔴 Edibles: dosis impredecible"],human:"Los concentrados de cannabis han aumentado dramáticamente las hospitalizaciones en países donde se ha legalizado."},
 ];
 
 // ══════════════════════════════════════════════════════
@@ -913,10 +880,10 @@ const DRUGS = [
 // ══════════════════════════════════════════════════════
 const POISONS = [
   {
-    type:'poison', name:"Brodifacoum (Ratonik · Klerat)", emoji:"🐀",
+    type:'poison', name:"Raticida anticoagulante — Ratonik · Klerat (brodifacoum)", emoji:"🐀",
     bg:"linear-gradient(135deg,#1a0500,#4a1008)",
     cat:"Raticida anticoagulante · Muy común Chile",
-    q:"El Brodifacoum es el raticida más usado en Chile. ¿Por qué los síntomas aparecen 2-5 días DESPUÉS de la ingestión?",
+    q:"El raticida anticoagulante (brodifacoum) es el más usado en Chile. ¿Por qué los síntomas aparecen 2-5 días DESPUÉS de la ingestión?",
     opts:[
       {t:"Porque el veneno se absorbe muy lentamente por el intestino",c:false},
       {t:"Porque agota los factores de coagulación existentes — el animal muere de hemorragia interna cuando se acaban",c:true},
@@ -928,10 +895,10 @@ const POISONS = [
     human:"Peligroso para humanos y fauna silvestre. Búhos y rapaces que comen ratas envenenadas también mueren (toxicidad por relay)."
   },
   {
-    type:'poison', name:"Etilenglicol (Anticongelante)", emoji:"🚗",
+    type:'poison', name:"Anticongelante (etilenglicol)", emoji:"🚗",
     bg:"linear-gradient(135deg,#0a0a2a,#1a1a5a)",
     cat:"Anticongelante · Sabor dulce · Mortal",
-    q:"El anticongelante tiene sabor dulce que atrae a gatos. ¿Cuánto tiempo tiene un gato para recibir antídoto antes de daño renal irreversible?",
+    q:"El anticongelante (etilenglicol) tiene sabor dulce que atrae a gatos. ¿Cuánto tiempo tiene un gato para recibir antídoto antes de daño renal irreversible?",
     opts:[
       {t:"24 horas — hay tiempo suficiente para buscar veterinario al día siguiente",c:false},
       {t:"Solo 3-4 horas — después el daño renal es irreversible",c:true},
@@ -943,10 +910,10 @@ const POISONS = [
     human:"Tóxico también para humanos. Ha sido usado en envenenamientos intencionales por su sabor dulce e incoloro."
   },
   {
-    type:'poison', name:"Metaldehído (Cebo babosas · Metarex)", emoji:"🐌",
+    type:'poison', name:"Cebo para babosas — Metarex (metaldehído)", emoji:"🐌",
     bg:"linear-gradient(135deg,#1a1a0a,#3a3a15)",
     cat:"Plaguicida · Jardines y huertos chilenos",
-    q:"El Metarex (cebo para babosas) tiene forma de granitos azules/verdes atractivos. ¿Qué sistema afecta principalmente?",
+    q:"El cebo para babosas (Metarex / metaldehído) tiene forma de granitos azules/verdes atractivos. ¿Qué sistema afecta principalmente?",
     opts:[
       {t:"El sistema digestivo — provoca úlceras gastrointestinales",c:false},
       {t:"El sistema nervioso central — convulsiones continuas que pueden ser fatales en horas",c:true},
@@ -958,85 +925,85 @@ const POISONS = [
     human:"Tóxico también para niños que confunden los gránulos con dulces."
   },
   {
-    type:'poison', name:"Permetrina / Piretroides (Advantix)", emoji:"🦟",
+    type:'poison', name:"Antipulgas Advantix (permetrina / piretroides)", emoji:"🦟",
     bg:"linear-gradient(135deg,#1a0a2a,#3a1a5a)",
     cat:"Insecticida antipulgas · LETAL para gatos",
-    q:"Un gato convive con un perro al que se le aplicó Advantix antipulgas. ¿Existe riesgo real para el gato?",
+    q:"Un gato convive con un perro al que se le aplicó el antipulgas Advantix (permetrina). ¿Existe riesgo real para el gato?",
     opts:[
       {t:"No — los productos para perros no afectan a los gatos del mismo hogar",c:false},
       {t:"Sí — el gato al acicalarse al perro o frotarse ingiere permetrina que es extremadamente tóxica para gatos",c:true},
       {t:"Solo si el gato lame directamente el punto de aplicación reciente",c:false},
       {t:"La permetrina solo es tóxica para insectos",c:false}
     ],
-    fb:"La permetrina es LETAL para gatos aunque sea bien tolerada por perros. Los gatos carecen de glucuronil transferasa para metabolizarla. Al acicalarse mutuamente, el gato ingiere permetrina causando temblores severos, convulsiones, hipertermia y muerte. Separar al perro del gato mínimo 24-48h tras aplicar Advantix.",
+    fb:"El Advantix (permetrina) es LETAL para gatos aunque sea bien tolerada por perros. Los gatos carecen de glucuronil transferasa para metabolizarla. Al acicalarse mutuamente, el gato ingiere permetrina causando temblores severos, convulsiones, hipertermia y muerte. Separar al perro del gato mínimo 24-48h tras aplicar Advantix.",
     tags:["tag-red:🔴 LETAL para gatos — separar 48h tras aplicar en perro","tag-red:🔴 Nunca aplicar productos de perro en gatos"],
     human:"Segura en uso correcto para humanos. Usada en mosquiteros y ropa de trekking."
   },
   {
-    type:'poison', name:"Organofosforados (Clorpirifos · Malatión)", emoji:"🌾",
+    type:'poison', name:"Insecticida agrícola (organofosforados — clorpirifos, malatión)", emoji:"🌾",
     bg:"linear-gradient(135deg,#0a2a0a,#1a4a15)",
     cat:"Insecticida agrícola · Zonas rurales Chile",
-    q:"Los organofosforados inhiben la acetilcolinesterasa. ¿Qué signo clínico característico permite sospechar esta intoxicación?",
+    q:"Los insecticidas agrícolas (organofosforados como clorpirifos o malatión) inhiben la acetilcolinesterasa. ¿Qué signo clínico característico permite sospechar esta intoxicación?",
     opts:[
       {t:"Pupilas muy dilatadas (midriasis) y taquicardia",c:false},
       {t:"Pupilas muy contraídas (miosis), salivación excesiva, diarrea y convulsiones — síndrome muscarínico",c:true},
       {t:"Solo convulsiones sin otros signos",c:false},
       {t:"Hemorragias espontáneas como los anticoagulantes",c:false}
     ],
-    fb:"Los organofosforados acumulan acetilcolina causando el síndrome SLUDGE: Salivación, Lagrimeo, Urinación, Defecación, vómito Gastrointestinal, Emesis. Más miosis, bradicardia y convulsiones. Antídoto específico: Atropina + Pralidoxima.",
+    fb:"Los insecticidas organofosforados (clorpirifos, malatión) acumulan acetilcolina causando el síndrome SLUDGE: Salivación, Lagrimeo, Urinación, Defecación, vómito Gastrointestinal, Emesis. Más miosis, bradicardia y convulsiones. Antídoto específico: Atropina + Pralidoxima.",
     tags:["tag-red:🔴 Síndrome SLUDGE — reconocerlo salva vidas","tag-blue:💉 Antídoto: Atropina + Pralidoxima"],
     human:"Los organofosforados fueron base de armas químicas (gas nervioso). Intoxicaciones frecuentes en trabajadores agrícolas."
   },
   {
-    type:'poison', name:"Fosfuro de Zinc (Rodenticida)", emoji:"💀",
+    type:'poison', name:"Rodenticida de zinc (fosfuro de zinc)", emoji:"💀",
     bg:"linear-gradient(135deg,#1a1a08,#3a3a10)",
     cat:"Rodenticida · Zonas rurales · Doble peligro",
-    q:"El Fosfuro de Zinc es especialmente peligroso porque representa riesgo no solo para la mascota sino también para...",
+    q:"El rodenticida de zinc (fosfuro de zinc) es especialmente peligroso porque representa riesgo no solo para la mascota sino también para...",
     opts:[
       {t:"Solo para la mascota — no hay riesgo para las personas cercanas",c:false},
       {t:"El veterinario y dueño — el estómago del animal intoxicado produce gas fosfina tóxico al vomitar",c:true},
       {t:"Solo para otras mascotas del hogar",c:false},
       {t:"El medio ambiente por contaminación del suelo únicamente",c:false}
     ],
-    fb:"El Fosfuro de Zinc reacciona con el ácido gástrico produciendo gas fosfina (PH3), altamente tóxico. Si el veterinario induce el vómito sin protección, él mismo puede intoxicarse. Informar SIEMPRE al veterinario qué tóxico ingirió el animal.",
+    fb:"El rodenticida de zinc (fosfuro de zinc) reacciona con el ácido gástrico produciendo gas fosfina (PH3), altamente tóxico. Si el veterinario induce el vómito sin protección, él mismo puede intoxicarse. Informar SIEMPRE al veterinario qué tóxico ingirió el animal.",
     tags:["tag-red:🔴 Gas fosfina: peligro para veterinario y dueño","tag-red:🔴 NO inducir vómito en casa"],
     human:"El gas fosfina también es tóxico para humanos — requiere atención en área ventilada."
   },
   {
-    type:'poison', name:"Lejía / Hipoclorito de Sodio", emoji:"🧴",
+    type:'poison', name:"Cloro / Lejía (Hipoclorito de Sodio)", emoji:"🧴",
     bg:"linear-gradient(135deg,#0a1a2a,#1a3a5a)",
     cat:"Limpiador doméstico · Concentración importa",
-    q:"La lejía doméstica al 3-5% y la lejía concentrada al 10%+ ¿representan la misma peligrosidad?",
+    q:"El Cloro doméstico (lejía / hipoclorito de sodio) al 3-5% y el concentrado al 10%+ ¿representan la misma peligrosidad?",
     opts:[
       {t:"Sí — cualquier concentración de hipoclorito es igualmente peligrosa",c:false},
-      {t:"No — la doméstica diluida irrita mucosas; la concentrada puede causar quemaduras graves en boca y esófago",c:true},
-      {t:"La lejía nunca es peligrosa para mascotas",c:false},
-      {t:"Solo peligrosa para gatos",c:false}
+      {t:"No — el doméstico diluido irrita mucosas; el concentrado puede causar quemaduras graves en boca y esófago",c:true},
+      {t:"El cloro nunca es peligroso para mascotas",c:false},
+      {t:"Solo peligroso para gatos",c:false}
     ],
-    fb:"La lejía doméstica (3-5%) representa riesgo moderado — principalmente irritación de mucosas si se lame. La lejía concentrada (10%+ industrial) puede causar quemaduras químicas graves. Nunca mezclar lejía con amoníaco o vinagre — produce gases tóxicos.",
-    tags:["tag-orange:🟠 Doméstica diluida: irritación mucosas","tag-red:🔴 Concentrada: quemaduras químicas graves"],
-    human:"La mezcla lejía + amoníaco produce gas cloramina tóxico para humanos también. Nunca mezclar productos de limpieza."
+    fb:"El Cloro doméstico (hipoclorito de sodio 3-5%) representa riesgo moderado — principalmente irritación de mucosas si se lame. El cloro concentrado (10%+ industrial) puede causar quemaduras químicas graves. Nunca mezclar cloro con amoníaco o vinagre — produce gases tóxicos.",
+    tags:["tag-orange:🟠 Doméstico diluido: irritación mucosas","tag-red:🔴 Concentrado: quemaduras químicas graves"],
+    human:"La mezcla cloro + amoníaco produce gas cloramina tóxico para humanos también. Nunca mezclar productos de limpieza."
   },
   {
-    type:'poison', name:"Paraquat (Herbicida · Gramoxone)", emoji:"🌿",
+    type:'poison', name:"Herbicida Gramoxone (paraquat)", emoji:"🌿",
     bg:"linear-gradient(135deg,#0a2a05,#1a4a10)",
     cat:"Herbicida agrícola · Sin antídoto efectivo",
-    q:"El Paraquat (Gramoxone) tiene una característica única que lo hace especialmente temido. ¿Cuál es?",
+    q:"El herbicida Gramoxone (paraquat) tiene una característica única que lo hace especialmente temido. ¿Cuál es?",
     opts:[
       {t:"Es el más rápido en causar síntomas — actúa en menos de 1 hora",c:false},
       {t:"No tiene antídoto efectivo y causa destrucción pulmonar progresiva e irreversible",c:true},
       {t:"Solo es tóxico para aves",c:false},
       {t:"Solo tóxico por inhalación, no por ingestión",c:false}
     ],
-    fb:"El Paraquat genera radicales libres que destruyen el tejido pulmonar progresivamente durante días o semanas. No existe antídoto efectivo. Incluso con tratamiento intensivo la mortalidad es muy alta. El oxígeno suplementario puede EMPEORAR el daño.",
+    fb:"El Gramoxone (paraquat) genera radicales libres que destruyen el tejido pulmonar progresivamente durante días o semanas. No existe antídoto efectivo. Incluso con tratamiento intensivo la mortalidad es muy alta. El oxígeno suplementario puede EMPEORAR el daño.",
     tags:["tag-red:🔴 SIN antídoto efectivo — mortalidad muy alta","tag-red:🔴 Destrucción pulmonar irreversible progresiva"],
     human:"El paraquat ha sido utilizado en suicidios. Alta mortalidad humana incluso con tratamiento en UCI."
   },
   {
-    type:'poison', name:"Naftalina (Bolas antimoth)", emoji:"🦋",
+    type:'poison', name:"Bolas antimoth / naftalinas (naftalina)", emoji:"🦋",
     bg:"linear-gradient(135deg,#1a1a2a,#3a3a5a)",
     cat:"Producto doméstico · Cajones y armarios",
-    q:"Las bolas de naftalina en cajones con ropa ¿pueden intoxicar a una mascota que duerme cerca del armario?",
+    q:"Las bolas antimoth (naftalinas) en cajones con ropa ¿pueden intoxicar a una mascota que duerme cerca del armario?",
     opts:[
       {t:"No — solo son peligrosas si se ingieren directamente",c:false},
       {t:"Sí — los vapores de naftalina se acumulan y son tóxicos por inhalación crónica",c:true},
@@ -1048,10 +1015,10 @@ const POISONS = [
     human:"Los vapores de naftalina también afectan a humanos con exposición prolongada."
   },
   {
-    type:'poison', name:"Ácido Bórico / Bórax (Veneno cucarachas)", emoji:"🪳",
+    type:'poison', name:"Veneno para cucarachas (ácido bórico / bórax)", emoji:"🪳",
     bg:"linear-gradient(135deg,#1a1a0a,#3a3518)",
     cat:"Insecticida doméstico · Uso muy extendido",
-    q:"Las trampas caseras de ácido bórico para cucarachas ¿representan riesgo para mascotas?",
+    q:"Las trampas caseras de veneno para cucarachas (ácido bórico / bórax) ¿representan riesgo para mascotas?",
     opts:[
       {t:"No — el ácido bórico no se absorbe en mamíferos",c:false},
       {t:"Sí — la ingestión repetida causa daño renal, neurológico y dermatitis en perros y gatos",c:true},
@@ -1254,24 +1221,32 @@ function renderQuestion(){
 // ══════════════════════════════════════════════════════
 // ESTADÍSTICAS — Storage persistente
 // ══════════════════════════════════════════════════════
+// ── Storage helper: usa window.storage (claude.ai) o localStorage (GitHub Pages) ──
+const store = {
+  async get(key){ try{ if(window.storage){ const r=await window.storage.get(key); return r?r.value:null; } return localStorage.getItem(key); }catch(e){ try{return localStorage.getItem(key);}catch(e2){return null;} } },
+  async set(key,val){ try{ if(window.storage){ await window.storage.set(key,val); return; } localStorage.setItem(key,val); }catch(e){ try{localStorage.setItem(key,val);}catch(e2){} } },
+  async delete(key){ try{ if(window.storage){ await window.storage.delete(key); return; } localStorage.removeItem(key); }catch(e){ try{localStorage.removeItem(key);}catch(e2){} } },
+  async list(prefix){ try{ if(window.storage){ const r=await window.storage.list(prefix); return r?r.keys:[]; } const keys=[]; for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith(prefix))keys.push(k);} return keys; }catch(e){ return []; } }
+};
+
 async function saveAnswer(q, correct){
   try {
     const key = 'stats:' + q.name.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ·\- ]/g,'').trim().slice(0,80);
     let entry;
-    try { const r = await window.storage.get(key); entry = r ? JSON.parse(r.value) : null; } catch(e){ entry = null; }
+    try { const r = await store.get(key); entry = r ? JSON.parse(r) : null; } catch(e){ entry = null; }
     if(!entry) entry = { name: q.name, emoji: q.emoji, type: q.type, correct: 0, wrong: 0 };
     if(correct) entry.correct++; else entry.wrong++;
-    await window.storage.set(key, JSON.stringify(entry));
+    await store.set(key, JSON.stringify(entry));
   } catch(e){ console.warn('Stats storage error:', e); }
 }
 
 async function saveRound(scoreVal){
   try {
     let rounds;
-    try { const r = await window.storage.get('stats:_rounds'); rounds = r ? JSON.parse(r.value) : {total:0, scores:[]}; } catch(e){ rounds = {total:0, scores:[]}; }
+    try { const r = await store.get('stats:_rounds'); rounds = r ? JSON.parse(r) : {total:0, scores:[]}; } catch(e){ rounds = {total:0, scores:[]}; }
     rounds.total++;
     rounds.scores.push(scoreVal);
-    await window.storage.set('stats:_rounds', JSON.stringify(rounds));
+    await store.set('stats:_rounds', JSON.stringify(rounds));
   } catch(e){ console.warn('Stats rounds error:', e); }
 }
 
@@ -1300,15 +1275,15 @@ async function renderStats(){
   try {
     // Cargar rondas
     let rounds = {total:0, scores:[]};
-    try { const r = await window.storage.get('stats:_rounds'); if(r) rounds = JSON.parse(r.value); } catch(e){}
+    try { const r = await store.get('stats:_rounds'); if(r) rounds = JSON.parse(r); } catch(e){}
 
     // Cargar preguntas
-    let keys;
-    try { const r = await window.storage.list('stats:'); keys = r ? r.keys.filter(k=>k!=='stats:_rounds') : []; } catch(e){ keys=[]; }
+    let keys = [];
+    try { const all = await store.list('stats:'); keys = all.filter(k=>k!=='stats:_rounds'); } catch(e){}
 
     const questions = [];
     for(const key of keys){
-      try { const r = await window.storage.get(key); if(r) questions.push(JSON.parse(r.value)); } catch(e){}
+      try { const r = await store.get(key); if(r) questions.push(JSON.parse(r)); } catch(e){}
     }
 
     if(rounds.total === 0 && questions.length === 0){
@@ -1375,22 +1350,39 @@ async function renderStats(){
       }).join('')}
 
       <!-- Preguntas individuales -->
-      <div style="color:rgba(240,235,224,0.4);font-size:10px;letter-spacing:2px;text-transform:uppercase;margin:18px 0 10px">% acierto por pregunta</div>
+      <div style="color:rgba(240,235,224,0.4);font-size:10px;letter-spacing:2px;text-transform:uppercase;margin:18px 0 10px">Aciertos y errores por pregunta</div>
       ${sorted.map(q=>{
         const total = q.correct+q.wrong;
         const pct = total ? Math.round(q.correct/total*100) : 0;
+        const pctWrong = total ? Math.round(q.wrong/total*100) : 0;
         const color = pct>=80?'#3fb950':pct>=50?'#d29922':'#f85149';
-        return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
-          <span style="font-size:22px;min-width:28px">${q.emoji}</span>
-          <div style="flex:1;min-width:0">
-            <div style="font-size:12px;color:#f0ebe0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${q.name}</div>
-            <div style="height:4px;background:#21262d;border-radius:2px;margin-top:5px;overflow:hidden">
-              <div style="height:100%;width:${pct}%;background:${color};border-radius:2px"></div>
-            </div>
+        return `<div style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:7px">
+            <span style="font-size:22px;min-width:28px">${q.emoji}</span>
+            <div style="font-size:12px;color:#f0ebe0;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${q.name}</div>
           </div>
-          <div style="text-align:right;min-width:48px">
-            <div style="font-size:14px;font-weight:700;color:${color}">${pct}%</div>
-            <div style="font-size:10px;color:rgba(240,235,224,0.35)">${q.correct}/${total}</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <!-- Aciertos -->
+            <div style="flex:1;min-width:0">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+                <span style="font-size:10px;color:#3fb950;font-weight:600">✓ Aciertos</span>
+                <span style="font-size:11px;color:#3fb950;font-weight:700">${q.correct} <span style="color:rgba(240,235,224,0.3);font-weight:400;font-size:10px">(${pct}%)</span></span>
+              </div>
+              <div style="height:5px;background:#21262d;border-radius:3px;overflow:hidden">
+                <div style="height:100%;width:${pct}%;background:#3fb950;border-radius:3px;transition:width 0.6s ease"></div>
+              </div>
+            </div>
+            <div style="width:1px;height:28px;background:rgba(255,255,255,0.07);flex-shrink:0"></div>
+            <!-- Errores -->
+            <div style="flex:1;min-width:0">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+                <span style="font-size:10px;color:#f85149;font-weight:600">✗ Errores</span>
+                <span style="font-size:11px;color:#f85149;font-weight:700">${q.wrong} <span style="color:rgba(240,235,224,0.3);font-weight:400;font-size:10px">(${pctWrong}%)</span></span>
+              </div>
+              <div style="height:5px;background:#21262d;border-radius:3px;overflow:hidden">
+                <div style="height:100%;width:${pctWrong}%;background:#f85149;border-radius:3px;transition:width 0.6s ease"></div>
+              </div>
+            </div>
           </div>
         </div>`;
       }).join('')}
@@ -1409,8 +1401,8 @@ async function renderStats(){
 async function clearStats(){
   if(!confirm('¿Borrar todas las estadísticas? Esta acción no se puede deshacer.')) return;
   try {
-    const r = await window.storage.list('stats:');
-    if(r) for(const key of r.keys){ try{ await window.storage.delete(key); }catch(e){} }
+    const keys = await store.list('stats:');
+    for(const key of keys){ try{ await store.delete(key); }catch(e){} }
     await renderStats();
   } catch(e){ alert('Error al borrar: '+e.message); }
 }
@@ -1456,15 +1448,6 @@ function nextQuestion(){
 
 function showResults(){
   saveRound(score);
-  // Enviar resultado a Firebase (anónimo, solo estadísticas)
-  const catName = selectedCat === 'plants' ? 'Plantas'
-    : selectedCat === 'foods' ? 'Alimentos'
-    : selectedCat === 'drugs' ? 'Drogas & Medicamentos'
-    : selectedCat === 'poisons' ? 'Venenos & Químicos'
-    : 'Mix completo';
-  if(typeof window.enviarResultadoFirebase === 'function'){
-    window.enviarResultadoFirebase(catName, score, QS);
-  }
   document.getElementById('screen-question').style.display='none';
   document.getElementById('progress-wrap').style.display='none';
   document.getElementById('screen-results').style.display='flex';
