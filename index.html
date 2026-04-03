@@ -93,6 +93,19 @@ body::before{
 .cat-count{color:var(--muted);font-size:11px}
 .mix-full{grid-column:span 2}
 
+/* ── SCORE WIDGET ── */
+.score-widget{
+  display:flex;align-items:center;justify-content:space-between;
+  margin:10px 0 0;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:14px;padding:12px 18px;
+}
+.score-widget-col{display:flex;flex-direction:column;align-items:center;flex:1}
+.score-widget-num{font-family:'Fraunces',serif;font-size:22px;font-weight:900;color:var(--cream);line-height:1}
+.score-widget-best{color:#f0b429}
+.score-widget-label{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-top:3px}
+.score-widget-divider{width:1px;height:32px;background:var(--border);flex-shrink:0}
+
 .btn-start{
   margin:20px 16px 0;
   background:linear-gradient(135deg,#238636,#2ea043);
@@ -427,10 +440,26 @@ body::before{
           <div class="cat-name objects">Objetos Peligrosos</div>
           <div class="cat-count">20 objetos · 10 al azar + alerta</div>
         </div>
-        <div class="cat-card mix" onclick="selectCat('mix',this)" style="grid-column:span 2">
+        <div class="cat-card mix" onclick="selectCat('mix',this)">
           <span class="cat-icon">🔀</span>
           <div class="cat-name mix">Mix completo</div>
-          <div class="cat-count">177 preguntas · 10 al azar + alerta</div>
+          <div class="cat-count">177 preguntas · 10 al azar</div>
+        </div>
+      </div>
+      <div class="score-widget" id="score-widget">
+        <div class="score-widget-col">
+          <span class="score-widget-num" id="sw-rounds">—</span>
+          <span class="score-widget-label">rondas jugadas</span>
+        </div>
+        <div class="score-widget-divider"></div>
+        <div class="score-widget-col">
+          <span class="score-widget-num score-widget-best" id="sw-best">—</span>
+          <span class="score-widget-label">mejor puntaje</span>
+        </div>
+        <div class="score-widget-divider"></div>
+        <div class="score-widget-col">
+          <span class="score-widget-num" id="sw-avg">—</span>
+          <span class="score-widget-label">promedio</span>
         </div>
       </div>
       <button class="btn-start" id="btn-start" onclick="startQuiz()" disabled>Selecciona una categoría</button>
@@ -1770,7 +1799,25 @@ function showIntro(){
   document.getElementById('progress-wrap').style.display='none';
   document.getElementById('screen-intro').style.display='flex';
   document.getElementById('screen-intro').style.flexDirection='column';
+  loadScoreWidget();
 }
+
+async function loadScoreWidget(){
+  try {
+    const r = await store.get('stats:_rounds');
+    if(!r){ return; }
+    const rounds = JSON.parse(r);
+    if(!rounds || rounds.total === 0) return;
+    const best = Math.max(...rounds.scores);
+    const avg  = (rounds.scores.reduce((a,b)=>a+b,0)/rounds.scores.length).toFixed(1);
+    document.getElementById('sw-rounds').textContent = rounds.total;
+    document.getElementById('sw-best').textContent   = best + '/11';
+    document.getElementById('sw-avg').textContent    = avg;
+  } catch(e){}
+}
+
+// Cargar widget al inicio
+loadScoreWidget();
 
 // ── Exponer funciones al scope global (requerido con type="module") ──
 window.selectCat      = selectCat;
@@ -1787,6 +1834,7 @@ window.handleLogoClick= handleLogoClick;
 window.closeStatsPanel= closeStatsPanel;
 window.switchTab      = switchTab;
 window.clearStats     = clearStats;
+window.loadScoreWidget= loadScoreWidget;
 </script>
   <!-- ── PANEL ESTADÍSTICAS (oculto) ── -->
   <div id="stats-panel" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:300;align-items:flex-end;justify-content:center;backdrop-filter:blur(6px);">
