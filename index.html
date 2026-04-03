@@ -282,6 +282,12 @@ body::before{
 .cat-name.poison{color:#ff6b35}
 .badge-poison{background:rgba(255,107,53,0.15);color:#ff6b35;border:1px solid rgba(255,107,53,0.3)}
 
+/* ── OBJETOS PELIGROSOS ── */
+.cat-card.objects::before{background:radial-gradient(ellipse at top left,rgba(251,191,36,0.12),transparent 70%)}
+.cat-card.selected.objects{border-color:#fbbf24;box-shadow:0 0 20px rgba(251,191,36,0.18)}
+.cat-name.objects{color:#fbbf24}
+.badge-objects{background:rgba(251,191,36,0.15);color:#fbbf24;border:1px solid rgba(251,191,36,0.35)}
+
 /* ✅ FIX: badge-common — una sola regla (eliminado el duplicado) */
 .badge-common{background:rgba(255,193,7,0.18);color:#ffc107;border:1px solid rgba(255,193,7,0.4);animation:pulse 1.5s infinite}
 
@@ -416,10 +422,15 @@ body::before{
           <div class="cat-name poison">Venenos & Químicos</div>
           <div class="cat-count">19 venenos · 10 al azar + alerta</div>
         </div>
+        <div class="cat-card objects" onclick="selectCat('objects',this)">
+          <span class="cat-icon">⚠️</span>
+          <div class="cat-name objects">Objetos Peligrosos</div>
+          <div class="cat-count">20 objetos · 10 al azar + alerta</div>
+        </div>
         <div class="cat-card mix" onclick="selectCat('mix',this)" style="grid-column:span 2">
           <span class="cat-icon">🔀</span>
           <div class="cat-name mix">Mix completo</div>
-          <div class="cat-count">157 preguntas · 10 al azar + alerta</div>
+          <div class="cat-count">177 preguntas · 10 al azar + alerta</div>
         </div>
       </div>
       <button class="btn-start" id="btn-start" onclick="startQuiz()" disabled>Selecciona una categoría</button>
@@ -611,11 +622,32 @@ body::before{
           <div class="item-row"><span class="item-num">8</span><span class="item-name" style="color:#f0b429">Alcohol isopropílico 70% ⚠️ solo tópico<span class="item-sci">Si la mascota lame la zona: consultar veterinario</span></span></div>
           <div class="item-row"><span class="item-num">9</span><span class="item-name" style="color:#7ee787">Limpiadores enzimáticos para mascotas ✅<span class="item-sci">Una vez secos: seguros y eliminan olores que atraen</span></span></div>
         </div>
+        <div class="panel-section">
+          <div class="panel-section-title" style="color:#fbbf24">⚠️ Objetos Peligrosos (20)</div>
+          <div class="item-row"><span class="item-num">1</span><span class="item-name">Cuesco de palta<span class="item-sci">Obstrucción esofágica o intestinal · superficie resbaladiza</span></span></div>
+          <div class="item-row"><span class="item-num">2</span><span class="item-name">Cuesco de durazno<span class="item-sci">Astillas + amigdalina · perforación y toxicidad</span></span></div>
+          <div class="item-row"><span class="item-num">3</span><span class="item-name">Huesos de pollo cocidos<span class="item-sci">Astillas que perforan esófago, estómago e intestinos</span></span></div>
+          <div class="item-row"><span class="item-num">4</span><span class="item-name">Medias o calcetines<span class="item-sci">Obstrucción intestinal masiva · muy frecuente en perros</span></span></div>
+          <div class="item-row"><span class="item-num">5</span><span class="item-name">Ropa interior o trapos de cocina<span class="item-sci">Bolas indigeribles que bloquean el intestino delgado</span></span></div>
+          <div class="item-row"><span class="item-num">6</span><span class="item-name">Hilos, lanas o sedal de pesca<span class="item-sci">Cuerpo extraño lineal · plegamiento y perforación intestinal · clásico en gatos</span></span></div>
+          <div class="item-row"><span class="item-num">7</span><span class="item-name">Agujas de coser<span class="item-sci">Perforación con migración interna · sin síntomas inmediatos</span></span></div>
+          <div class="item-row"><span class="item-num">8</span><span class="item-name">Elásticos, gomitas o ligas para el pelo<span class="item-sci">Cuerpo lineal · necrosis por estrangulamiento</span></span></div>
+          <div class="item-row"><span class="item-num">9</span><span class="item-name">Pilas de botón<span class="item-sci">Quemadura electroquímica ultrarrápida · perforación en horas</span></span></div>
+          <div class="item-row"><span class="item-num">10</span><span class="item-name">Monedas y botones metálicos<span class="item-sci">Obstrucción mecánica + toxicidad por zinc</span></span></div>
+          <div class="item-row"><span class="item-num">11</span><span class="item-name">Piezas pequeñas de juguetes<span class="item-sci">Lego y similares · atragantamiento o bloqueo intestinal</span></span></div>
+          <div class="item-row"><span class="item-num">12</span><span class="item-name">Cordones de zapatos<span class="item-sci">Cuerpo extraño lineal · pliegues y perforación</span></span></div>
+          <div class="item-row"><span class="item-num">13</span><span class="item-name">Coronta de choclo<span class="item-sci">Obstrucción severa · muy frecuente en Chile</span></span></div>
+          <div class="item-row"><span class="item-num">14</span><span class="item-name">Piedras o guijarros del jardín<span class="item-sci">Pica · obstrucción mecánica + laceración interna</span></span></div>
+          <div class="item-row"><span class="item-num">15</span><span class="item-name">Pelotas pequeñas de goma<span class="item-sci">Atasco gástrico o laríngeo según tamaño</span></span></div>
+          <div class="item-row"><span class="item-num">16</span><span class="item-name">Bolsas de plástico<span class="item-sci">Obstrucción masiva + adherencia al tejido intestinal</span></span></div>
+          <div class="item-row"><span class="item-num">17</span><span class="item-name">Palillos de brocheta o palitos de madera<span class="item-sci">Astillas que perforan el tracto digestivo</span></span></div>
+          <div class="item-row"><span class="item-num">18</span><span class="item-name">Cintas o lazos de regalo<span class="item-sci">Cuerpo lineal · plegamiento intestinal y necrosis · riesgo en fiestas</span></span></div>
+          <div class="item-row"><span class="item-num">19</span><span class="item-name">Tornillos, tuercas o clavos<span class="item-sci">Perforación directa + toxicidad metálica sistémica</span></span></div>
+          <div class="item-row"><span class="item-num">20</span><span class="item-name">Corchos de botella de vino<span class="item-sci">Fragmentos esponjosos que se expanden y obstruyen</span></span></div>
+        </div>
       </div>
     </div>
   </div>
-
-  <!-- ── OVERLAY: FUENTES ── -->
   <div class="overlay" id="panel-sources" onclick="closePanel('panel-sources',event)">
     <div class="panel">
       <div class="panel-header">
@@ -1095,27 +1127,172 @@ const PREGUNTA_11_POOL = [
 ];
 
 // ══════════════════════════════════════════════════════
+// BANCO OBJETOS PELIGROSOS (20)
+// ══════════════════════════════════════════════════════
+const OBJECTS = [
+  {type:'object',name:"Cuesco de palta",emoji:"🥑",bg:"linear-gradient(135deg,#1a2a0a,#2a4a10)",cat:"Cuerpo extraño · Obstrucción mecánica",
+   q:"¿El cuesco de palta es seguro para que un perro lo muerda o juegue con él?",
+   opts:[{t:"Sí — es demasiado grande para ser tragado",c:false},{t:"No — su superficie resbaladiza y dureza pueden provocar obstrucción esofágica o intestinal",c:true},{t:"Solo es peligroso para razas pequeñas",c:false},{t:"Es seguro si el perro lo muerde pero no lo traga",c:false}],
+   fb:"El cuesco de palta es uno de los cuerpos extraños más subestimados. Su superficie resbaladiza facilita que sea tragado entero causando obstrucción esofágica o intestinal que requiere cirugía de urgencia. La pulpa también contiene persina. Desechar siempre en contenedor cerrado.",
+   tags:["tag-red:🔴 Obstrucción intestinal — cirugía de urgencia","tag-orange:🟠 La pulpa también contiene persina"],
+   human:"Sin riesgo para humanos."},
+
+  {type:'object',name:"Cuesco de durazno",emoji:"🍑",bg:"linear-gradient(135deg,#2a1508,#4a2a10)",cat:"Cuerpo extraño · Doble riesgo",
+   q:"Un perro mastica y traga un cuesco de durazno. ¿Es una emergencia veterinaria?",
+   opts:[{t:"No — si lo masticó, los fragmentos pasan fácilmente",c:false},{t:"Sí — los fragmentos astillados perforan el tracto digestivo y el núcleo contiene amigdalina",c:true},{t:"Solo si traga el cuesco entero",c:false},{t:"Solo en perros menores de 10 kg",c:false}],
+   fb:"El cuesco de durazno representa doble riesgo: sus fragmentos astillados pueden perforar estómago o intestinos, y su núcleo contiene amigdalina que se metaboliza en cianuro. Urgencia veterinaria inmediata aunque el perro parezca bien.",
+   tags:["tag-red:🔴 Astillas perforantes + amigdalina → cianuro","tag-red:🔴 Urgencia aunque el perro parezca bien"],
+   human:"Las semillas de durazno también contienen amigdalina — no masticar los huesos."},
+
+  {type:'object',name:"Huesos de pollo cocidos",emoji:"🍖",bg:"linear-gradient(135deg,#2a1a08,#5a3818)",cat:"Cuerpo extraño · Perforación intestinal",
+   q:"¿Los huesos de pollo cocidos son más seguros que los crudos porque están blandos?",
+   opts:[{t:"Sí — la cocción los ablanda y los hace más seguros",c:false},{t:"No — la cocción los vuelve frágiles y se astillan en esquirlas que perforan intestinos",c:true},{t:"Son igual de peligrosos que los crudos",c:false},{t:"Solo son peligrosos los huesos de pechuga",c:false}],
+   fb:"La cocción deshidrata el hueso volviéndolo quebradizo. Al masticarse se fragmenta en astillas punzantes que pueden lacerar encías, obstruir el esófago o perforar estómago e intestinos causando peritonitis fatal. Los huesos crudos de gran tamaño son la única alternativa supervisada.",
+   tags:["tag-red:🔴 Peritonitis fatal por perforación","tag-red:🔴 Nunca dar huesos cocidos"],
+   human:"Los huesos cocidos también representan riesgo de atragantamiento para personas."},
+
+  {type:'object',name:"Medias o calcetines",emoji:"🧦",bg:"linear-gradient(135deg,#1a0a2a,#3a1a5a)",cat:"Cuerpo extraño textil · Muy frecuente en perros",
+   q:"¿Una media tragada por un perro puede pasar sola sin necesidad de veterinario?",
+   opts:[{t:"Sí — si el perro es grande puede expulsarla naturalmente",c:false},{t:"No — las medias forman masas compactas que obstruyen el intestino y requieren cirugía",c:true},{t:"Solo preocuparse si el perro vomita más de 3 veces",c:false},{t:"Esperar 24 horas antes de consultar",c:false}],
+   fb:"Las medias son uno de los cuerpos extraños más frecuentes en perros. Al humedecerse con jugos gástricos forman una masa compacta que no avanza. La obstrucción completa sin tratamiento lleva a necrosis intestinal en horas. Nunca esperar — veterinario inmediato.",
+   tags:["tag-red:🔴 Necrosis intestinal sin tratamiento","tag-red:🔴 NUNCA esperar — veterinario inmediato"],
+   human:"Sin riesgo para humanos."},
+
+  {type:'object',name:"Ropa o trapos de cocina",emoji:"🧣",bg:"linear-gradient(135deg,#2a0a1a,#4a1a35)",cat:"Cuerpo extraño textil · Bloqueo intestino delgado",
+   q:"Un perro tragó un trapo de cocina pequeño. ¿Cuál es la acción correcta?",
+   opts:[{t:"Darle mucha agua para que lo expulse",c:false},{t:"Veterinario inmediato — los tejidos forman bolas indigeribles que bloquean el intestino delgado",c:true},{t:"Esperar a que lo vomite solo",c:false},{t:"Darle aceite de oliva para lubricar el paso",c:false}],
+   fb:"Los tejidos de tela no se digieren y se enrollan formando masas que bloquean el intestino delgado. El aceite o el agua no ayudan — solo retrasan la atención. La extracción quirúrgica o por endoscopía es el único tratamiento.",
+   tags:["tag-red:🔴 Obstrucción intestinal — solo cirugía o endoscopía","tag-red:🔴 El aceite NO ayuda — retrasa la atención"],
+   human:"Sin riesgo para humanos."},
+
+  {type:'object',name:"Hilos, lanas o sedal de pesca",emoji:"🧵",bg:"linear-gradient(135deg,#0a1a2a,#1a3a5a)",cat:"Cuerpo extraño lineal · Clásico en gatos",
+   q:"Un gato juega con hilo y lo traga. ¿Por qué los cuerpos extraños lineales son especialmente peligrosos?",
+   opts:[{t:"Porque son difíciles de detectar en radiografía",c:false},{t:"Porque se anclan en la base de la lengua y provocan plegamiento y perforación intestinal",c:true},{t:"Solo son peligrosos si miden más de 30 cm",c:false},{t:"Porque el hilo corta la mucosa gástrica al entrar",c:false}],
+   fb:"El hilo, la lana o el sedal se anclan frecuentemente bajo la lengua o en el píloro. El intestino intenta avanzarlo contrayéndose, pero al estar fijo se va plegando sobre sí mismo causando perforación múltiple. Es la emergencia quirúrgica más grave relacionada con cuerpos extraños en gatos.",
+   tags:["tag-red:🔴 Perforación intestinal múltiple","tag-red:🔴 Emergencia quirúrgica máxima en gatos"],
+   human:"Sin riesgo para humanos."},
+
+  {type:'object',name:"Agujas de coser",emoji:"🪡",bg:"linear-gradient(135deg,#1a1a2a,#3a3a5a)",cat:"Cuerpo extraño · Migración interna",
+   q:"¿Una aguja tragada por un gato puede quedar fija en algún órgano sin síntomas visibles?",
+   opts:[{t:"No — siempre provoca síntomas inmediatos y evidentes",c:false},{t:"Sí — puede migrar y quedar alojada sin síntomas hasta causar una perforación tardía",c:true},{t:"Solo si la aguja tiene hilo enhebrado",c:false},{t:"Las agujas siempre se expulsan por las heces",c:false}],
+   fb:"Las agujas pueden perforar esófago, estómago o intestinos y migrar hacia cavidad abdominal, tórax o tejidos musculares sin síntomas inmediatos. El diagnóstico es radiológico. Todo animal que haya ingerido una aguja debe ir al veterinario aunque esté aparentemente bien.",
+   tags:["tag-red:🔴 Migración interna sin síntomas — radiografía urgente","tag-red:🔴 Veterinario aunque parezca bien"],
+   human:"Las agujas representan riesgo físico también para humanos si se ingieren."},
+
+  {type:'object',name:"Elásticos, gomitas o ligas para el pelo",emoji:"🟡",bg:"linear-gradient(135deg,#2a2a00,#4a4a10)",cat:"Cuerpo extraño lineal · Necrosis tisular",
+   q:"¿Los elásticos pequeños son inofensivos para las mascotas porque son blandos y flexibles?",
+   opts:[{t:"Sí — su flexibilidad permite que pasen sin problema",c:false},{t:"No — pueden causar obstrucción lineal, enredarse en intestinos o estrangular tejido causando necrosis",c:true},{t:"Solo son peligrosos si se tragan varios a la vez",c:false},{t:"Solo riesgosos para gatos, no para perros",c:false}],
+   fb:"Los elásticos actúan como cuerpos extraños lineales: se enrollan en el intestino causando plegamiento, obstrucción y necrosis del tejido atrapado. Los gatos son especialmente atraídos por gomitas y ligas para el pelo. Mantenerlas siempre fuera de su alcance.",
+   tags:["tag-red:🔴 Necrosis del tejido intestinal","tag-orange:🟠 Gatos especialmente atraídos por ligas y gomitas"],
+   human:"Sin riesgo para humanos."},
+
+  {type:'object',name:"Pilas de botón",emoji:"🔋",bg:"linear-gradient(135deg,#1a0808,#4a1010)",cat:"Cuerpo extraño químico · Urgencia máxima",
+   q:"¿Una pila de botón tragada por una mascota es una emergencia más urgente que la mayoría de las intoxicaciones?",
+   opts:[{t:"No — las pilas son sólidas y no liberan químicos al organismo",c:false},{t:"Sí — generan corriente eléctrica que produce quemaduras químicas en minutos con perforación en pocas horas",c:true},{t:"Solo si la pila está usada y tiene electrolito expuesto",c:false},{t:"Es urgente solo si la pila tiene más de 2 cm",c:false}],
+   fb:"Las pilas de botón son la emergencia más crítica entre los cuerpos extraños. Al contacto con la mucosa húmeda generan corriente eléctrica que produce hidróxido de sodio, quemando tejido en minutos. La perforación esofágica puede ocurrir en menos de 2 horas. Ir a urgencias veterinarias sin esperar ningún síntoma.",
+   tags:["tag-red:🔴 URGENCIA MÁXIMA — perforación en menos de 2 horas","tag-red:🔴 No esperar síntomas — ir a urgencias ahora"],
+   human:"Las pilas de botón son igualmente peligrosas para niños pequeños."},
+
+  {type:'object',name:"Monedas y botones metálicos",emoji:"🪙",bg:"linear-gradient(135deg,#1a1a0a,#3a3a18)",cat:"Cuerpo extraño metálico · Toxicidad por zinc",
+   q:"¿Las monedas representan solo riesgo mecánico de obstrucción o también pueden ser tóxicas?",
+   opts:[{t:"Solo mecánico — los metales no se disuelven en el estómago",c:false},{t:"Ambos — el zinc de las monedas modernas se disuelve en el ácido gástrico causando toxicidad sistémica",c:true},{t:"Solo las monedas de cobre son tóxicas",c:false},{t:"Solo riesgo mecánico en perros pequeños",c:false}],
+   fb:"Las monedas modernas contienen zinc que el ácido gástrico disuelve causando anemia hemolítica y daño renal, además de la obstrucción mecánica. Los botones metálicos representan riesgo similar. Urgencia veterinaria aunque el animal esté comiendo y bebiendo con normalidad.",
+   tags:["tag-red:🔴 Doble riesgo: obstrucción + toxicidad por zinc","tag-red:🔴 Urgencia aunque parezca normal"],
+   human:"Sin riesgo para humanos en uso normal de monedas."},
+
+  {type:'object',name:"Piezas pequeñas de juguetes",emoji:"🧩",bg:"linear-gradient(135deg,#0a1a2a,#1a3550)",cat:"Cuerpo extraño · Atragantamiento y bloqueo",
+   q:"¿Los juguetes para niños son seguros para mascotas si no contienen químicos tóxicos?",
+   opts:[{t:"Sí — si son no tóxicos no representan peligro",c:false},{t:"No — las piezas pequeñas pueden causar atragantamiento o bloqueo intestinal aunque sean no tóxicas",c:true},{t:"Solo peligrosos para cachorros menores de 6 meses",c:false},{t:"Solo si las piezas son menores a 1 cm",c:false}],
+   fb:"La toxicidad química es solo uno de los riesgos. Las piezas pequeñas de juguetes son una causa frecuente de obstrucción intestinal en perros y gatos. El criterio no es si es tóxico sino si puede ser tragado. Cualquier pieza que entre en la boca de la mascota es potencialmente peligrosa.",
+   tags:["tag-red:🔴 No tóxico ≠ seguro — el tamaño es el criterio","tag-orange:🟠 Revisión continua de juguetes con piezas desprendibles"],
+   human:"Las piezas pequeñas de juguetes también son peligrosas para niños menores de 3 años."},
+
+  {type:'object',name:"Cordones de zapatos",emoji:"👟",bg:"linear-gradient(135deg,#1a1a1a,#3a3a3a)",cat:"Cuerpo extraño lineal · Plegamiento intestinal",
+   q:"¿Un cordón de zapato que cuelga parcialmente fuera de la boca o el ano debe tirarse para extraerlo?",
+   opts:[{t:"Sí — tirar suavemente es la forma más rápida y segura de retirarlo",c:false},{t:"No — nunca tirar de un cuerpo extraño lineal porque puede desgarrar el intestino",c:true},{t:"Tirar solo si está en la boca, no si sale por el ano",c:false},{t:"Tirar con movimiento rápido para minimizar el daño",c:false}],
+   fb:"Nunca tirar de un hilo, cordón o cualquier cuerpo lineal que cuelgue de la boca o salga por el ano. Si está anclado en algún punto del tracto digestivo, tirar puede causar desgarros o perforaciones múltiples. Ir al veterinario con el objeto en su posición original.",
+   tags:["tag-red:🔴 NUNCA tirar — puede desgarrar el intestino","tag-red:🔴 Ir al veterinario con el objeto en posición"],
+   human:"Sin riesgo para humanos."},
+
+  {type:'object',name:"Coronta de choclo",emoji:"🌽",bg:"linear-gradient(135deg,#2a1a00,#5a3800)",cat:"Cuerpo extraño · Muy frecuente en Chile",
+   q:"¿La coronta de choclo puede ser tragada entera por un perro mediano o grande?",
+   opts:[{t:"No — su tamaño la hace imposible de tragar para perros medianos",c:false},{t:"Sí — los perros la tragan entera con frecuencia causando obstrucción severa por su forma y tamaño",c:true},{t:"Solo si el perro la mastica en trozos previamente",c:false},{t:"Solo las corontas grandes son peligrosas",c:false}],
+   fb:"La coronta de choclo es una de las causas más frecuentes de obstrucción intestinal en Chile. Los perros la tragan entera atraídos por el olor. Su forma cilíndrica y tamaño la hacen imposible de pasar por el intestino. Cirugía de urgencia en la mayoría de los casos. Nunca dejar corontas al alcance.",
+   tags:["tag-red:🔴 Causa frecuente de obstrucción en Chile","tag-red:🔴 Cirugía de urgencia — desechar en contenedor cerrado"],
+   human:"Sin riesgo para humanos."},
+
+  {type:'object',name:"Piedras o guijarros del jardín",emoji:"🪨",bg:"linear-gradient(135deg,#1a1a1a,#2a2a2a)",cat:"Cuerpo extraño · Pica · Obstrucción",
+   q:"Un perro come piedras del jardín habitualmente. ¿Es una conducta normal que no requiere atención veterinaria?",
+   opts:[{t:"Sí — es instintivo y las piedras pequeñas pasan sin problema",c:false},{t:"No — la pica puede indicar déficit nutricional y las piedras causan obstrucción y laceración interna",c:true},{t:"Solo preocuparse si come piedras grandes",c:false},{t:"Es normal en cachorros hasta los 12 meses",c:false}],
+   fb:"Comer piedras de forma habitual se llama pica y puede indicar anemia, déficit de minerales o ansiedad. Las piedras causan obstrucción mecánica y laceración interna. Requiere evaluación veterinaria para tratar la causa de fondo además de la urgencia inmediata.",
+   tags:["tag-red:🔴 Pica: señal de déficit nutricional o ansiedad","tag-orange:🟠 Evaluación veterinaria para causa de fondo"],
+   human:"Sin riesgo para humanos."},
+
+  {type:'object',name:"Pelotas pequeñas de goma",emoji:"⚽",bg:"linear-gradient(135deg,#0a1a0a,#1a3518)",cat:"Cuerpo extraño · Atasco gástrico o laríngeo",
+   q:"¿Una pelota de goma del tamaño de una pelota de tenis es segura para todos los perros?",
+   opts:[{t:"Sí — si el perro puede tomarla en la boca sin problemas es adecuada",c:false},{t:"No — debe ser más grande que la boca abierta del perro para evitar que se atasque en laringe o estómago",c:true},{t:"Solo peligrosa si tiene partes desprendibles",c:false},{t:"Es segura si el perro juega supervisado",c:false}],
+   fb:"La pelota debe ser significativamente más grande que la boca completamente abierta del perro. Pelotas del tamaño justo pueden ser aspiradas y atascarse en la laringe causando asfixia, o tragadas y bloquearse en el estómago. El tamaño correcto es el criterio más importante al elegir juguetes.",
+   tags:["tag-red:🔴 Debe ser más grande que la boca completamente abierta","tag-red:🔴 Pelota pequeña = riesgo de asfixia o atasco gástrico"],
+   human:"Sin riesgo para humanos."},
+
+  {type:'object',name:"Bolsas de plástico",emoji:"🛍️",bg:"linear-gradient(135deg,#0a0a1a,#1a1a3a)",cat:"Cuerpo extraño · Obstrucción y asfixia",
+   q:"¿Las bolsas de plástico representan solo riesgo de asfixia o también de obstrucción interna?",
+   opts:[{t:"Solo asfixia si la bolsa cubre la cabeza",c:false},{t:"Ambos — ingeridas causan obstrucción masiva y adherencia al tejido intestinal",c:true},{t:"Solo las bolsas grandes son peligrosas",c:false},{t:"Solo riesgo si la bolsa tiene restos de comida",c:false}],
+   fb:"Las bolsas de plástico atraen a las mascotas por los olores de alimentos. Ingeridas forman masas que se adhieren al tejido intestinal, causando obstrucción severa difícil de resolver quirúrgicamente. Además del riesgo de asfixia, guardar siempre las bolsas fuera del alcance.",
+   tags:["tag-red:🔴 Doble riesgo: asfixia + obstrucción intestinal","tag-red:🔴 Guardar fuera del alcance siempre"],
+   human:"Las bolsas de plástico también representan riesgo de asfixia para niños pequeños."},
+
+  {type:'object',name:"Palillos de brocheta o palitos de madera",emoji:"🍢",bg:"linear-gradient(135deg,#2a1508,#5a3010)",cat:"Cuerpo extraño · Astillas perforantes",
+   q:"¿Los palillos de brocheta usados, con restos de carne, son seguros para que el perro los mastique?",
+   opts:[{t:"Sí — la madera es natural y no tóxica",c:false},{t:"No — se astillan en fragmentos punzantes que perforan boca, esófago o intestinos",c:true},{t:"Solo peligrosos si el perro los traga enteros",c:false},{t:"Seguros si son de bambú, peligrosos solo si son de madera dura",c:false}],
+   fb:"Los palillos de brocheta son extremadamente atractivos para los perros por el olor a carne. Al masticarse se fragmentan en astillas punzantes que pueden perforar cualquier punto del tracto digestivo. Desechar siempre en contenedor cerrado inmediatamente después de usarlos.",
+   tags:["tag-red:🔴 Astillas perforantes en cualquier punto del tracto","tag-red:🔴 Desechar en contenedor cerrado inmediatamente"],
+   human:"Los palillos de madera también representan riesgo de atragantamiento para personas."},
+
+  {type:'object',name:"Cintas o lazos de regalo",emoji:"🎀",bg:"linear-gradient(135deg,#2a0a25,#5a1850)",cat:"Cuerpo extraño lineal · Riesgo en celebraciones",
+   q:"¿Las cintas decorativas de regalo son inofensivas para los gatos porque son suaves?",
+   opts:[{t:"Sí — su suavidad impide que causen daño interno",c:false},{t:"No — actúan como cuerpo extraño lineal causando plegamiento intestinal y necrosis del tejido atrapado",c:true},{t:"Solo peligrosas si tienen adhesivo",c:false},{t:"Solo si miden más de 50 cm",c:false}],
+   fb:"Los gatos son especialmente atraídos por cintas y lazos de regalo. Su comportamiento lineal es idéntico al del hilo o sedal: se anclan en el tracto digestivo y al intentar avanzar pliegan el intestino sobre sí mismo. En Navidad y cumpleaños, mantener todos los materiales de envoltura fuera del alcance.",
+   tags:["tag-red:🔴 Comportamiento lineal = plegamiento intestinal","tag-orange:🟠 Riesgo especial en Navidad y celebraciones"],
+   human:"Sin riesgo para humanos."},
+
+  {type:'object',name:"Tornillos, tuercas o clavos",emoji:"🔩",bg:"linear-gradient(135deg,#1a1a1a,#3a3a3a)",cat:"Cuerpo extraño metálico · Perforación directa",
+   q:"¿Un perro que ingirió un tornillo pequeño puede esperar atención veterinaria hasta el día siguiente?",
+   opts:[{t:"Sí — los metales son pesados y generalmente se depositan sin moverse",c:false},{t:"No — los bordes cortantes perforan el tracto digestivo y el zinc o plomo pueden causar toxicidad sistémica",c:true},{t:"Solo urgente si el tornillo tiene más de 2 cm",c:false},{t:"Esperar 12 horas para ver si lo expulsa naturalmente",c:false}],
+   fb:"Los objetos metálicos con bordes o puntas son urgencia veterinaria inmediata. Además de la perforación mecánica, tornillos y tuercas de zinc o plomo causan toxicidad sistémica al disolverse en el ácido gástrico. Nunca esperar síntomas con objetos metálicos.",
+   tags:["tag-red:🔴 Perforación directa + toxicidad metálica sistémica","tag-red:🔴 NUNCA esperar — urgencia inmediata"],
+   human:"Sin riesgo para humanos en uso normal."},
+
+  {type:'object',name:"Corchos de botella de vino",emoji:"🍾",bg:"linear-gradient(135deg,#2a0808,#5a1515)",cat:"Cuerpo extraño · Obstrucción por expansión",
+   q:"¿Un corcho de vino es seguro para que un perro lo muerda como juguete?",
+   opts:[{t:"Sí — es blando, no tóxico y demasiado grande para ser tragado",c:false},{t:"No — los perros fragmentan el corcho y los trozos obstruyen el intestino porque se expanden con la humedad",c:true},{t:"Seguro para perros grandes, peligroso solo para razas toy",c:false},{t:"Solo peligroso si el corcho tiene residuos de vino",c:false}],
+   fb:"El corcho parece inofensivo pero los perros lo fragmentan con facilidad. Los trozos de corcho absorben líquido y se expanden en el tracto digestivo, formando tapones que bloquean el intestino. Además pueden causar obstrucción esofágica si un trozo grande es tragado rápidamente.",
+   tags:["tag-red:🔴 Se expande con la humedad — forma tapones intestinales","tag-orange:🟠 Los perros lo fragmentan fácilmente"],
+   human:"Sin riesgo para humanos."},
+];
+
+// ══════════════════════════════════════════════════════
 // LÓGICA GENERAL
 // ══════════════════════════════════════════════════════
 const ALL_PLANTS = [...PLANTS, ...SAFE_PLANTS];
 const ALL_FOODS  = [...FOODS,  ...SAFE_FOODS];
 const ALL_DRUGS  = [...DRUGS];
-
-// ✅ FIX: POISONS ahora está definido correctamente arriba
 const ALL_POISON = [...POISONS, ...SAFE_POISONS];
+const ALL_OBJECTS= [...OBJECTS];
 
 const POOL = {
-  plants: ALL_PLANTS,
-  foods:  ALL_FOODS,
-  drugs:  ALL_DRUGS,
-  poison: ALL_POISON,
-  mix:    [...ALL_PLANTS,...ALL_FOODS,...ALL_DRUGS,...ALL_POISON]
+  plants:  ALL_PLANTS,
+  foods:   ALL_FOODS,
+  drugs:   ALL_DRUGS,
+  poison:  ALL_POISON,
+  objects: ALL_OBJECTS,
+  mix:     [...ALL_PLANTS,...ALL_FOODS,...ALL_DRUGS,...ALL_POISON,...ALL_OBJECTS]
 };
 
-const CAT_LABELS  = { plants:'🌿 Plantas', foods:'🍽️ Alimentos', drugs:'⚗️ Drogas & Medicamentos', poison:'☠️ Venenos & Químicos', mix:'🔀 Mix completo' };
-const CAT_COLORS  = { plants:'#56d364', foods:'#f0883e', drugs:'#bc8cff', poison:'#ff6b35', mix:'#58a6ff' };
-const TYPE_LABELS = { plant:'Planta', food:'Alimento', drug:'Droga/Medicamento', poison:'Veneno/Químico', common:'⚠️ Peligro Común' };
-const TYPE_CLASSES= { plant:'badge-plant', food:'badge-food', drug:'badge-drug', poison:'badge-poison', common:'badge-common' };
+const CAT_LABELS  = { plants:'🌿 Plantas', foods:'🍽️ Alimentos', drugs:'⚗️ Drogas & Medicamentos', poison:'☠️ Venenos & Químicos', objects:'⚠️ Objetos Peligrosos', mix:'🔀 Mix completo' };
+const CAT_COLORS  = { plants:'#56d364', foods:'#f0883e', drugs:'#bc8cff', poison:'#ff6b35', objects:'#fbbf24', mix:'#58a6ff' };
+const TYPE_LABELS = { plant:'Planta', food:'Alimento', drug:'Droga/Medicamento', poison:'Veneno/Químico', object:'⚠️ Objeto Peligroso', common:'⚠️ Peligro Común' };
+const TYPE_CLASSES= { plant:'badge-plant', food:'badge-food', drug:'badge-drug', poison:'badge-poison', object:'badge-objects', common:'badge-common' };
 
 let currentCat=null, session=[], qIdx=0, score=0, answers=[];
 const QS=11;
@@ -1347,8 +1524,8 @@ function switchTab(tab){
 // RENDER STATS — bloque de HTML compartido
 // ══════════════════════════════════════════════════════
 function buildStatsHTML(rounds, questions){
-  const typeLabels = {plant:'🌿 Plantas', food:'🍽️ Alimentos', drug:'⚗️ Drogas & Medicamentos', poison:'☠️ Venenos & Químicos', common:'⚠️ Alertas del Hogar'};
-  const typeColors = {plant:'#56d364', food:'#f0883e', drug:'#bc8cff', poison:'#ff6b35', common:'#ffc107'};
+  const typeLabels = {plant:'🌿 Plantas', food:'🍽️ Alimentos', drug:'⚗️ Drogas & Medicamentos', poison:'☠️ Venenos & Químicos', object:'⚠️ Objetos Peligrosos', common:'⚠️ Alertas del Hogar'};
+  const typeColors = {plant:'#56d364', food:'#f0883e', drug:'#bc8cff', poison:'#ff6b35', object:'#fbbf24', common:'#ffc107'};
 
   const avgScore  = rounds.scores && rounds.scores.length
     ? (rounds.scores.reduce((a,b)=>a+b,0)/rounds.scores.length).toFixed(1)
